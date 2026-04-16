@@ -33,8 +33,11 @@ EcoScan runs this pipeline:
 
 ```text
 EcoScan/
+├── run.sh
 ├── data/
 │   └── sample_inputs/
+├── docs/
+│   └── sample-dashboard.svg
 ├── src/
 │   └── ecoscan/
 │       ├── cli.py
@@ -51,16 +54,22 @@ EcoScan/
 
 ## Quick Start
 
-From the project root, start the local dashboard:
-
-```bash
-PYTHONPATH=src python3 -m ecoscan.cli serve
-```
-
-Or use the tiny launcher script:
+From the project root, the easiest way to start the local dashboard is:
 
 ```bash
 ./run.sh
+```
+
+`run.sh` does three things for you:
+
+- starts the local EcoScan server
+- uses the sample input files in `data/sample_inputs/`
+- opens the dashboard in your browser automatically on macOS
+
+If you want to start it manually instead:
+
+```bash
+PYTHONPATH=src python3 -m ecoscan.cli serve
 ```
 
 Then open:
@@ -80,7 +89,7 @@ EcoScan includes easy test inputs in:
 Run the dashboard with those files:
 
 ```bash
-PYTHONPATH=src python3 -m ecoscan.cli serve --data-dir data/sample_inputs
+./run.sh
 ```
 
 Print the raw model output in the terminal:
@@ -99,6 +108,12 @@ Point EcoScan at your own input folder:
 
 ```bash
 PYTHONPATH=src python3 -m ecoscan.cli serve --data-dir /path/to/my-inputs
+```
+
+If you want to keep using `run.sh`, you can still pass options through it:
+
+```bash
+./run.sh --port 8123
 ```
 
 Your folder should contain:
@@ -143,19 +158,19 @@ If `map.json` is omitted, EcoScan still runs, but custom polygons and landmarks 
 Start the dashboard:
 
 ```bash
-PYTHONPATH=src python3 -m ecoscan.cli serve
+./run.sh
 ```
 
-Start the dashboard with the shortcut script:
+Start the dashboard manually:
 
 ```bash
-./run.sh
+PYTHONPATH=src python3 -m ecoscan.cli serve
 ```
 
 Start the dashboard on another port:
 
 ```bash
-PYTHONPATH=src python3 -m ecoscan.cli serve --port 8123
+./run.sh --port 8123
 ```
 
 Print raw output:
