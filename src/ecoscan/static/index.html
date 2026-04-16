@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EcoScan | Biodiversity Health Intelligence</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy reveal">
+          <p class="eyebrow">EcoScan biodiversity command center</p>
+          <h1>See which species slip first when habitat conditions break down.</h1>
+          <p class="hero-text">
+            EcoScan fuses satellite-derived habitat signals with field sensors to reveal where
+            monarch butterflies, California red-legged frogs, valley oak saplings, and acorn
+            woodpeckers are under the most pressure.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#dashboard">Open live habitat map</a>
+            <a class="button secondary" href="#story">Why it matters</a>
+          </div>
+        </div>
+        <section class="hero-panel reveal delay-1">
+          <p class="panel-label">System snapshot</p>
+          <div id="heroMetrics" class="hero-metrics"></div>
+        </section>
+      </header>
+
+      <main>
+        <section id="story" class="story-grid">
+          <article class="story-card reveal delay-1">
+            <p class="card-kicker">Problem</p>
+            <h2>Habitat decline is spatial, layered, and easy to miss.</h2>
+            <p>
+              Heat, water stress, air quality, and fragmentation rarely harm every species the same
+              way. Most monitoring tools catch one signal, not the full ecological story.
+            </p>
+          </article>
+          <article class="story-card accent reveal delay-2">
+            <p class="card-kicker">Approach</p>
+            <h2>We convert remote sensing into species-level evidence.</h2>
+            <p>
+              EcoScan combines satellite-style vegetation and moisture indicators with field sensors,
+              then translates each habitat polygon into vulnerability signals for real species and
+              plants.
+            </p>
+          </article>
+          <article class="story-card reveal delay-3">
+            <p class="card-kicker">Outcome</p>
+            <h2>Teams can act on place, species, and intervention together.</h2>
+            <p>
+              Judges and field teams can see where the corridor is most fragile, which species are
+              sounding the alarm, and which restoration move has the highest leverage.
+            </p>
+          </article>
+        </section>
+
+        <section id="dashboard" class="dashboard">
+          <div class="section-heading reveal">
+            <p class="eyebrow">Live demo</p>
+            <h2>Species-aware habitat map</h2>
+          </div>
+
+          <div id="summaryCards" class="summary-cards"></div>
+
+          <div class="grid-layout">
+            <section class="panel map-panel reveal delay-1">
+              <div class="panel-header">
+                <div>
+                  <p class="panel-label">Spatial overview</p>
+                  <h3>Corridor map</h3>
+                </div>
+                <p class="panel-note">Click any habitat polygon or sensor marker for details.</p>
+              </div>
+              <div class="map-wrap">
+                <div id="mapMeta" class="map-meta"></div>
+                <svg id="habitatMap" class="habitat-map" viewBox="0 0 1000 680" role="img" aria-label="EcoScan habitat map"></svg>
+                <div class="legend">
+                  <span><i class="legend-swatch thriving"></i>Thriving</span>
+                  <span><i class="legend-swatch stressed"></i>Stressed</span>
+                  <span><i class="legend-swatch fragile"></i>Fragile</span>
+                  <span><i class="legend-dot"></i>Sensor station</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel insight-panel reveal delay-2">
+              <div class="panel-header">
+                <div>
+                  <p class="panel-label">Focused view</p>
+                  <h3 id="detailTitle">Select a habitat polygon</h3>
+                </div>
+              </div>
+              <div id="detailCard" class="detail-card">
+                <p class="empty-state">Loading habitat insights...</p>
+              </div>
+            </section>
+          </div>
+
+          <div class="grid-layout secondary-layout">
+            <section class="panel reveal delay-2">
+              <div class="panel-header">
+                <div>
+                  <p class="panel-label">Species watch</p>
+                  <h3>Most affected species and plants</h3>
+                </div>
+              </div>
+              <div id="speciesList" class="species-list"></div>
+            </section>
+
+            <section class="panel reveal delay-3">
+              <div class="panel-header">
+                <div>
+                  <p class="panel-label">Sensors</p>
+                  <h3>Field station health context</h3>
+                </div>
+              </div>
+              <div id="sensorList" class="sensor-list"></div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/static/app.js"></script>
+  </body>
+  </html>
