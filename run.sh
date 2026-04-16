@@ -17,7 +17,12 @@ while (($#)); do
   shift
 done
 
-PYTHONPATH=src python3 -m ecoscan.cli serve --data-dir data/sample_inputs "${args[@]}" &
+server_cmd=(python3 -m ecoscan.cli serve --data-dir data/sample_inputs)
+if ((${#args[@]})); then
+  server_cmd+=("${args[@]}")
+fi
+
+PYTHONPATH=src "${server_cmd[@]}" &
 server_pid=$!
 
 cleanup() {
