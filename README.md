@@ -1,33 +1,99 @@
 # EcoScan
 
-EcoScan is a biodiversity health mapping demo that combines habitat data, environmental sensors, and a local web dashboard to show where ecosystems are under stress.
+EcoScan is a biodiversity health dashboard that combines habitat cells, environmental sensor context, and species-specific habitat rules to show which plants and animals are under stress first.
 
-The current demo focuses on a South San Jose corridor and highlights:
+The current demo is centered on the real Coyote Valley and Coyote Creek corridor in South San Jose, California. It is built to be hackathon-friendly:
+
+- `./run.sh` starts everything locally
+- the website has compact interactive views instead of one long scrolling page
+- the sample data is tied to real places and public conservation references
+- you can swap in your own `CSV` and `JSON` files without editing the code
+
+## What EcoScan Does
+
+EcoScan loads habitat and sensor data, fuses them into per-zone stress signals, and translates those signals into species pressure.
+
+For each habitat polygon, EcoScan:
+
+1. Reads satellite-style habitat features such as `ndvi`, `surface_temp_c`, `moisture_index`, and `elevation_m`
+2. Reads nearby sensor values such as `pm25`, `humidity`, `soil_moisture`, and `water_ph`
+3. Computes stress indicators like vegetation stress, moisture stress, thermal stress, and water-quality stress
+4. Scores each habitat as `thriving`, `stressed`, or `fragile`
+5. Estimates which species and plants are most likely to be suffering in that habitat
+6. Displays the results in a local web app with tabs for overview, real map, species watch, and data sources
+
+## Current Demo Story
+
+The default demo focuses on species that make a convincing biodiversity story for Coyote Valley:
 
 - Monarch butterfly
 - California red-legged frog
+- Western pond turtle
 - Acorn woodpecker
 - Valley oak saplings
+- California milkweed
+- Black phoebe
+- Coyote brush
 
-## Features
+The map centers on real Coyote Valley coordinates, and the sample file metadata points to public sources for:
 
-- Combines habitat inputs like NDVI, temperature, moisture, and elevation
-- Combines sensor inputs like PM2.5, humidity, soil moisture, and water pH
-- Scores each habitat zone as `thriving`, `stressed`, or `fragile`
-- Estimates which species or plants are most affected
-- Shows results in a local browser dashboard with a map and sensor markers
-- Supports simple file-based testing with `CSV` and `JSON`
+- Coyote Creek Outdoor Classroom and regional water context
+- Coyote Valley landscape and wildlife linkage context
+- official species habitat guidance for monarchs and California red-legged frogs
 
-## How It Works
+Important note:
 
-EcoScan runs this pipeline:
+- the sample location, landmarks, and source references are real
+- the sample species logic is based on public habitat guidance
+- the sample numeric sensor values are representative, normalized demo inputs designed for local testing and hackathon presentation
 
-1. Load habitat cells and sensor readings
-2. Match nearby sensors to each habitat cell
-3. Compute ecological stress signals
-4. Score habitat health
-5. Estimate species and plant pressure
-6. Display the results on a local map dashboard
+That means the project is honest and easy to demo: it is a source-backed prototype, not a claim of live regulatory monitoring.
+
+## Quick Start
+
+From the project root:
+
+```bash
+./run.sh
+```
+
+`run.sh` will:
+
+- start the local EcoScan server
+- use the source-backed sample files in `data/sample_inputs/`
+- open the dashboard automatically on macOS
+
+Then open:
+
+```text
+http://127.0.0.1:8000
+```
+
+If you want to run manually:
+
+```bash
+PYTHONPATH=src python3 -m ecoscan.cli serve --data-dir data/sample_inputs
+```
+
+## Sample Screenshot
+
+![EcoScan sample dashboard](docs/sample-dashboard.svg)
+
+## Raw Output
+
+To inspect the modeled output in the terminal:
+
+```bash
+PYTHONPATH=src python3 -m ecoscan.cli demo --data-dir data/sample_inputs
+```
+
+This prints:
+
+- study area metadata
+- biodiversity overview
+- species catalog rollup
+- most fragile habitat
+- habitat-level recommendations
 
 ## Project Structure
 
@@ -36,10 +102,14 @@ EcoScan/
 ├── run.sh
 ├── data/
 │   └── sample_inputs/
+│       ├── habitats.csv
+│       ├── sensors.csv
+│       └── map.json
 ├── docs/
 │   └── sample-dashboard.svg
 ├── src/
 │   └── ecoscan/
+│       ├── api.py
 │       ├── cli.py
 │       ├── dataio.py
 │       ├── demo.py
@@ -48,81 +118,73 @@ EcoScan/
 │       ├── pipeline.py
 │       ├── server.py
 │       └── static/
-├── tests/
-└── README.md
+└── tests/
 ```
 
-## Quick Start
+## Input Files
 
-From the project root, the easiest way to start the local dashboard is:
+EcoScan accepts three file types.
 
-```bash
-./run.sh
-```
+### `habitats.csv`
 
-`run.sh` does three things for you:
-
-- starts the local EcoScan server
-- uses the sample input files in `data/sample_inputs/`
-- opens the dashboard in your browser automatically on macOS
-
-If you want to start it manually instead:
-
-```bash
-PYTHONPATH=src python3 -m ecoscan.cli serve
-```
-
-Then open:
+Required columns:
 
 ```text
-http://127.0.0.1:8000
+cell_id,centroid_lon,centroid_lat,ndvi,surface_temp_c,moisture_index,elevation_m
 ```
 
-## Run With Sample Files
+What these mean:
 
-EcoScan includes easy test inputs in:
+- `cell_id`: unique polygon or grid-cell ID
+- `centroid_lon` and `centroid_lat`: the location of the habitat cell
+- `ndvi`: vegetation greenness index from satellite or raster analysis
+- `surface_temp_c`: land-surface temperature in Celsius
+- `moisture_index`: normalized moisture indicator
+- `elevation_m`: elevation in meters
 
-- `data/sample_inputs/habitats.csv`
-- `data/sample_inputs/sensors.csv`
-- `data/sample_inputs/map.json`
+### `sensors.csv`
 
-Run the dashboard with those files:
+Required columns:
 
-```bash
-./run.sh
+```text
+sensor_id,lon,lat,pm25,humidity,soil_moisture,water_ph
 ```
 
-Print the raw model output in the terminal:
+What these mean:
 
-```bash
-PYTHONPATH=src python3 -m ecoscan.cli demo --data-dir data/sample_inputs
-```
+- `sensor_id`: station ID used across the app
+- `lon` and `lat`: station coordinates
+- `pm25`: air quality value
+- `humidity`: relative humidity
+- `soil_moisture`: normalized soil moisture
+- `water_ph`: water chemistry context
 
-## Sample Screenshot
+### `map.json`
 
-![EcoScan sample dashboard](docs/sample-dashboard.svg)
+`map.json` controls the story layer and map layer. At minimum, it should contain:
 
-## Use Your Own Files
+- `study_area`
+- `cell_polygons`
 
-Point EcoScan at your own input folder:
+Recommended fields for the best experience:
+
+- `landmarks`
+- `system_snapshot`
+- `location_context`
+- `sensor_profiles`
+- `data_sources`
+
+The current sample file shows the full recommended structure.
+
+## Use Your Own Data
+
+Point EcoScan at your own folder:
 
 ```bash
 PYTHONPATH=src python3 -m ecoscan.cli serve --data-dir /path/to/my-inputs
 ```
 
-If you want to keep using `run.sh`, you can still pass options through it:
-
-```bash
-./run.sh --port 8123
-```
-
-Your folder should contain:
-
-- `habitats.csv`
-- `sensors.csv`
-- optionally `map.json`
-
-You can also pass files one by one:
+Or pass the files one-by-one:
 
 ```bash
 PYTHONPATH=src python3 -m ecoscan.cli demo \
@@ -131,43 +193,81 @@ PYTHONPATH=src python3 -m ecoscan.cli demo \
   --map-file /path/to/map.json
 ```
 
-## Input Format
+You can also pass options through the launcher:
 
-`habitats.csv` columns:
-
-```text
-cell_id,centroid_lon,centroid_lat,ndvi,surface_temp_c,moisture_index,elevation_m
+```bash
+./run.sh --port 8123
 ```
 
-`sensors.csv` columns:
+## How To Implement Real Data
 
-```text
-sensor_id,lon,lat,pm25,humidity,soil_moisture,water_ph
-```
+The easiest way to move from demo data to real data is to keep EcoScan's file schema and build small export steps from your actual sources.
 
-`map.json` should include:
+### Recommended Real Data Workflow
 
-- `study_area`
-- optional `landmarks`
-- `cell_polygons`
+1. Export or derive habitat cells from satellite or GIS data
+2. Export real station readings from your sensor platform or public API
+3. Convert both into `habitats.csv` and `sensors.csv`
+4. Build a matching `map.json` with real polygons and source notes
+5. Run EcoScan locally against that folder
 
-If `map.json` is omitted, EcoScan still runs, but custom polygons and landmarks will not be shown.
+### Good Real Data Sources For This Project
+
+Habitat and land cover:
+
+- Sentinel-2 vegetation indices
+- Landsat land-surface temperature
+- local `GeoTIFF`, `CSV`, or GIS exports
+- `GeoJSON` polygons converted into the `cell_polygons` format
+
+Sensors and field measurements:
+
+- NOAA weather observations
+- USGS water and groundwater stations
+- EPA or regional air-quality monitors
+- your own IoT CSV exports
+
+Species context:
+
+- state wildlife agencies
+- U.S. Fish and Wildlife Service species pages
+- local conservation or open-space agencies
+
+### Practical Conversion Pattern
+
+If your real data starts in tools like QGIS, Google Earth Engine, ArcGIS, or a notebook pipeline:
+
+- generate one row per habitat unit in `habitats.csv`
+- generate one row per station in `sensors.csv`
+- export the habitat polygons into `map.json`
+- include source URLs and notes in `map.json` so the website can explain where the data came from
+
+### Suggested Real-Data Additions
+
+If you want to take this farther after the hackathon:
+
+1. add a small ingestion script that converts `GeoJSON` or `GeoTIFF` outputs into EcoScan CSVs
+2. add a periodic fetch from NOAA, USGS, or your own sensor API
+3. add species-specific rules for your exact ecosystem instead of the current Coyote Valley demo species set
+
+## Website Views
+
+The website is intentionally split into focused views so judges can understand the project quickly.
+
+- `Overview`: system snapshot, plain-English narrative, top habitats, and top stressed species
+- `Real map`: Leaflet map with real location coordinates, polygons, stations, and interactive detail panel
+- `Species watch`: a larger species catalog with stress levels and habitat needs
+- `Data & sources`: sensor context and public reference links
 
 ## Useful Commands
 
-Start the dashboard:
+Start the local site:
 
 ```bash
 ./run.sh
 ```
 
-Start the dashboard manually:
-
-```bash
-PYTHONPATH=src python3 -m ecoscan.cli serve
-```
-
-Start the dashboard on another port:
+Start it on another port:
 
 ```bash
 ./run.sh --port 8123
@@ -176,7 +276,7 @@ Start the dashboard on another port:
 Print raw output:
 
 ```bash
-PYTHONPATH=src python3 -m ecoscan.cli demo
+PYTHONPATH=src python3 -m ecoscan.cli demo --data-dir data/sample_inputs
 ```
 
 Run tests:
@@ -185,35 +285,32 @@ Run tests:
 PYTHONPATH=src python3 -m unittest discover -s tests -v
 ```
 
-## What You Should See
-
-In the browser:
-
-- Habitat polygons on a map
-- Sensor markers
-- Biodiversity summary cards
-- Habitat details
-- Species pressure summaries
-- Recommended interventions
-
-In terminal output:
-
-- Study area info
-- Biodiversity overview stats
-- Most fragile habitat
-- Species pressure details
-
 ## Troubleshooting
+
+If the browser does not open automatically:
+
+- keep the server running
+- open `http://127.0.0.1:8000` manually
 
 If port `8000` is already in use:
 
 ```bash
-PYTHONPATH=src python3 -m ecoscan.cli serve --port 8123
+./run.sh --port 8123
 ```
 
-If you get missing file errors, check that your input folder has the expected filenames.
+If the map tiles do not load:
 
-If you want to verify everything still works:
+- check that your browser has internet access
+- the app still runs locally, but the Leaflet base map depends on OpenStreetMap tiles
+
+If your custom data fails to load:
+
+- verify that `habitats.csv` and `sensors.csv` include the required columns
+- verify that `map.json` contains `study_area` and `cell_polygons`
+
+## Verification
+
+The project can be verified with:
 
 ```bash
 PYTHONPATH=src python3 -m unittest discover -s tests -v

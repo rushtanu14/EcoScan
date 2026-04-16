@@ -3,7 +3,12 @@ from pathlib import Path
 
 from ecoscan.dataio import load_input_bundle, load_raster_cells_csv, load_sensor_readings_csv
 from ecoscan.demo import build_demo_map, generate_demo_grid, generate_demo_sensors
-from ecoscan.pipeline import build_habitat_model, classify_habitat_health, summarize_habitat_zones
+from ecoscan.pipeline import (
+    build_habitat_model,
+    classify_habitat_health,
+    summarize_habitat_zones,
+    summarize_species_catalog,
+)
 
 
 class HabitatModelingTests(unittest.TestCase):
@@ -16,6 +21,8 @@ class HabitatModelingTests(unittest.TestCase):
         self.assertEqual(len(cells), 12)
         self.assertEqual(len(sensors), 4)
         self.assertIn("cell-0-0", map_data["cell_polygons"])
+        self.assertTrue(map_data["data_sources"])
+        self.assertEqual(map_data["sensor_profiles"][0]["sensor_id"], "coyote-creek-outdoor-classroom")
 
     def test_demo_pipeline_returns_sorted_habitats(self) -> None:
         cells = generate_demo_grid(rows=4, cols=4, seed=5)
@@ -30,7 +37,7 @@ class HabitatModelingTests(unittest.TestCase):
         self.assertGreaterEqual(habitats[0].species_pressures[0].vulnerability_score, 0.0)
         self.assertTrue(habitats[0].polygon)
         self.assertTrue(habitats[0].habitat_story)
-        self.assertEqual(habitats[0].species_pressures[0].common_name in {"Monarch butterfly", "California red-legged frog", "Acorn woodpecker", "Valley oak saplings"}, True)
+        self.assertTrue(habitats[0].species_pressures[0].source_url.startswith("https://"))
 
     def test_health_thresholds_are_stable(self) -> None:
         self.assertEqual(classify_habitat_health(0.2), "thriving")
@@ -48,6 +55,18 @@ class HabitatModelingTests(unittest.TestCase):
         self.assertIn("avg_biodiversity_score", summary)
         self.assertIn("top_species_at_risk", summary)
         self.assertTrue(summary["priority_actions"])
+
+    def test_species_catalog_rolls_up_pressure(self) -> None:
+        habitats = build_habitat_model(
+            generate_demo_grid(rows=3, cols=3),
+            generate_demo_sensors(),
+            cell_polygons=build_demo_map(rows=3, cols=3)["cell_polygons"],
+        )
+        catalog = summarize_species_catalog(habitats)
+
+        self.assertGreaterEqual(len(catalog), 6)
+        self.assertIn("status_label", catalog[0])
+        self.assertIn("source_url", catalog[0])
 
 
 if __name__ == "__main__":

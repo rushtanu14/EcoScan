@@ -84,11 +84,10 @@ def load_map_json(path: Path) -> MapData:
         cell_id: [tuple(point) for point in points]
         for cell_id, points in payload["cell_polygons"].items()
     }
-    return {
-        "study_area": payload["study_area"],
-        "landmarks": payload.get("landmarks", []),
-        "cell_polygons": normalized_polygons,
-    }
+    normalized_payload = dict(payload)
+    normalized_payload["cell_polygons"] = normalized_polygons
+    normalized_payload.setdefault("landmarks", [])
+    return normalized_payload
 
 
 def resolve_input_paths(
@@ -142,6 +141,14 @@ def load_input_bundle(
             },
             "landmarks": [],
             "cell_polygons": {},
+            "system_snapshot": {
+                "title": "Custom field upload",
+                "summary": "EcoScan loaded your local habitat cells and sensor observations.",
+                "observed_window": "User supplied",
+                "data_mode": "custom",
+            },
+            "data_sources": [],
+            "sensor_profiles": [],
         }
 
     return cells, sensors, map_data

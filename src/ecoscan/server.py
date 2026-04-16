@@ -7,7 +7,7 @@ from typing import Optional
 from urllib.parse import parse_qs, urlparse
 
 from .dataio import load_input_bundle
-from .pipeline import build_habitat_model, summarize_habitat_zones
+from .pipeline import build_habitat_model, summarize_habitat_zones, summarize_species_catalog
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -31,14 +31,21 @@ def build_demo_payload(
         map_file=map_file,
     )
     habitats = build_habitat_model(cells, sensors, cell_polygons=map_data["cell_polygons"])
+    extras = {
+        key: value
+        for key, value in map_data.items()
+        if key not in {"study_area", "landmarks", "cell_polygons"}
+    }
     return {
         "rows": len({cell.centroid[1] for cell in cells}),
         "cols": len({cell.centroid[0] for cell in cells}),
         "overview": summarize_habitat_zones(habitats),
+        "species_catalog": summarize_species_catalog(habitats),
         "study_area": map_data["study_area"],
         "landmarks": map_data["landmarks"],
         "sensors": [asdict(sensor) for sensor in sensors],
         "habitats": [asdict(habitat) for habitat in habitats],
+        **extras,
     }
 
 

@@ -4,7 +4,7 @@ from dataclasses import asdict
 from typing import Optional
 
 from .dataio import load_input_bundle
-from .pipeline import build_habitat_model, summarize_habitat_zones
+from .pipeline import build_habitat_model, summarize_habitat_zones, summarize_species_catalog
 from .server import run_dev_server
 
 
@@ -33,9 +33,13 @@ def _demo_command(
         "cols": inferred_cols,
         "habitat_count": len(habitats),
         "overview": summarize_habitat_zones(habitats),
+        "species_catalog": summarize_species_catalog(habitats),
         "study_area": map_data["study_area"],
         "most_fragile_habitat": asdict(habitats[0]),
         "habitats": [asdict(zone) for zone in habitats[:10]],
+        "sensor_profiles": map_data.get("sensor_profiles", []),
+        "system_snapshot": map_data.get("system_snapshot", {}),
+        "data_sources": map_data.get("data_sources", []),
     }
     print(json.dumps(payload, indent=2))
     return 0

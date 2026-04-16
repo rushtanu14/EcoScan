@@ -36,6 +36,8 @@ class SpeciesPressure:
     common_name: str
     scientific_name: str
     kingdom: str
+    habitat_need: str
+    source_url: str
     vulnerability_score: float
     pressure_factors: List[str]
     narrative: str

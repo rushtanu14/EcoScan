@@ -1,30 +1,138 @@
 {
   "study_area": {
-    "name": "Coyote Creek Biodiversity Corridor",
-    "region": "South San Jose, California",
+    "name": "Coyote Valley Biodiversity Corridor",
+    "region": "South San Jose and Coyote Valley, California",
     "bounds": {
       "west": -121.92,
       "east": -121.78,
       "south": 37.20,
       "north": 37.31
     },
-    "story": "A sample file-driven corridor for quickly testing EcoScan with your own habitat and sensor inputs."
+    "center": {
+      "lat": 37.255,
+      "lon": -121.85
+    },
+    "story": "This demo focuses on the Coyote Creek and Coyote Valley landscape, a real wildlife linkage where wetlands, oak savanna, and urban edge conditions shape biodiversity health."
   },
+  "system_snapshot": {
+    "title": "Source-backed Coyote Valley demo",
+    "summary": "EcoScan combines habitat cells with representative field-sensor snapshots anchored to public station locations and species guidance for the Coyote Creek and Coyote Valley corridor.",
+    "observed_window": "Representative 2024-2026 public-source snapshot normalized for demo use",
+    "data_mode": "source-backed demo",
+    "what_is_real": [
+      "Study area, landmarks, and sensor place references are tied to real Coyote Valley and Coyote Creek locations.",
+      "Species stress rules are tied to public habitat guidance from California and federal conservation sources.",
+      "The sensor values in this sample are representative snapshots mapped into EcoScan's simplified schema for hackathon testing."
+    ]
+  },
+  "location_context": {
+    "why_here": "Coyote Valley is one of the South Bay's most important wildlife linkages and water landscapes, connecting the Santa Cruz Mountains and Diablo Range while buffering flood and groundwater systems.",
+    "pressure_story": "The corridor mixes wetlands and creek habitat with dry grassland, oak edges, roads, and urban heat, making it a strong place to demonstrate species-specific habitat stress."
+  },
+  "data_sources": [
+    {
+      "name": "U.S. Geological Survey - Coyote Creek Outdoor Classroom monitoring site",
+      "kind": "groundwater and site context",
+      "url": "https://pubs.usgs.gov/publication/ofr02369",
+      "note": "Used to anchor the wetland and groundwater monitoring story near Coyote Creek Outdoor Classroom."
+    },
+    {
+      "name": "Open Space Authority - About Coyote Valley",
+      "kind": "landscape context",
+      "url": "https://www.openspaceauthority.org/projects-programs/coyote-valley-master-plan/about-coyote-valley",
+      "note": "Used for the real location story around wildlife connectivity, water, and flood resilience."
+    },
+    {
+      "name": "Open Space Authority - Understanding Coyote Valley",
+      "kind": "species and habitat context",
+      "url": "https://www.openspaceauthority.org/whats-new/understanding-coyote-valley",
+      "note": "Supports the presence of wetland, grassland, oak, and wildlife linkage habitat in the study area."
+    },
+    {
+      "name": "California Department of Fish and Wildlife - Monarch Butterfly",
+      "kind": "species reference",
+      "url": "https://wildlife.ca.gov/Conservation/Invertebrates/Monarch-Butterfly",
+      "note": "Used to define monarch decline drivers, habitat need, and restoration actions."
+    },
+    {
+      "name": "U.S. Fish and Wildlife Service - California Red-Legged Frog",
+      "kind": "species reference",
+      "url": "https://www.fws.gov/rivers/species/california-red-legged-frog-rana-draytonii",
+      "note": "Used to define aquatic and upland refuge needs for frogs in creek and wetland habitat."
+    },
+    {
+      "name": "Stanford Conservation Program - Western Pond Turtle",
+      "kind": "species reference",
+      "url": "https://conservation.stanford.edu/science-management-0/species-risk/western-pond-turtle",
+      "note": "Used to anchor freshwater turtle habitat logic in the regional creek corridor story."
+    }
+  ],
+  "sensor_profiles": [
+    {
+      "sensor_id": "coyote-creek-outdoor-classroom",
+      "label": "Coyote Creek Outdoor Classroom",
+      "kind": "water and riparian context",
+      "coordinates": [-121.902, 37.286],
+      "source_url": "https://pubs.usgs.gov/publication/ofr02369",
+      "source_name": "USGS Coyote Creek Outdoor Classroom",
+      "observed_at": "2026-04-16",
+      "summary": "Represents groundwater and water-quality context near the Coyote Creek Outdoor Classroom monitoring area.",
+      "why_it_matters": "This station informs frog and turtle habitat health where persistent freshwater refuge matters most."
+    },
+    {
+      "sensor_id": "coyote-valley-open-space",
+      "label": "Coyote Valley Open Space",
+      "kind": "oak and grassland context",
+      "coordinates": [-121.874, 37.246],
+      "source_url": "https://www.openspaceauthority.org/preserves/coyotevalley.html",
+      "source_name": "Open Space Authority Coyote Valley Preserve",
+      "observed_at": "2026-04-16",
+      "summary": "Represents mixed oak, grassland, and wildlife corridor conditions in protected open space.",
+      "why_it_matters": "This station helps track edge drying and canopy condition affecting acorn woodpeckers, milkweed, and valley oaks."
+    },
+    {
+      "sensor_id": "laguna-seca-wetland-edge",
+      "label": "Laguna Seca Wetland Edge",
+      "kind": "seasonal wetland context",
+      "coordinates": [-121.914, 37.235],
+      "source_url": "https://www.openspaceauthority.org/whats-new/understanding-coyote-valley",
+      "source_name": "Open Space Authority wetland context",
+      "observed_at": "2026-04-16",
+      "summary": "Represents seasonal wetland conditions in the southern part of the corridor.",
+      "why_it_matters": "This wetland edge is the clearest refuge signal for amphibians, turtles, and riparian plants."
+    },
+    {
+      "sensor_id": "monterey-road-urban-edge",
+      "label": "Monterey Road Urban Edge",
+      "kind": "air and heat edge context",
+      "coordinates": [-121.805, 37.258],
+      "source_url": "https://www.openspaceauthority.org/projects-programs/coyote-valley-master-plan/about-coyote-valley",
+      "source_name": "Coyote Valley urban interface context",
+      "observed_at": "2026-04-16",
+      "summary": "Represents the hotter, drier roadside interface where fragmentation and air-quality stress are strongest.",
+      "why_it_matters": "This station drives the urban heat story for monarchs, milkweed, oak recruitment, and shrub cover."
+    }
+  ],
   "landmarks": [
     {
       "name": "Coyote Creek",
       "kind": "waterway",
-      "coordinates": [[-121.89, 37.305], [-121.865, 37.27], [-121.84, 37.225]]
+      "coordinates": [[-121.902, 37.305], [-121.89, 37.282], [-121.873, 37.258], [-121.86, 37.236], [-121.848, 37.212]]
     },
     {
-      "name": "Wetland Refuge",
+      "name": "Laguna Seca Wetland Zone",
       "kind": "refuge",
-      "coordinates": [[-121.905, 37.295], [-121.885, 37.29], [-121.89, 37.27], [-121.91, 37.275]]
+      "coordinates": [[-121.918, 37.245], [-121.897, 37.247], [-121.892, 37.226], [-121.913, 37.223]]
     },
     {
-      "name": "Urban Edge",
+      "name": "Monterey Road Urban Edge",
       "kind": "urban_edge",
-      "coordinates": [[-121.81, 37.305], [-121.785, 37.305], [-121.785, 37.235], [-121.81, 37.235]]
+      "coordinates": [[-121.812, 37.304], [-121.785, 37.304], [-121.785, 37.232], [-121.812, 37.232]]
+    },
+    {
+      "name": "Coyote Valley Open Space",
+      "kind": "open_space",
+      "coordinates": [[-121.897, 37.268], [-121.862, 37.268], [-121.862, 37.232], [-121.897, 37.232]]
     }
   ],
   "cell_polygons": {

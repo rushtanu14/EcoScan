@@ -4,127 +4,133 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EcoScan | Biodiversity Health Intelligence</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
     <div class="atmosphere atmosphere-one"></div>
     <div class="atmosphere atmosphere-two"></div>
     <div class="noise-layer"></div>
+
     <div class="page-shell">
-      <header class="hero">
-        <div class="hero-copy reveal">
-          <p class="eyebrow">EcoScan biodiversity command center</p>
-          <h1>See which species slip first when habitat conditions break down.</h1>
-          <p class="hero-text">
-            EcoScan fuses satellite-derived habitat signals with field sensors to reveal where
-            monarch butterflies, California red-legged frogs, valley oak saplings, and acorn
-            woodpeckers are under the most pressure.
-          </p>
-          <div class="hero-actions">
-            <a class="button primary" href="#dashboard">Open live habitat map</a>
-            <a class="button secondary" href="#story">Why it matters</a>
-          </div>
-          <div class="hero-gallery">
-            <article class="mini-panel">
-              <img src="/assets/species-monarch.svg" alt="Monarch butterfly illustration" />
-              <div>
-                <span>Migration signal</span>
-                <strong>Monarch butterfly</strong>
-              </div>
-            </article>
-            <article class="mini-panel">
-              <img src="/assets/species-frog.svg" alt="California red-legged frog illustration" />
-              <div>
-                <span>Wetland indicator</span>
-                <strong>California red-legged frog</strong>
-              </div>
-            </article>
-          </div>
+      <header class="topbar reveal">
+        <div>
+          <p class="eyebrow">EcoScan</p>
+          <strong class="brand-mark">Biodiversity Command Center</strong>
         </div>
-        <section class="hero-panel reveal delay-1">
-          <p class="panel-label">System snapshot</p>
-          <div class="hero-visual">
-            <img src="/assets/hero-corridor.svg" alt="EcoScan corridor illustration" />
-            <div id="heroMetrics" class="hero-metrics"></div>
-          </div>
-        </section>
+        <nav class="utility-nav" aria-label="Primary">
+          <button class="nav-chip is-active" data-view-target="overviewView">Overview</button>
+          <button class="nav-chip" data-view-target="mapView">Map</button>
+          <button class="nav-chip" data-view-target="speciesView">Species</button>
+          <button class="nav-chip" data-view-target="dataView">Data</button>
+        </nav>
       </header>
 
-      <main>
-        <section id="story" class="story-grid">
-          <article class="story-card reveal delay-1">
-            <p class="card-kicker">Problem</p>
-            <h2>Habitat decline is spatial, layered, and easy to miss.</h2>
-            <p>
-              Heat, water stress, air quality, and fragmentation rarely harm every species the same
-              way. Most monitoring tools catch one signal, not the full ecological story.
+      <main class="experience-shell">
+        <section class="hero-panel reveal delay-1">
+          <div class="hero-copy">
+            <p class="eyebrow">Source-backed habitat story</p>
+            <h1>Track which species are stressed first when Coyote Valley conditions shift.</h1>
+            <p class="hero-text">
+              EcoScan combines habitat cells, field-sensor context, and public species guidance to
+              show where frogs, monarchs, oak recruitment, turtles, and riparian birds are under
+              the most pressure.
             </p>
-          </article>
-          <article class="story-card accent reveal delay-2">
-            <p class="card-kicker">Approach</p>
-            <h2>We convert remote sensing into species-level evidence.</h2>
-            <p>
-              EcoScan combines satellite-style vegetation and moisture indicators with field sensors,
-              then translates each habitat polygon into vulnerability signals for real species and
-              plants.
-            </p>
-          </article>
-          <article class="story-card reveal delay-3">
-            <p class="card-kicker">Outcome</p>
-            <h2>Teams can act on place, species, and intervention together.</h2>
-            <p>
-              Judges and field teams can see where the corridor is most fragile, which species are
-              sounding the alarm, and which restoration move has the highest leverage.
-            </p>
-          </article>
+            <div id="heroMetrics" class="hero-metrics"></div>
+          </div>
+          <aside class="hero-visual">
+            <img src="/assets/hero-corridor.svg" alt="Coyote Valley habitat corridor illustration" />
+            <div class="glass-callout">
+              <p class="panel-label">System snapshot</p>
+              <h2 id="snapshotTitle">Loading habitat model...</h2>
+              <p id="snapshotSummary">Preparing source-backed biodiversity signals.</p>
+            </div>
+          </aside>
         </section>
 
-        <section id="dashboard" class="dashboard">
-          <div class="section-heading reveal">
-            <p class="eyebrow">Live demo</p>
-            <h2>Species-aware habitat map</h2>
-          </div>
-
+        <section class="summary-strip reveal delay-2">
           <div id="summaryCards" class="summary-cards"></div>
+        </section>
 
-          <div class="grid-layout secondary-layout overview-layout">
-            <section class="panel reveal delay-1">
+        <section class="view-switcher reveal delay-2" aria-label="Dashboard views">
+          <button class="view-tab is-active" data-view-target="overviewView">Overview</button>
+          <button class="view-tab" data-view-target="mapView">Real map</button>
+          <button class="view-tab" data-view-target="speciesView">Species watch</button>
+          <button class="view-tab" data-view-target="dataView">Data & sources</button>
+        </section>
+
+        <section id="overviewView" class="dashboard-view is-active">
+          <div class="view-grid two-up">
+            <article class="panel reveal delay-1">
               <div class="panel-header">
                 <div>
-                  <p class="panel-label">Instant view</p>
-                  <h3>Top habitats needing attention</h3>
+                  <p class="panel-label">System snapshot</p>
+                  <h3>What this run is actually showing</h3>
                 </div>
               </div>
-              <div id="habitatList" class="habitat-list">
-                <p class="empty-state">Loading habitats...</p>
+              <div id="snapshotExplain" class="snapshot-grid">
+                <p class="empty-state">Loading snapshot...</p>
               </div>
-            </section>
+            </article>
 
-            <section class="panel reveal delay-2">
+            <article class="panel reveal delay-2">
               <div class="panel-header">
                 <div>
-                  <p class="panel-label">Simple summary</p>
-                  <h3>What this run is saying</h3>
+                  <p class="panel-label">Plain English</p>
+                  <h3>What the habitat model is saying</h3>
                 </div>
               </div>
               <div id="narrativeSummary" class="narrative-summary">
                 <p class="empty-state">Loading summary...</p>
               </div>
-            </section>
+            </article>
           </div>
 
-          <div class="grid-layout">
-            <section class="panel map-panel reveal delay-1">
+          <div class="view-grid two-up">
+            <article class="panel reveal delay-2">
               <div class="panel-header">
                 <div>
-                  <p class="panel-label">Spatial overview</p>
-                  <h3>Corridor map</h3>
+                  <p class="panel-label">Priority habitats</p>
+                  <h3>Where intervention is most urgent</h3>
                 </div>
-                <p class="panel-note">Click any habitat polygon or sensor marker for details.</p>
               </div>
-              <div class="map-wrap">
+              <div id="habitatList" class="habitat-list">
+                <p class="empty-state">Loading habitats...</p>
+              </div>
+            </article>
+
+            <article class="panel reveal delay-3">
+              <div class="panel-header">
+                <div>
+                  <p class="panel-label">Top stressed species</p>
+                  <h3>Species most exposed to the current conditions</h3>
+                </div>
+              </div>
+              <div id="stressedSpeciesRail" class="species-rail">
+                <p class="empty-state">Loading species...</p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section id="mapView" class="dashboard-view">
+          <div class="view-grid map-layout">
+            <article class="panel map-panel reveal delay-1">
+              <div class="panel-header">
+                <div>
+                  <p class="panel-label">Real location</p>
+                  <h3 id="mapTitle">Coyote Valley map</h3>
+                </div>
+                <p class="panel-note">Select a habitat, station, or species to focus the map.</p>
+              </div>
+              <div class="map-stack">
                 <div id="mapMeta" class="map-meta"></div>
-                <svg id="habitatMap" class="habitat-map" viewBox="0 0 1000 680" role="img" aria-label="EcoScan habitat map"></svg>
+                <div id="leafletMap" class="leaflet-map" role="img" aria-label="Coyote Valley habitat map"></div>
                 <div class="legend">
                   <span><i class="legend-swatch thriving"></i>Thriving</span>
                   <span><i class="legend-swatch stressed"></i>Stressed</span>
@@ -132,46 +138,85 @@
                   <span><i class="legend-dot"></i>Sensor station</span>
                 </div>
               </div>
-            </section>
+            </article>
 
-            <section class="panel insight-panel reveal delay-2">
+            <article class="panel insight-panel reveal delay-2">
               <div class="panel-header">
                 <div>
                   <p class="panel-label">Focused view</p>
-                  <h3 id="detailTitle">Select a habitat polygon</h3>
+                  <h3 id="detailTitle">Select a habitat, station, or species</h3>
                 </div>
               </div>
               <div id="detailCard" class="detail-card">
                 <p class="empty-state">Loading habitat insights...</p>
               </div>
-            </section>
+            </article>
           </div>
+        </section>
 
-          <div class="grid-layout secondary-layout">
-            <section class="panel reveal delay-2">
+        <section id="speciesView" class="dashboard-view">
+          <div class="view-grid species-layout">
+            <article class="panel reveal delay-1">
               <div class="panel-header">
                 <div>
-                  <p class="panel-label">Species watch</p>
-                  <h3>Most affected species and plants</h3>
+                  <p class="panel-label">Species options</p>
+                  <h3>Browse more species and plants</h3>
                 </div>
               </div>
-              <div id="speciesList" class="species-list"></div>
-            </section>
+              <div id="speciesList" class="species-list">
+                <p class="empty-state">Loading species catalog...</p>
+              </div>
+            </article>
 
-            <section class="panel reveal delay-3">
+            <article class="panel reveal delay-2">
               <div class="panel-header">
                 <div>
-                  <p class="panel-label">Sensors</p>
-                  <h3>Field station health context</h3>
+                  <p class="panel-label">Species profile</p>
+                  <h3 id="speciesDetailTitle">Choose a species</h3>
                 </div>
               </div>
-              <div id="sensorList" class="sensor-list"></div>
-            </section>
+              <div id="speciesDetail" class="detail-card">
+                <p class="empty-state">Pick a species card to inspect habitat need, stress factors, and source notes.</p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section id="dataView" class="dashboard-view">
+          <div class="view-grid two-up">
+            <article class="panel reveal delay-1">
+              <div class="panel-header">
+                <div>
+                  <p class="panel-label">Sensor context</p>
+                  <h3>Stations feeding this run</h3>
+                </div>
+              </div>
+              <div id="sensorList" class="sensor-list">
+                <p class="empty-state">Loading sensors...</p>
+              </div>
+            </article>
+
+            <article class="panel reveal delay-2">
+              <div class="panel-header">
+                <div>
+                  <p class="panel-label">Public references</p>
+                  <h3>Where the location and species story comes from</h3>
+                </div>
+              </div>
+              <div id="sourceList" class="source-list">
+                <p class="empty-state">Loading sources...</p>
+              </div>
+            </article>
           </div>
         </section>
       </main>
     </div>
 
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
     <script src="/app.js"></script>
   </body>
-  </html>
+</html>

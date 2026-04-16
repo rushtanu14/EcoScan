@@ -1,5 +1,5 @@
 sensor_id,lon,lat,pm25,humidity,soil_moisture,water_ph
-roadside-fragment,-121.805,37.258,42.0,33.0,0.22,6.4
-wetland-refuge,-121.902,37.286,10.0,74.0,0.69,7.2
-forest-interior,-121.874,37.246,15.0,61.0,0.56,7.0
-dry-grassland,-121.836,37.301,26.0,39.0,0.28,6.8
+coyote-creek-outdoor-classroom,-121.902000,37.286000,11.8,72.0,0.67,7.3
+coyote-valley-open-space,-121.874000,37.246000,14.6,60.0,0.54,7.0
+laguna-seca-wetland-edge,-121.914000,37.235000,9.5,77.0,0.74,7.4
+monterey-road-urban-edge,-121.805000,37.258000,34.8,37.0,0.24,6.5
