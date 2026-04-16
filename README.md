@@ -57,6 +57,12 @@ From the project root, start the local dashboard:
 PYTHONPATH=src python3 -m ecoscan.cli serve
 ```
 
+Or use the tiny launcher script:
+
+```bash
+./run.sh
+```
+
 Then open:
 
 ```text
@@ -82,6 +88,10 @@ Print the raw model output in the terminal:
 ```bash
 PYTHONPATH=src python3 -m ecoscan.cli demo --data-dir data/sample_inputs
 ```
+
+## Sample Screenshot
+
+![EcoScan sample dashboard](docs/sample-dashboard.svg)
 
 ## Use Your Own Files
 
@@ -134,6 +144,12 @@ Start the dashboard:
 
 ```bash
 PYTHONPATH=src python3 -m ecoscan.cli serve
+```
+
+Start the dashboard with the shortcut script:
+
+```bash
+./run.sh
 ```
 
 Start the dashboard on another port:

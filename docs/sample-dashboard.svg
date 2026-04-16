@@ -1,0 +1,58 @@
+<svg width="1400" height="840" viewBox="0 0 1400 840" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1400" height="840" rx="36" fill="#F4EEDB"/>
+  <rect x="24" y="24" width="1352" height="792" rx="28" fill="#F8F3E4" stroke="#DAD2BC"/>
+  <circle cx="129" cy="90" r="12" fill="#D88D2F"/>
+  <circle cx="169" cy="90" r="12" fill="#598648"/>
+  <circle cx="209" cy="90" r="12" fill="#943F2E"/>
+  <text x="70" y="162" fill="#213121" font-family="Georgia, serif" font-size="54" font-weight="700">EcoScan</text>
+  <text x="70" y="208" fill="#5F6F5E" font-family="Arial, sans-serif" font-size="24">Biodiversity corridor intelligence for species under habitat stress</text>
+
+  <rect x="70" y="250" width="300" height="138" rx="24" fill="#FFF8EC" stroke="#DDD2B7"/>
+  <text x="96" y="294" fill="#4F6F52" font-family="Arial, sans-serif" font-size="18" letter-spacing="2">TOP SPECIES AT RISK</text>
+  <text x="96" y="346" fill="#213121" font-family="Georgia, serif" font-size="36" font-weight="700">Monarch butterfly</text>
+  <text x="96" y="376" fill="#5F6F5E" font-family="Arial, sans-serif" font-size="20">South San Jose corridor</text>
+
+  <rect x="390" y="250" width="300" height="138" rx="24" fill="#FFF8EC" stroke="#DDD2B7"/>
+  <text x="416" y="294" fill="#4F6F52" font-family="Arial, sans-serif" font-size="18" letter-spacing="2">FRAGILE HABITATS</text>
+  <text x="416" y="352" fill="#943F2E" font-family="Georgia, serif" font-size="52" font-weight="700">7</text>
+
+  <rect x="710" y="250" width="300" height="138" rx="24" fill="#FFF8EC" stroke="#DDD2B7"/>
+  <text x="736" y="294" fill="#4F6F52" font-family="Arial, sans-serif" font-size="18" letter-spacing="2">THRIVING HABITATS</text>
+  <text x="736" y="352" fill="#598648" font-family="Georgia, serif" font-size="52" font-weight="700">5</text>
+
+  <rect x="1030" y="250" width="274" height="138" rx="24" fill="#FFF8EC" stroke="#DDD2B7"/>
+  <text x="1056" y="294" fill="#4F6F52" font-family="Arial, sans-serif" font-size="18" letter-spacing="2">LEAD ACTION</text>
+  <text x="1056" y="338" fill="#213121" font-family="Georgia, serif" font-size="28" font-weight="700">Restore habitat buffers</text>
+  <text x="1056" y="372" fill="#5F6F5E" font-family="Arial, sans-serif" font-size="18">and improve water retention</text>
+
+  <rect x="70" y="428" width="770" height="328" rx="28" fill="#FFF8EC" stroke="#DDD2B7"/>
+  <text x="102" y="474" fill="#4F6F52" font-family="Arial, sans-serif" font-size="18" letter-spacing="2">CORRIDOR MAP</text>
+  <rect x="102" y="500" width="706" height="224" rx="24" fill="#EFE5CA"/>
+  <path d="M152 536C246 522 326 564 416 598C504 634 592 650 726 690" stroke="#4F8195" stroke-width="18" stroke-linecap="round"/>
+  <rect x="136" y="520" width="140" height="82" rx="18" fill="#6A9B7A" fill-opacity="0.35"/>
+  <rect x="634" y="520" width="128" height="168" rx="18" fill="#C27A5A" fill-opacity="0.22"/>
+  <rect x="176" y="560" width="116" height="92" rx="12" fill="#598648" fill-opacity="0.86" stroke="#FFF7EA" stroke-width="3"/>
+  <rect x="298" y="584" width="120" height="90" rx="12" fill="#D88D2F" fill-opacity="0.92" stroke="#FFF7EA" stroke-width="3"/>
+  <rect x="424" y="610" width="120" height="84" rx="12" fill="#943F2E" fill-opacity="0.94" stroke="#FFF7EA" stroke-width="3"/>
+  <rect x="550" y="570" width="118" height="104" rx="12" fill="#D88D2F" fill-opacity="0.92" stroke="#FFF7EA" stroke-width="3"/>
+  <circle cx="324" cy="548" r="10" fill="#17354B" stroke="#FFF7EA" stroke-width="4"/>
+  <circle cx="590" cy="618" r="10" fill="#17354B" stroke="#FFF7EA" stroke-width="4"/>
+  <circle cx="248" cy="640" r="10" fill="#17354B" stroke="#FFF7EA" stroke-width="4"/>
+  <text x="160" y="708" fill="#5F6F5E" font-family="Arial, sans-serif" font-size="18">Wetland refuge</text>
+  <text x="316" y="708" fill="#5F6F5E" font-family="Arial, sans-serif" font-size="18">Mixed grassland</text>
+  <text x="470" y="708" fill="#5F6F5E" font-family="Arial, sans-serif" font-size="18">Urban heat fringe</text>
+
+  <rect x="872" y="428" width="432" height="328" rx="28" fill="#FFF8EC" stroke="#DDD2B7"/>
+  <text x="904" y="474" fill="#4F6F52" font-family="Arial, sans-serif" font-size="18" letter-spacing="2">FOCUSED VIEW</text>
+  <text x="904" y="526" fill="#213121" font-family="Georgia, serif" font-size="34" font-weight="700">Urban heat fringe</text>
+  <text x="904" y="562" fill="#5F6F5E" font-family="Arial, sans-serif" font-size="21">Valley oak saplings are the clearest signal here.</text>
+  <rect x="904" y="594" width="368" height="1" fill="#DDD2B7"/>
+  <text x="904" y="630" fill="#5F6F5E" font-family="Arial, sans-serif" font-size="20">Most at-risk species</text>
+  <text x="1150" y="630" fill="#213121" font-family="Arial, sans-serif" font-size="20" font-weight="700">Valley oak saplings</text>
+  <rect x="904" y="658" width="368" height="1" fill="#DDD2B7"/>
+  <text x="904" y="694" fill="#5F6F5E" font-family="Arial, sans-serif" font-size="20">Key drivers</text>
+  <text x="1070" y="694" fill="#213121" font-family="Arial, sans-serif" font-size="20" font-weight="700">Moisture, vegetation, dry air</text>
+  <rect x="904" y="720" width="174" height="16" rx="8" fill="#D5E1BD"/>
+  <rect x="904" y="720" width="146" height="16" rx="8" fill="#8BA95A"/>
+  <text x="1096" y="734" fill="#5F6F5E" font-family="Arial, sans-serif" font-size="18">Vulnerability 84%</text>
+</svg>
