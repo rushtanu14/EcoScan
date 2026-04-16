@@ -1,17 +1,9 @@
 const summaryCards = document.getElementById("summaryCards");
 const heroMetrics = document.getElementById("heroMetrics");
-const snapshotTitle = document.getElementById("snapshotTitle");
-const snapshotSummary = document.getElementById("snapshotSummary");
-const snapshotExplain = document.getElementById("snapshotExplain");
 const habitatList = document.getElementById("habitatList");
 const narrativeSummary = document.getElementById("narrativeSummary");
 const stressedSpeciesRail = document.getElementById("stressedSpeciesRail");
-const mapMeta = document.getElementById("mapMeta");
-const detailCard = document.getElementById("detailCard");
-const detailTitle = document.getElementById("detailTitle");
 const speciesList = document.getElementById("speciesList");
-const speciesDetail = document.getElementById("speciesDetail");
-const speciesDetailTitle = document.getElementById("speciesDetailTitle");
 const sensorList = document.getElementById("sensorList");
 const sourceList = document.getElementById("sourceList");
 const mapTitle = document.getElementById("mapTitle");
@@ -26,8 +18,6 @@ let landmarkState = [];
 let speciesCatalogState = [];
 let sensorProfilesState = [];
 let dataSourcesState = [];
-let systemSnapshotState = {};
-let locationContextState = {};
 let activeCellId = null;
 let activeSensorId = null;
 let activeSpeciesName = null;
@@ -120,35 +110,6 @@ function buildHeroMetrics(overview) {
   `;
 }
 
-function buildSnapshot() {
-  snapshotTitle.textContent = systemSnapshotState.title || "EcoScan system snapshot";
-  snapshotSummary.textContent = systemSnapshotState.summary || studyAreaState.story;
-  const bullets = systemSnapshotState.what_is_real || [];
-
-  snapshotExplain.innerHTML = `
-    <article class="snapshot-card">
-      <span>Observed window</span>
-      <strong>${systemSnapshotState.observed_window || "Not supplied"}</strong>
-      <p>${locationContextState.why_here || studyAreaState.story}</p>
-    </article>
-    <article class="snapshot-card">
-      <span>Why this landscape</span>
-      <strong>${studyAreaState.name}</strong>
-      <p>${locationContextState.pressure_story || studyAreaState.story}</p>
-    </article>
-    ${bullets
-      .map(
-        (bullet) => `
-          <article class="snapshot-note">
-            <span>What is real</span>
-            <p>${bullet}</p>
-          </article>
-        `,
-      )
-      .join("")}
-  `;
-}
-
 function buildNarrativeSummary(overview) {
   const leadHabitat = habitatState[0];
   const leadSpecies = leadHabitat?.species_pressures?.[0];
@@ -182,8 +143,6 @@ function buildHabitatList() {
     button.addEventListener("click", () => {
       activeCellId = button.dataset.cellId;
       activeSensorId = null;
-      const selected = habitatState.find((habitat) => habitat.cell_id === activeCellId);
-      renderHabitatDetail(selected);
       activateView("mapView");
       drawMapLayers();
     });
@@ -204,7 +163,6 @@ function buildStressedSpeciesRail() {
   stressedSpeciesRail.querySelectorAll(".rail-species").forEach((button) => {
     button.addEventListener("click", () => {
       activeSpeciesName = button.dataset.speciesName;
-      renderSpeciesDetail(findSpeciesByName(activeSpeciesName));
       activateView("speciesView");
       drawMapLayers();
       buildStressedSpeciesRail();
@@ -216,25 +174,40 @@ function buildStressedSpeciesRail() {
 function buildSpeciesList() {
   speciesList.innerHTML = speciesCatalogState
     .map((species) => `
-      <button class="species-item ${species.status_label} ${species.common_name === activeSpeciesName ? "is-active" : ""}" data-species-name="${species.common_name}">
+      <article class="species-item species-card ${species.status_label} ${species.common_name === activeSpeciesName ? "is-active" : ""}" data-species-name="${species.common_name}">
         <div class="species-topline">
           <span>${titleCase(species.kingdom)}</span>
           <strong>${species.common_name}</strong>
         </div>
         <p><em>${species.scientific_name}</em></p>
-        <p>${species.habitat_need}</p>
+        <p>${species.narrative}</p>
         <div class="species-meta">
           <span>${species.stressed_habitat_count}/${species.total_habitats} habitats under stress</span>
           <strong>${formatPercent(species.avg_vulnerability_score)}</strong>
         </div>
-      </button>
+        <div class="detail-stat">
+          <span>Habitat need</span>
+          <strong>${species.habitat_need}</strong>
+        </div>
+        <div>
+          <p class="panel-label">Pressure factors</p>
+          <div class="tag-row">
+            ${species.pressure_factors.map((factor) => `<span class="tag">${titleCase(factor)}</span>`).join("")}
+          </div>
+        </div>
+        <div class="source-link">
+          <a href="${species.source_url}" target="_blank" rel="noreferrer">Open pressure reference</a>
+        </div>
+      </article>
     `)
     .join("");
 
   speciesList.querySelectorAll(".species-item").forEach((button) => {
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (event) => {
+      if (event.target.closest("a")) {
+        return;
+      }
       activeSpeciesName = button.dataset.speciesName;
-      renderSpeciesDetail(findSpeciesByName(activeSpeciesName));
       drawMapLayers();
       buildStressedSpeciesRail();
       buildSpeciesList();
@@ -242,57 +215,7 @@ function buildSpeciesList() {
   });
 }
 
-function renderSpeciesDetail(species) {
-  if (!species) {
-    speciesDetailTitle.textContent = "Choose a species";
-    speciesDetail.innerHTML = '<p class="empty-state">Select a species card to inspect its pressure story.</p>';
-    return;
-  }
-
-  speciesDetailTitle.textContent = species.common_name;
-  speciesDetail.innerHTML = `
-    <div>
-      <p class="panel-label">Species stress</p>
-      <h3>${formatPercent(species.avg_vulnerability_score)}</h3>
-      <p>${species.narrative}</p>
-    </div>
-    <div class="detail-stat">
-      <span>Scientific name</span>
-      <strong><em>${species.scientific_name}</em></strong>
-    </div>
-    <div class="detail-stat">
-      <span>Habitat need</span>
-      <strong>${species.habitat_need}</strong>
-    </div>
-    <div class="detail-stat">
-      <span>Stressed habitats</span>
-      <strong>${species.stressed_habitat_count} of ${species.total_habitats}</strong>
-    </div>
-    <div>
-      <p class="panel-label">Lead pressure factors</p>
-      <div class="tag-row">
-        ${species.pressure_factors.map((factor) => `<span class="tag">${titleCase(factor)}</span>`).join("")}
-      </div>
-    </div>
-    <div class="source-link">
-      <a href="${species.source_url}" target="_blank" rel="noreferrer">Open species reference</a>
-    </div>
-  `;
-}
-
-function buildMapMeta() {
-  mapMeta.innerHTML = `
-    <article class="metric-pill map-pill">
-      <span>Location</span>
-      <strong>${studyAreaState.name}</strong>
-      <p>${studyAreaState.story}</p>
-    </article>
-    <article class="metric-pill map-pill">
-      <span>Map mode</span>
-      <strong>${activeSpeciesName || "All habitat stress"}</strong>
-      <p>Leaflet map centered on the real Coyote Valley study area.</p>
-    </article>
-  `;
+function buildMapHeader() {
   mapTitle.textContent = `${studyAreaState.name} map`;
 }
 
@@ -363,7 +286,7 @@ function drawLandmarks() {
 }
 
 function drawMapLayers() {
-  buildMapMeta();
+  buildMapHeader();
   if (!window.L) {
     document.getElementById("leafletMap").innerHTML = `
       <div class="map-fallback">
@@ -397,7 +320,6 @@ function drawMapLayers() {
     polygon.on("click", () => {
       activeCellId = habitat.cell_id;
       activeSensorId = null;
-      renderHabitatDetail(habitat);
       drawMapLayers();
       buildHabitatList();
     });
@@ -420,99 +342,11 @@ function drawMapLayers() {
     marker.on("click", () => {
       activeSensorId = sensor.sensor_id;
       activeCellId = null;
-      renderSensorDetail(sensor, profile);
       drawMapLayers();
     });
     marker.bindTooltip(profile?.label || titleCase(sensor.sensor_id));
     marker.addTo(sensorLayerGroup);
   });
-}
-
-function renderHabitatDetail(habitat) {
-  if (!habitat) {
-    detailTitle.textContent = "Select a habitat, station, or species";
-    detailCard.innerHTML = '<p class="empty-state">Choose a habitat polygon to inspect biodiversity stress.</p>';
-    return;
-  }
-
-  detailTitle.textContent = `${titleCase(habitat.habitat_type)} • ${habitat.cell_id}`;
-  detailCard.innerHTML = `
-    <div>
-      <p class="panel-label">Habitat diagnosis</p>
-      <h3>${habitat.biodiversity_score}</h3>
-      <p>${habitat.habitat_story}</p>
-    </div>
-    <div class="detail-stat">
-      <span>Status</span>
-      <strong>${titleCase(habitat.health_label)}</strong>
-    </div>
-    <div class="detail-stat">
-      <span>Most stressed species</span>
-      <strong>${habitat.species_pressures[0].common_name}</strong>
-    </div>
-    <div>
-      <p class="panel-label">Pressure signals</p>
-      <div class="tag-row">
-        ${habitat.key_signals.map((signal) => `<span class="tag">${titleCase(signal)}</span>`).join("")}
-      </div>
-    </div>
-    <div>
-      <p class="panel-label">Recommended actions</p>
-      <div class="action-list">
-        ${habitat.recommended_actions.map((action) => `<span class="action-chip">${action}</span>`).join("")}
-      </div>
-    </div>
-    <div>
-      <p class="panel-label">Species under pressure</p>
-      ${habitat.species_pressures
-        .slice(0, 4)
-        .map(
-          (pressure) => `
-            <div class="detail-stat">
-              <span>${pressure.common_name}</span>
-              <strong>${formatPercent(pressure.vulnerability_score)}</strong>
-            </div>
-          `,
-        )
-        .join("")}
-    </div>
-  `;
-}
-
-function renderSensorDetail(sensor, profile) {
-  detailTitle.textContent = profile?.label || titleCase(sensor.sensor_id);
-  detailCard.innerHTML = `
-    <div>
-      <p class="panel-label">Station context</p>
-      <h3>${profile?.label || titleCase(sensor.sensor_id)}</h3>
-      <p>${profile?.summary || "This station provides field context for nearby habitat cells."}</p>
-    </div>
-    <div class="detail-stat">
-      <span>Why it matters</span>
-      <strong>${profile?.kind || "Field sensor"}</strong>
-    </div>
-    <div class="detail-stat">
-      <span>PM2.5</span>
-      <strong>${sensor.readings.pm25}</strong>
-    </div>
-    <div class="detail-stat">
-      <span>Humidity</span>
-      <strong>${sensor.readings.humidity}</strong>
-    </div>
-    <div class="detail-stat">
-      <span>Soil moisture</span>
-      <strong>${sensor.readings.soil_moisture}</strong>
-    </div>
-    <div class="detail-stat">
-      <span>Water pH</span>
-      <strong>${sensor.readings.water_ph}</strong>
-    </div>
-    ${
-      profile?.source_url
-        ? `<div class="source-link"><a href="${profile.source_url}" target="_blank" rel="noreferrer">Open station reference</a></div>`
-        : ""
-    }
-  `;
 }
 
 function buildSensorList() {
@@ -541,10 +375,6 @@ function buildSensorList() {
     button.addEventListener("click", () => {
       activeSensorId = button.dataset.sensorId;
       activeCellId = null;
-      const sensor = sensorState.find((item) => item.sensor_id === activeSensorId);
-      const profile = sensorProfilesState.find((item) => item.sensor_id === activeSensorId);
-      renderSensorDetail(sensor, profile);
-      activateView("mapView");
       drawMapLayers();
       buildSensorList();
     });
@@ -582,22 +412,17 @@ async function loadDashboard() {
   speciesCatalogState = payload.species_catalog || [];
   sensorProfilesState = payload.sensor_profiles || [];
   dataSourcesState = payload.data_sources || [];
-  systemSnapshotState = payload.system_snapshot || {};
-  locationContextState = payload.location_context || {};
   activeCellId = habitatState[0]?.cell_id || null;
   activeSpeciesName = speciesCatalogState[0]?.common_name || null;
 
   buildSummaryCards(payload.overview);
   buildHeroMetrics(payload.overview);
-  buildSnapshot();
   buildNarrativeSummary(payload.overview);
   buildHabitatList();
   buildStressedSpeciesRail();
   buildSpeciesList();
   buildSensorList();
   buildSourceList();
-  renderHabitatDetail(habitatState[0]);
-  renderSpeciesDetail(findSpeciesByName(activeSpeciesName));
   drawMapLayers();
 }
 
@@ -610,9 +435,6 @@ function renderError(message) {
   speciesList.innerHTML = markup;
   sensorList.innerHTML = markup;
   sourceList.innerHTML = markup;
-  snapshotExplain.innerHTML = markup;
-  detailCard.innerHTML = markup;
-  speciesDetail.innerHTML = markup;
 }
 
 bindViewTabs();

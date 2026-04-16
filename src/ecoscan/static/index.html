@@ -43,13 +43,8 @@
             </p>
             <div id="heroMetrics" class="hero-metrics"></div>
           </div>
-          <aside class="hero-visual">
+          <aside class="hero-visual hero-visual-solo">
             <img src="/assets/hero-corridor.svg" alt="Coyote Valley habitat corridor illustration" />
-            <div class="glass-callout">
-              <p class="panel-label">System snapshot</p>
-              <h2 id="snapshotTitle">Loading habitat model...</h2>
-              <p id="snapshotSummary">Preparing source-backed biodiversity signals.</p>
-            </div>
           </aside>
         </section>
 
@@ -57,28 +52,9 @@
           <div id="summaryCards" class="summary-cards"></div>
         </section>
 
-        <section class="view-switcher reveal delay-2" aria-label="Dashboard views">
-          <button class="view-tab is-active" data-view-target="overviewView">Overview</button>
-          <button class="view-tab" data-view-target="mapView">Real map</button>
-          <button class="view-tab" data-view-target="speciesView">Species watch</button>
-          <button class="view-tab" data-view-target="dataView">Data & sources</button>
-        </section>
-
         <section id="overviewView" class="dashboard-view is-active">
           <div class="view-grid two-up">
             <article class="panel reveal delay-1">
-              <div class="panel-header">
-                <div>
-                  <p class="panel-label">System snapshot</p>
-                  <h3>What this run is actually showing</h3>
-                </div>
-              </div>
-              <div id="snapshotExplain" class="snapshot-grid">
-                <p class="empty-state">Loading snapshot...</p>
-              </div>
-            </article>
-
-            <article class="panel reveal delay-2">
               <div class="panel-header">
                 <div>
                   <p class="panel-label">Plain English</p>
@@ -104,7 +80,7 @@
               </div>
             </article>
 
-            <article class="panel reveal delay-3">
+            <article class="panel reveal delay-2">
               <div class="panel-header">
                 <div>
                   <p class="panel-label">Top stressed species</p>
@@ -119,67 +95,38 @@
         </section>
 
         <section id="mapView" class="dashboard-view">
-          <div class="view-grid map-layout">
-            <article class="panel map-panel reveal delay-1">
-              <div class="panel-header">
-                <div>
-                  <p class="panel-label">Real location</p>
-                  <h3 id="mapTitle">Coyote Valley map</h3>
-                </div>
-                <p class="panel-note">Select a habitat, station, or species to focus the map.</p>
+          <article class="panel map-panel reveal delay-1">
+            <div class="panel-header">
+              <div>
+                <p class="panel-label">Real location</p>
+                <h3 id="mapTitle">Coyote Valley map</h3>
               </div>
-              <div class="map-stack">
-                <div id="mapMeta" class="map-meta"></div>
-                <div id="leafletMap" class="leaflet-map" role="img" aria-label="Coyote Valley habitat map"></div>
-                <div class="legend">
-                  <span><i class="legend-swatch thriving"></i>Thriving</span>
-                  <span><i class="legend-swatch stressed"></i>Stressed</span>
-                  <span><i class="legend-swatch fragile"></i>Fragile</span>
-                  <span><i class="legend-dot"></i>Sensor station</span>
-                </div>
+              <p class="panel-note">Habitat polygons and field stations across the corridor.</p>
+            </div>
+            <div class="map-stack">
+              <div id="leafletMap" class="leaflet-map" role="img" aria-label="Coyote Valley habitat map"></div>
+              <div class="legend">
+                <span><i class="legend-swatch thriving"></i>Thriving</span>
+                <span><i class="legend-swatch stressed"></i>Stressed</span>
+                <span><i class="legend-swatch fragile"></i>Fragile</span>
+                <span><i class="legend-dot"></i>Sensor station</span>
               </div>
-            </article>
-
-            <article class="panel insight-panel reveal delay-2">
-              <div class="panel-header">
-                <div>
-                  <p class="panel-label">Focused view</p>
-                  <h3 id="detailTitle">Select a habitat, station, or species</h3>
-                </div>
-              </div>
-              <div id="detailCard" class="detail-card">
-                <p class="empty-state">Loading habitat insights...</p>
-              </div>
-            </article>
-          </div>
+            </div>
+          </article>
         </section>
 
         <section id="speciesView" class="dashboard-view">
-          <div class="view-grid species-layout">
-            <article class="panel reveal delay-1">
-              <div class="panel-header">
-                <div>
-                  <p class="panel-label">Species options</p>
-                  <h3>Browse more species and plants</h3>
-                </div>
+          <article class="panel reveal delay-1">
+            <div class="panel-header">
+              <div>
+                <p class="panel-label">Species watch</p>
+                <h3>Pressure stories across plants and animals</h3>
               </div>
-              <div id="speciesList" class="species-list">
-                <p class="empty-state">Loading species catalog...</p>
-              </div>
-            </article>
-
-            <article class="panel reveal delay-2">
-              <div class="panel-header">
-                <div>
-                  <p class="panel-label">Species profile</p>
-                  <h3 id="speciesDetailTitle">Choose a species</h3>
-                </div>
-              </div>
-              <div id="speciesDetail" class="detail-card">
-                <p class="empty-state">Pick a species card to inspect habitat need, stress factors, and source notes.</p>
-              </div>
-            </article>
-          </div>
+            </div>
+            <div id="speciesList" class="species-list species-grid">
+              <p class="empty-state">Loading species catalog...</p>
+            </div>
+          </article>
         </section>
 
         <section id="dataView" class="dashboard-view">
