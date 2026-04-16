@@ -4,9 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EcoScan | Biodiversity Health Intelligence</title>
-    <link rel="stylesheet" href="/static/styles.css" />
+    <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
+    <div class="atmosphere atmosphere-one"></div>
+    <div class="atmosphere atmosphere-two"></div>
+    <div class="noise-layer"></div>
     <div class="page-shell">
       <header class="hero">
         <div class="hero-copy reveal">
@@ -21,10 +24,29 @@
             <a class="button primary" href="#dashboard">Open live habitat map</a>
             <a class="button secondary" href="#story">Why it matters</a>
           </div>
+          <div class="hero-gallery">
+            <article class="mini-panel">
+              <img src="/assets/species-monarch.svg" alt="Monarch butterfly illustration" />
+              <div>
+                <span>Migration signal</span>
+                <strong>Monarch butterfly</strong>
+              </div>
+            </article>
+            <article class="mini-panel">
+              <img src="/assets/species-frog.svg" alt="California red-legged frog illustration" />
+              <div>
+                <span>Wetland indicator</span>
+                <strong>California red-legged frog</strong>
+              </div>
+            </article>
+          </div>
         </div>
         <section class="hero-panel reveal delay-1">
           <p class="panel-label">System snapshot</p>
-          <div id="heroMetrics" class="hero-metrics"></div>
+          <div class="hero-visual">
+            <img src="/assets/hero-corridor.svg" alt="EcoScan corridor illustration" />
+            <div id="heroMetrics" class="hero-metrics"></div>
+          </div>
         </section>
       </header>
 
@@ -64,6 +86,32 @@
           </div>
 
           <div id="summaryCards" class="summary-cards"></div>
+
+          <div class="grid-layout secondary-layout overview-layout">
+            <section class="panel reveal delay-1">
+              <div class="panel-header">
+                <div>
+                  <p class="panel-label">Instant view</p>
+                  <h3>Top habitats needing attention</h3>
+                </div>
+              </div>
+              <div id="habitatList" class="habitat-list">
+                <p class="empty-state">Loading habitats...</p>
+              </div>
+            </section>
+
+            <section class="panel reveal delay-2">
+              <div class="panel-header">
+                <div>
+                  <p class="panel-label">Simple summary</p>
+                  <h3>What this run is saying</h3>
+                </div>
+              </div>
+              <div id="narrativeSummary" class="narrative-summary">
+                <p class="empty-state">Loading summary...</p>
+              </div>
+            </section>
+          </div>
 
           <div class="grid-layout">
             <section class="panel map-panel reveal delay-1">
@@ -124,6 +172,6 @@
       </main>
     </div>
 
-    <script src="/static/app.js"></script>
+    <script src="/app.js"></script>
   </body>
   </html>

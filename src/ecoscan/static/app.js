@@ -6,6 +6,8 @@ const detailCard = document.getElementById("detailCard");
 const detailTitle = document.getElementById("detailTitle");
 const speciesList = document.getElementById("speciesList");
 const sensorList = document.getElementById("sensorList");
+const habitatList = document.getElementById("habitatList");
+const narrativeSummary = document.getElementById("narrativeSummary");
 
 let habitatState = [];
 let sensorState = [];
@@ -76,6 +78,46 @@ function buildMapMeta() {
       <p>${studyAreaState.story}</p>
     </article>
   `;
+}
+
+function buildNarrativeSummary(overview) {
+  const leadHabitat = habitatState[0];
+  narrativeSummary.innerHTML = `
+    <article class="summary-story">
+      <strong>${overview.top_species_at_risk[0] || "No lead species"}</strong>
+      <p>The strongest current warning is coming from ${leadHabitat.habitat_type} habitat near ${studyAreaState.region}.</p>
+      <p>${leadHabitat.habitat_story}</p>
+      <p><strong>Priority action:</strong> ${overview.priority_actions[0] || "No action available."}</p>
+    </article>
+  `;
+}
+
+function buildHabitatList() {
+  habitatList.innerHTML = habitatState
+    .slice(0, 5)
+    .map(
+      (habitat, index) => `
+        <button class="habitat-row ${habitat.health_label}" data-cell-id="${habitat.cell_id}">
+          <span class="row-rank">#${index + 1}</span>
+          <span class="row-main">
+            <strong>${titleCase(habitat.habitat_type)}</strong>
+            <small>${habitat.species_pressures[0].common_name}</small>
+          </span>
+          <span class="row-score">${Math.round(habitat.biodiversity_score)}</span>
+        </button>
+      `,
+    )
+    .join("");
+
+  habitatList.querySelectorAll(".habitat-row").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeCellId = button.dataset.cellId;
+      activeSensorId = null;
+      const selected = habitatState.find((item) => item.cell_id === activeCellId);
+      renderDetail(selected);
+      buildHabitatMap();
+    });
+  });
 }
 
 function buildHabitatMap() {
@@ -308,6 +350,8 @@ async function loadDashboard() {
 
   buildSummaryCards(payload.overview);
   buildMapMeta();
+  buildHabitatList();
+  buildNarrativeSummary(payload.overview);
   buildHabitatMap();
   buildSpeciesList();
   buildSensorList();

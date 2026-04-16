@@ -82,6 +82,8 @@ class EcoScanHandler(SimpleHTTPRequestHandler):
 
         if parsed.path == "/":
             self.path = "/index.html"
+        elif parsed.path.startswith("/static/"):
+            self.path = parsed.path.removeprefix("/static")
 
         super().do_GET()
 

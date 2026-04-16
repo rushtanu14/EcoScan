@@ -8,7 +8,6 @@ from .pipeline import build_habitat_model, summarize_habitat_zones
 try:
     from fastapi import FastAPI
     from fastapi.responses import FileResponse
-    from fastapi.staticfiles import StaticFiles
 except ImportError as exc:  # pragma: no cover
     raise RuntimeError(
         "FastAPI is not installed. Install optional dependencies with: pip install -e '.[api]'"
@@ -19,7 +18,6 @@ BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 
 app = FastAPI(title="EcoScan API", version="0.2.0")
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
 def _demo_payload(
@@ -53,6 +51,21 @@ def _demo_payload(
 @app.get("/")
 def index() -> FileResponse:
     return FileResponse(STATIC_DIR / "index.html")
+
+
+@app.get("/styles.css")
+def styles() -> FileResponse:
+    return FileResponse(STATIC_DIR / "styles.css")
+
+
+@app.get("/app.js")
+def script() -> FileResponse:
+    return FileResponse(STATIC_DIR / "app.js")
+
+
+@app.get("/assets/{asset_path:path}")
+def assets(asset_path: str) -> FileResponse:
+    return FileResponse(STATIC_DIR / "assets" / asset_path)
 
 
 @app.get("/health")
