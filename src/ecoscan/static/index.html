@@ -19,16 +19,22 @@
 
     <div class="page-shell">
       <header class="topbar reveal">
-        <div>
+        <div class="brand-block">
           <p class="eyebrow">EcoScan</p>
           <strong class="brand-mark">Biodiversity Command Center</strong>
         </div>
-        <nav class="utility-nav" aria-label="Primary">
-          <button class="nav-chip is-active" data-view-target="overviewView">Overview</button>
-          <button class="nav-chip" data-view-target="mapView">Map</button>
-          <button class="nav-chip" data-view-target="speciesView">Species</button>
-          <button class="nav-chip" data-view-target="dataView">Data</button>
-        </nav>
+        <div class="search-shell" role="search">
+          <label class="search-label" for="ecoscanSearch">Search species or Coyote places</label>
+          <input
+            id="ecoscanSearch"
+            class="search-input"
+            list="ecoscanSuggestions"
+            type="search"
+            placeholder="Search species, stations, wetlands, or corridor areas"
+            autocomplete="off"
+          />
+          <datalist id="ecoscanSuggestions"></datalist>
+        </div>
       </header>
 
       <main class="experience-shell">
@@ -50,6 +56,13 @@
 
         <section class="summary-strip reveal delay-2">
           <div id="summaryCards" class="summary-cards"></div>
+        </section>
+
+        <section class="view-tabs reveal delay-2" aria-label="Dashboard views">
+          <button class="section-tab is-active" data-view-target="overviewView">Overview</button>
+          <button class="section-tab" data-view-target="mapView">Map</button>
+          <button class="section-tab" data-view-target="speciesView">Species</button>
+          <button class="section-tab" data-view-target="dataView">Data</button>
         </section>
 
         <section id="overviewView" class="dashboard-view is-active">

@@ -77,7 +77,7 @@ body::before {
 .hero-panel,
 .panel,
 .summary-card,
-.nav-chip,
+.section-tab,
 .metric-pill,
 .species-item,
 .sensor-item,
@@ -112,6 +112,11 @@ body::before {
   margin-bottom: 18px;
 }
 
+.brand-block {
+  display: grid;
+  gap: 4px;
+}
+
 .brand-mark,
 .hero h1,
 .hero-panel h1,
@@ -139,6 +144,7 @@ body::before {
 }
 
 .utility-nav,
+.view-tabs,
 .legend,
 .tag-row,
 .action-list,
@@ -148,7 +154,7 @@ body::before {
   gap: 10px;
 }
 
-.nav-chip {
+.section-tab {
   appearance: none;
   cursor: pointer;
   border-radius: 999px;
@@ -159,7 +165,7 @@ body::before {
   transition: transform 180ms ease, background 180ms ease, color 180ms ease;
 }
 
-.nav-chip:hover,
+.section-tab:hover,
 .habitat-row:hover,
 .species-item:hover,
 .sensor-item:hover,
@@ -167,9 +173,40 @@ body::before {
   transform: translateY(-2px);
 }
 
-.nav-chip.is-active {
+.section-tab.is-active {
   color: #faf5ee;
   background: linear-gradient(135deg, #3d322d, #786556);
+}
+
+.search-shell {
+  display: grid;
+  gap: 8px;
+  justify-items: end;
+}
+
+.search-label {
+  color: rgba(56, 48, 43, 0.72);
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.search-input {
+  width: min(420px, 52vw);
+  min-height: 48px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 251, 246, 0.52);
+  color: var(--ink);
+  font: inherit;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(24px);
+}
+
+.search-input:focus {
+  outline: 2px solid rgba(120, 101, 86, 0.28);
+  outline-offset: 2px;
 }
 
 .experience-shell {
@@ -253,6 +290,10 @@ body::before {
 
 .summary-cards {
   grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.view-tabs {
+  gap: 12px;
 }
 
 .summary-card,
@@ -526,6 +567,17 @@ body::before {
     linear-gradient(135deg, rgba(255, 255, 255, 0.16), transparent);
 }
 
+.species-reveal {
+  display: none;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(48, 39, 33, 0.09);
+}
+
+.species-reveal.is-open {
+  display: grid;
+}
+
 .reveal {
   opacity: 0;
   transform: translateY(18px);
@@ -583,10 +635,12 @@ body::before {
     grid-template-columns: 1fr;
   }
 
-  .utility-nav {
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    padding-bottom: 4px;
+  .search-shell {
+    justify-items: stretch;
+  }
+
+  .search-input {
+    width: 100%;
   }
 
   .hero-panel,
@@ -600,6 +654,12 @@ body::before {
 
   .leaflet-map {
     min-height: 420px;
+  }
+
+  .view-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
   }
 
   .habitat-row {

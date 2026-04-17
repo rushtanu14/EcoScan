@@ -113,6 +113,48 @@
       "why_it_matters": "This station drives the urban heat story for monarchs, milkweed, oak recruitment, and shrub cover."
     }
   ],
+  "searchable_places": [
+    {
+      "label": "Coyote Valley Biodiversity Corridor",
+      "kind": "study_area",
+      "lat": 37.255,
+      "lon": -121.85,
+      "zoom": 12,
+      "description": "Full study area centered on the Coyote Valley wildlife corridor."
+    },
+    {
+      "label": "Coyote Creek Outdoor Classroom",
+      "kind": "station",
+      "lat": 37.286,
+      "lon": -121.902,
+      "zoom": 14,
+      "description": "Riparian and freshwater context for frogs and turtles."
+    },
+    {
+      "label": "Coyote Valley Open Space",
+      "kind": "station",
+      "lat": 37.246,
+      "lon": -121.874,
+      "zoom": 14,
+      "description": "Oak and grassland context for woodpeckers, milkweed, and valley oak."
+    },
+    {
+      "label": "Laguna Seca Wetland Zone",
+      "kind": "landmark",
+      "lat": 37.235,
+      "lon": -121.905,
+      "zoom": 14,
+      "description": "Wetland refuge where amphibian and turtle habitat is strongest."
+    },
+    {
+      "label": "Monterey Road Urban Edge",
+      "kind": "landmark",
+      "lat": 37.258,
+      "lon": -121.805,
+      "zoom": 13,
+      "description": "Hotter roadside edge where monarch and milkweed stress is strongest."
+    }
+  ],
   "landmarks": [
     {
       "name": "Coyote Creek",

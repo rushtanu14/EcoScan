@@ -7,6 +7,8 @@ const speciesList = document.getElementById("speciesList");
 const sensorList = document.getElementById("sensorList");
 const sourceList = document.getElementById("sourceList");
 const mapTitle = document.getElementById("mapTitle");
+const searchInput = document.getElementById("ecoscanSearch");
+const searchSuggestions = document.getElementById("ecoscanSuggestions");
 
 const viewTabs = [...document.querySelectorAll("[data-view-target]")];
 const views = [...document.querySelectorAll(".dashboard-view")];
@@ -18,6 +20,7 @@ let landmarkState = [];
 let speciesCatalogState = [];
 let sensorProfilesState = [];
 let dataSourcesState = [];
+let searchablePlacesState = [];
 let activeCellId = null;
 let activeSensorId = null;
 let activeSpeciesName = null;
@@ -26,6 +29,7 @@ let map = null;
 let habitatLayerGroup = null;
 let sensorLayerGroup = null;
 let landmarkLayerGroup = null;
+let searchIndex = [];
 
 const titleCase = (value) =>
   value
@@ -59,6 +63,20 @@ function activateView(targetId) {
   views.forEach((view) => {
     view.classList.toggle("is-active", view.id === targetId);
   });
+}
+
+function scoreForSpecies(habitat, speciesName) {
+  if (!speciesName) {
+    return 1 - habitat.risk_score;
+  }
+  return habitat.species_pressures.find((pressure) => pressure.common_name === speciesName)?.vulnerability_score ?? 0;
+}
+
+function statusForSpecies(habitat, speciesName) {
+  if (!speciesName) {
+    return habitat.health_label;
+  }
+  return speciesRiskLevel(scoreForSpecies(habitat, speciesName));
 }
 
 function bindViewTabs() {
@@ -98,7 +116,7 @@ function buildHeroMetrics(overview) {
       <p>${studyAreaState.name}</p>
     </article>
     <article class="metric-pill">
-      <span>Lead stressed species</span>
+      <span>Selected species</span>
       <strong>${leadSpecies ? leadSpecies.common_name : "N/A"}</strong>
       <p>${leadSpecies ? leadSpecies.habitat_need : "Waiting for species rollup."}</p>
     </article>
@@ -111,14 +129,23 @@ function buildHeroMetrics(overview) {
 }
 
 function buildNarrativeSummary(overview) {
-  const leadHabitat = habitatState[0];
-  const leadSpecies = leadHabitat?.species_pressures?.[0];
+  const focusSpecies = findSpeciesByName(activeSpeciesName) || findSpeciesByName(overview.top_species_at_risk[0]);
+  const relevantHabitats = habitatState
+    .map((habitat) => ({
+      habitat,
+      score: scoreForSpecies(habitat, focusSpecies?.common_name || null),
+    }))
+    .sort((left, right) => right.score - left.score);
+  const leadHabitat = relevantHabitats[0]?.habitat;
+  const leadSpecies = focusSpecies || leadHabitat?.species_pressures?.[0];
+  const healthyHabitat = [...relevantHabitats].reverse().find((item) => item.habitat)?.habitat;
   narrativeSummary.innerHTML = `
     <article class="summary-story">
-      <p class="panel-label">Lead signal</p>
+      <p class="panel-label">Selected signal</p>
       <h3>${leadSpecies ? leadSpecies.common_name : "No species found"}</h3>
-      <p>${leadHabitat ? leadHabitat.habitat_story : "No habitat summary yet."}</p>
-      <p><strong>Stressors:</strong> ${(leadHabitat?.key_signals || []).map(titleCase).join(", ")}</p>
+      <p>${leadSpecies ? leadSpecies.narrative : "No species narrative yet."}</p>
+      <p><strong>Most stressed region:</strong> ${leadHabitat ? titleCase(leadHabitat.habitat_type) : "Not available"}.</p>
+      <p><strong>Healthier refuge:</strong> ${healthyHabitat ? titleCase(healthyHabitat.habitat_type) : "Not available"}.</p>
       <p><strong>Action:</strong> ${overview.priority_actions[0] || "No intervention available."}</p>
     </article>
   `;
@@ -132,9 +159,9 @@ function buildHabitatList() {
         <span class="row-rank">#${index + 1}</span>
         <span class="row-main">
           <strong>${titleCase(habitat.habitat_type)}</strong>
-          <small>${habitat.species_pressures[0].common_name}</small>
+          <small>${activeSpeciesName || habitat.species_pressures[0].common_name}</small>
         </span>
-        <span class="row-score">${Math.round(habitat.biodiversity_score)}</span>
+        <span class="row-score">${formatPercent(scoreForSpecies(habitat, activeSpeciesName))}</span>
       </button>
     `)
     .join("");
@@ -165,8 +192,10 @@ function buildStressedSpeciesRail() {
       activeSpeciesName = button.dataset.speciesName;
       activateView("speciesView");
       drawMapLayers();
-      buildStressedSpeciesRail();
       buildSpeciesList();
+      buildStressedSpeciesRail();
+      const card = speciesList.querySelector(`[data-species-name="${CSS.escape(activeSpeciesName)}"]`);
+      card?.scrollIntoView({ behavior: "smooth", block: "center" });
     });
   });
 }
@@ -198,6 +227,11 @@ function buildSpeciesList() {
         <div class="source-link">
           <a href="${species.source_url}" target="_blank" rel="noreferrer">Open pressure reference</a>
         </div>
+        <div class="species-reveal ${species.common_name === activeSpeciesName ? "is-open" : ""}">
+          <p><strong>Where stress is strongest:</strong> ${describeSpeciesExtremes(species.common_name).high}</p>
+          <p><strong>Where habitat looks healthier:</strong> ${describeSpeciesExtremes(species.common_name).low}</p>
+          <p><strong>Action items:</strong> ${actionItemsForSpecies(species.common_name).join(" ")}</p>
+        </div>
       </article>
     `)
     .join("");
@@ -208,15 +242,22 @@ function buildSpeciesList() {
         return;
       }
       activeSpeciesName = button.dataset.speciesName;
+      activeCellId = null;
+      activeSensorId = null;
       drawMapLayers();
+      buildHeroMetrics({ top_species_at_risk: [activeSpeciesName], priority_actions: actionItemsForSpecies(activeSpeciesName) });
+      buildNarrativeSummary({ top_species_at_risk: [activeSpeciesName], priority_actions: actionItemsForSpecies(activeSpeciesName) });
       buildStressedSpeciesRail();
       buildSpeciesList();
+      button.scrollIntoView({ behavior: "smooth", block: "nearest" });
     });
   });
 }
 
 function buildMapHeader() {
-  mapTitle.textContent = `${studyAreaState.name} map`;
+  mapTitle.textContent = activeSpeciesName
+    ? `${studyAreaState.name} map • ${activeSpeciesName}`
+    : `${studyAreaState.name} map`;
 }
 
 function styleColorForHealth(label) {
@@ -252,10 +293,11 @@ function ensureMap() {
   sensorLayerGroup = window.L.layerGroup().addTo(map);
   landmarkLayerGroup = window.L.layerGroup().addTo(map);
 
-  const bounds = studyAreaState.bounds;
-  map.fitBounds([
-    [bounds.south, bounds.west],
-    [bounds.north, bounds.east],
+  const center = studyAreaState.center || { lat: (studyAreaState.bounds.north + studyAreaState.bounds.south) / 2, lon: (studyAreaState.bounds.east + studyAreaState.bounds.west) / 2 };
+  map.setView([center.lat, center.lon], 12);
+  map.setMaxBounds([
+    [studyAreaState.bounds.south - 0.015, studyAreaState.bounds.west - 0.02],
+    [studyAreaState.bounds.north + 0.015, studyAreaState.bounds.east + 0.02],
   ]);
 }
 
@@ -306,14 +348,15 @@ function drawMapLayers() {
     const leadPressure = activeSpeciesName
       ? habitat.species_pressures.find((pressure) => pressure.common_name === activeSpeciesName)
       : habitat.species_pressures[0];
+    const status = statusForSpecies(habitat, activeSpeciesName);
     const emphasis = habitatMatchesSpecies(habitat);
     const polygon = window.L.polygon(
       habitat.polygon.map(([lon, lat]) => [lat, lon]),
       {
-        color: styleColorForHealth(habitat.health_label),
+        color: styleColorForHealth(status),
         weight: habitat.cell_id === activeCellId ? 3 : 1.4,
-        fillColor: styleColorForHealth(habitat.health_label),
-        fillOpacity: emphasis ? 0.5 : 0.14,
+        fillColor: styleColorForHealth(status),
+        fillOpacity: emphasis ? 0.58 : 0.12,
       },
     );
 
@@ -324,7 +367,7 @@ function drawMapLayers() {
       buildHabitatList();
     });
     polygon.bindTooltip(
-      `${titleCase(habitat.habitat_type)} • ${Math.round(habitat.biodiversity_score)} • ${leadPressure?.common_name || "No species"}`,
+      `${titleCase(habitat.habitat_type)} • ${titleCase(status)} • ${leadPressure?.common_name || "No species"}`,
     );
     polygon.addTo(habitatLayerGroup);
   });
@@ -346,6 +389,114 @@ function drawMapLayers() {
     });
     marker.bindTooltip(profile?.label || titleCase(sensor.sensor_id));
     marker.addTo(sensorLayerGroup);
+  });
+}
+
+function describeSpeciesExtremes(speciesName) {
+  const scored = habitatState
+    .map((habitat) => ({
+      habitat,
+      score: scoreForSpecies(habitat, speciesName),
+    }))
+    .sort((left, right) => right.score - left.score);
+
+  return {
+    high: scored[0] ? `${titleCase(scored[0].habitat.habitat_type)} at ${formatPercent(scored[0].score)} vulnerability` : "Not available",
+    low: scored[scored.length - 1]
+      ? `${titleCase(scored[scored.length - 1].habitat.habitat_type)} at ${formatPercent(scored[scored.length - 1].score)} vulnerability`
+      : "Not available",
+  };
+}
+
+function actionItemsForSpecies(speciesName) {
+  const species = findSpeciesByName(speciesName);
+  if (!species) {
+    return [];
+  }
+
+  const actions = [];
+  habitatState.forEach((habitat) => {
+    if (habitat.species_pressures.some((pressure) => pressure.common_name === speciesName)) {
+      habitat.recommended_actions.forEach((action) => {
+        if (!actions.includes(action)) {
+          actions.push(action);
+        }
+      });
+    }
+  });
+
+  return actions.slice(0, 3);
+}
+
+function buildSearchIndex() {
+  const speciesEntries = speciesCatalogState.map((species) => ({
+    label: species.common_name,
+    value: species.common_name,
+    kind: "species",
+  }));
+  const placeEntries = searchablePlacesState.map((place) => ({
+    label: place.label,
+    value: place.label,
+    kind: place.kind,
+    lat: place.lat,
+    lon: place.lon,
+    zoom: place.zoom,
+  }));
+  const sensorEntries = sensorProfilesState.map((profile) => ({
+    label: profile.label,
+    value: profile.label,
+    kind: "station",
+    lat: profile.coordinates[1],
+    lon: profile.coordinates[0],
+    zoom: 14,
+  }));
+  const sourceEntries = dataSourcesState.map((source) => ({
+    label: source.name,
+    value: source.name,
+    kind: "source",
+  }));
+
+  searchIndex = [...speciesEntries, ...placeEntries, ...sensorEntries, ...sourceEntries];
+  searchSuggestions.innerHTML = searchIndex
+    .map((entry) => `<option value="${entry.value}"></option>`)
+    .join("");
+}
+
+function focusSearchTarget(entry) {
+  if (!entry) {
+    return;
+  }
+
+  if (entry.kind === "species") {
+    activeSpeciesName = entry.value;
+    activateView("speciesView");
+    drawMapLayers();
+    buildHeroMetrics({ top_species_at_risk: [activeSpeciesName], priority_actions: actionItemsForSpecies(activeSpeciesName) });
+    buildNarrativeSummary({ top_species_at_risk: [activeSpeciesName], priority_actions: actionItemsForSpecies(activeSpeciesName) });
+    buildStressedSpeciesRail();
+    buildSpeciesList();
+    const card = speciesList.querySelector(`[data-species-name="${CSS.escape(activeSpeciesName)}"]`);
+    card?.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+
+  if (entry.kind === "source") {
+    activateView("dataView");
+    sourceList.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+
+  activateView("mapView");
+  if (map && entry.lat && entry.lon) {
+    map.flyTo([entry.lat, entry.lon], entry.zoom || 13, { duration: 0.9 });
+  }
+}
+
+function bindSearch() {
+  searchInput?.addEventListener("change", () => {
+    const term = searchInput.value.trim().toLowerCase();
+    const match = searchIndex.find((entry) => entry.value.toLowerCase() === term || entry.label.toLowerCase() === term);
+    focusSearchTarget(match);
   });
 }
 
@@ -412,9 +563,11 @@ async function loadDashboard() {
   speciesCatalogState = payload.species_catalog || [];
   sensorProfilesState = payload.sensor_profiles || [];
   dataSourcesState = payload.data_sources || [];
+  searchablePlacesState = payload.searchable_places || [];
   activeCellId = habitatState[0]?.cell_id || null;
   activeSpeciesName = speciesCatalogState[0]?.common_name || null;
 
+  buildSearchIndex();
   buildSummaryCards(payload.overview);
   buildHeroMetrics(payload.overview);
   buildNarrativeSummary(payload.overview);
@@ -438,6 +591,7 @@ function renderError(message) {
 }
 
 bindViewTabs();
+bindSearch();
 
 loadDashboard().catch((error) => {
   renderError(`Unable to load EcoScan data: ${error.message}`);
