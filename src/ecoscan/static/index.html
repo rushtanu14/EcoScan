@@ -87,6 +87,45 @@
                     <span>Binary or ASCII `PLY`, `OBJ`, `LAS`, `LAZ`, `XYZ`, or `PTS` point-cloud / mesh files are parsed on the server.</span>
                   </label>
                 </div>
+                <div class="intake-control-panel">
+                  <div class="intake-guide">
+                    <div class="intake-step">
+                      <span>1</span>
+                      <div>
+                        <strong>Add photos</strong>
+                        <p>Upload one or more habitat or species images from the field.</p>
+                      </div>
+                    </div>
+                    <div class="intake-step">
+                      <span>2</span>
+                      <div>
+                        <strong>Add a scan</strong>
+                        <p>Optional, but useful for surface-aware hotspot annotations and overlays.</p>
+                      </div>
+                    </div>
+                    <div class="intake-step">
+                      <span>3</span>
+                      <div>
+                        <strong>Run analysis</strong>
+                        <p>Review the selected inputs, then launch one combined analysis job.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="intake-actions">
+                    <div class="detail-stat">
+                      <span>Selected photos</span>
+                      <strong id="selectedPhotosSummary">None selected</strong>
+                    </div>
+                    <div class="detail-stat">
+                      <span>Selected scan</span>
+                      <strong id="selectedScanSummary">None selected</strong>
+                    </div>
+                    <div class="intake-button-row">
+                      <button id="runAnalysisButton" class="primary-button" type="button">Run analysis</button>
+                      <button id="clearInputsButton" class="secondary-button" type="button">Clear inputs</button>
+                    </div>
+                  </div>
+                </div>
                 <div class="intake-summary">
                   <div id="modelStatusBanner" class="model-status-banner idle">
                     <span class="model-status-kicker">Detector path</span>

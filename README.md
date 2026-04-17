@@ -85,6 +85,12 @@ Then open:
 http://127.0.0.1:8000
 ```
 
+To stop EcoScan from another terminal:
+
+```bash
+./stop.sh
+```
+
 If you want to run manually:
 
 ```bash
@@ -96,6 +102,15 @@ That means the default local startup path is a single command:
 ```bash
 ./run.sh
 ```
+
+The input flow inside the app is:
+
+1. Add one or more field photos
+2. Optionally add a scan file
+3. Review the selected input summary in the intake panel
+4. Click `Run analysis`
+
+The app then shows the active detector path, progress percent, annotated detections, scan overlays, and action items in one place.
 
 To swap in your own fine-tuned detector, point EcoScan at a local Hugging Face object-detection checkpoint and an optional manifest:
 

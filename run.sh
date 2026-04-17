@@ -4,6 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 venv_dir=".venv"
+pid_file=".ecoscan.pid"
 port=8000
 args=()
 
@@ -43,11 +44,23 @@ if ((${#args[@]})); then
   server_cmd+=("${args[@]}")
 fi
 
+if [[ -f "$pid_file" ]]; then
+  existing_pid="$(cat "$pid_file" 2>/dev/null || true)"
+  if [[ -n "$existing_pid" ]] && kill -0 "$existing_pid" 2>/dev/null; then
+    echo "EcoScan is already running with PID $existing_pid."
+    echo "Open http://127.0.0.1:${port} or run ./stop.sh first."
+    exit 0
+  fi
+  rm -f "$pid_file"
+fi
+
 PYTHONPATH=src "${server_cmd[@]}" &
 server_pid=$!
+echo "$server_pid" > "$pid_file"
 
 cleanup() {
   kill "$server_pid" 2>/dev/null || true
+  rm -f "$pid_file"
 }
 
 trap cleanup EXIT INT TERM
@@ -60,6 +73,7 @@ for _ in $(seq 1 30); do
 done
 
 echo "Opening EcoScan dashboard at http://127.0.0.1:${port}"
+echo "Press Ctrl+C here or run ./stop.sh from another terminal to stop EcoScan."
 
 if command -v open >/dev/null 2>&1; then
   open "http://127.0.0.1:${port}" >/dev/null 2>&1 || true

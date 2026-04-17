@@ -109,6 +109,15 @@ body::before {
   gap: 18px;
 }
 
+.intake-control-panel,
+.intake-guide,
+.intake-actions,
+.intake-button-row,
+.intake-step {
+  display: grid;
+  gap: 14px;
+}
+
 .topbar {
   grid-template-columns: 1fr auto;
   align-items: center;
@@ -230,9 +239,91 @@ body::before {
 .summary-card,
 .metric-pill,
 .source-item,
-.action-card {
+.action-card,
+.intake-control-panel {
   padding: 18px;
   border-radius: var(--radius-md);
+}
+
+.intake-control-panel {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.intake-guide {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.intake-step {
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.intake-step span {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  font-weight: 700;
+  background: var(--surface-dark);
+  color: white;
+}
+
+.intake-step strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.intake-step p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.intake-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.intake-button-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-self: end;
+}
+
+.primary-button,
+.secondary-button {
+  appearance: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  min-height: 48px;
+  padding: 0 18px;
+  font: inherit;
+  cursor: pointer;
+  transition: transform 160ms ease, background 160ms ease, opacity 160ms ease;
+}
+
+.primary-button {
+  background: var(--surface-dark);
+  color: white;
+}
+
+.secondary-button {
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--ink);
+}
+
+.primary-button:disabled,
+.secondary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.primary-button:hover:not(:disabled),
+.secondary-button:hover:not(:disabled) {
+  transform: translateY(-1px);
 }
 
 .summary-card.warning strong,
@@ -831,7 +922,9 @@ a {
   .scan-grid,
   .species-card,
   .upload-shell,
-  .two-up {
+  .two-up,
+  .intake-guide,
+  .intake-actions {
     grid-template-columns: 1fr;
   }
 

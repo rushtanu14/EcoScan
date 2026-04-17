@@ -13,6 +13,10 @@ const searchInput = document.getElementById("ecoscanSearch");
 const searchSuggestions = document.getElementById("ecoscanSuggestions");
 const photoUploadInput = document.getElementById("photoUploadInput");
 const scanUploadInput = document.getElementById("scanUploadInput");
+const selectedPhotosSummary = document.getElementById("selectedPhotosSummary");
+const selectedScanSummary = document.getElementById("selectedScanSummary");
+const runAnalysisButton = document.getElementById("runAnalysisButton");
+const clearInputsButton = document.getElementById("clearInputsButton");
 const jobStatusText = document.getElementById("jobStatusText");
 const jobProgressBar = document.getElementById("jobProgressBar");
 const jobProgressText = document.getElementById("jobProgressText");
@@ -211,6 +215,20 @@ function buildActionList() {
 function setJobStatus(text) {
   if (jobStatusText) {
     jobStatusText.textContent = text;
+  }
+}
+
+function updateInputSummary() {
+  if (selectedPhotosSummary) {
+    selectedPhotosSummary.textContent = selectedPhotoFiles.length
+      ? `${selectedPhotoFiles.length} file${selectedPhotoFiles.length === 1 ? "" : "s"} selected`
+      : "None selected";
+  }
+  if (selectedScanSummary) {
+    selectedScanSummary.textContent = selectedScanFile ? selectedScanFile.name : "None selected";
+  }
+  if (runAnalysisButton) {
+    runAnalysisButton.disabled = !selectedPhotoFiles.length && !selectedScanFile;
   }
 }
 
@@ -754,6 +772,33 @@ async function createAnalysisJob() {
   return payload.job_id;
 }
 
+async function runSelectedAnalysis(targetView = "scanView") {
+  if (!selectedPhotoFiles.length && !selectedScanFile) {
+    renderError("Add at least one photo or one scan before running analysis.");
+    return;
+  }
+  try {
+    const jobId = await createAnalysisJob();
+    const result = await waitForJob(jobId);
+    applyAnalysisResult(result);
+    activateView(targetView);
+  } catch (error) {
+    renderError(`Unable to analyze inputs: ${error.message}`);
+  }
+}
+
+function clearSelectedInputs() {
+  selectedPhotoFiles = [];
+  selectedScanFile = null;
+  if (photoUploadInput) {
+    photoUploadInput.value = "";
+  }
+  if (scanUploadInput) {
+    scanUploadInput.value = "";
+  }
+  updateInputSummary();
+}
+
 async function waitForJob(jobId) {
   while (true) {
     const response = await fetch(`/api/jobs/${jobId}`);
@@ -1136,17 +1181,12 @@ function bindPhotoUpload() {
   photoUploadInput?.addEventListener("change", async (event) => {
     const files = event.target.files;
     if (!files?.length) {
+      selectedPhotoFiles = [];
+      updateInputSummary();
       return;
     }
-    try {
-      selectedPhotoFiles = [...files];
-      const jobId = await createAnalysisJob();
-      const result = await waitForJob(jobId);
-      applyAnalysisResult(result);
-      activateView("scanView");
-    } catch (error) {
-      renderError(`Unable to analyze uploaded photos: ${error.message}`);
-    }
+    selectedPhotoFiles = [...files];
+    updateInputSummary();
   });
 }
 
@@ -1154,17 +1194,23 @@ function bindScanUpload() {
   scanUploadInput?.addEventListener("change", async (event) => {
     const file = event.target.files?.[0];
     if (!file) {
+      selectedScanFile = null;
+      updateInputSummary();
       return;
     }
-    try {
-      selectedScanFile = file;
-      const jobId = await createAnalysisJob();
-      const result = await waitForJob(jobId);
-      applyAnalysisResult(result);
-      activateView("scanView");
-    } catch (error) {
-      renderError(`Unable to analyze uploaded scan: ${error.message}`);
-    }
+    selectedScanFile = file;
+    updateInputSummary();
+  });
+}
+
+function bindInputActions() {
+  runAnalysisButton?.addEventListener("click", () => {
+    runSelectedAnalysis("scanView");
+  });
+  clearInputsButton?.addEventListener("click", () => {
+    clearSelectedInputs();
+    setJobStatus("Idle");
+    setJobProgress(0, "Waiting for uploads");
   });
 }
 
@@ -1261,7 +1307,9 @@ bindViewTabs();
 bindSearch();
 bindPhotoUpload();
 bindScanUpload();
+bindInputActions();
 bindExportReport();
+updateInputSummary();
 
 loadDashboard().catch((error) => {
   renderError(`Unable to load EcoScan data: ${error.message}`);
