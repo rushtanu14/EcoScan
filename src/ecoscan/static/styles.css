@@ -223,6 +223,18 @@ body::before {
   display: block;
 }
 
+.hero-visual {
+  display: grid;
+  gap: 10px;
+}
+
+.hero-caption {
+  margin: 0;
+  padding: 0 4px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
 .summary-cards {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
