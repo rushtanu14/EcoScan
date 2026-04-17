@@ -6,9 +6,16 @@ const stressedSpeciesRail = document.getElementById("stressedSpeciesRail");
 const speciesList = document.getElementById("speciesList");
 const sensorList = document.getElementById("sensorList");
 const sourceList = document.getElementById("sourceList");
+const actionList = document.getElementById("actionList");
 const mapTitle = document.getElementById("mapTitle");
+const scanTitle = document.getElementById("scanTitle");
 const searchInput = document.getElementById("ecoscanSearch");
 const searchSuggestions = document.getElementById("ecoscanSuggestions");
+const photoUploadInput = document.getElementById("photoUploadInput");
+const photoGallery = document.getElementById("photoGallery");
+const scanViewport = document.getElementById("scanViewport");
+const scanLegend = document.getElementById("scanLegend");
+const detectionFeed = document.getElementById("detectionFeed");
 
 const viewTabs = [...document.querySelectorAll("[data-view-target]")];
 const views = [...document.querySelectorAll(".dashboard-view")];
@@ -21,6 +28,10 @@ let speciesCatalogState = [];
 let sensorProfilesState = [];
 let dataSourcesState = [];
 let searchablePlacesState = [];
+let scanModelState = [];
+let uploadedEvidenceState = [];
+let searchIndex = [];
+
 let activeCellId = null;
 let activeSensorId = null;
 let activeSpeciesName = null;
@@ -29,7 +40,6 @@ let map = null;
 let habitatLayerGroup = null;
 let sensorLayerGroup = null;
 let landmarkLayerGroup = null;
-let searchIndex = [];
 
 const titleCase = (value) =>
   value
@@ -42,10 +52,6 @@ function formatPercent(value) {
   return `${Math.round(value * 100)}%`;
 }
 
-function findSpeciesByName(name) {
-  return speciesCatalogState.find((species) => species.common_name === name);
-}
-
 function speciesRiskLevel(score) {
   if (score >= 0.68) {
     return "fragile";
@@ -54,6 +60,16 @@ function speciesRiskLevel(score) {
     return "stressed";
   }
   return "thriving";
+}
+
+function statusColor(label) {
+  if (label === "fragile") {
+    return "#8e4d3d";
+  }
+  if (label === "stressed") {
+    return "#c48a48";
+  }
+  return "#5c7d62";
 }
 
 function activateView(targetId) {
@@ -65,32 +81,40 @@ function activateView(targetId) {
   });
 }
 
+function findSpeciesByName(name) {
+  return speciesCatalogState.find((species) => species.common_name === name);
+}
+
+function findHabitatById(cellId) {
+  return habitatState.find((habitat) => habitat.cell_id === cellId);
+}
+
+function findScanCell(cellId) {
+  return scanModelState.find((cell) => cell.cell_id === cellId);
+}
+
 function scoreForSpecies(habitat, speciesName) {
   if (!speciesName) {
-    return 1 - habitat.risk_score;
+    return habitat.risk_score;
   }
-  return habitat.species_pressures.find((pressure) => pressure.common_name === speciesName)?.vulnerability_score ?? 0;
+  return habitat.species_pressures.find((pressure) => pressure.common_name === speciesName)?.vulnerability_score ?? habitat.risk_score;
 }
 
-function statusForSpecies(habitat, speciesName) {
-  if (!speciesName) {
-    return habitat.health_label;
-  }
-  return speciesRiskLevel(scoreForSpecies(habitat, speciesName));
-}
-
-function bindViewTabs() {
-  viewTabs.forEach((button) => {
-    button.addEventListener("click", () => activateView(button.dataset.viewTarget));
-  });
+function activeOverview() {
+  const leadSpecies = findSpeciesByName(activeSpeciesName) || speciesCatalogState[0];
+  const leadHabitat = habitatState.find((habitat) => habitat.cell_id === activeCellId) || habitatState[0];
+  return {
+    species: leadSpecies,
+    habitat: leadHabitat,
+  };
 }
 
 function buildSummaryCards(overview) {
   const cards = [
     { label: "Average biodiversity score", value: `${overview.avg_biodiversity_score}` },
-    { label: "Fragile habitats", value: `${overview.fragile_cells}`, className: "danger" },
-    { label: "Stressed habitats", value: `${overview.stressed_cells}`, className: "warning" },
-    { label: "Lead stressed species", value: overview.top_species_at_risk[0] || "N/A" },
+    { label: "Fragile scan cells", value: `${overview.fragile_cells}`, className: "danger" },
+    { label: "Stressed cells", value: `${overview.stressed_cells}`, className: "warning" },
+    { label: "Lead species at risk", value: overview.top_species_at_risk[0] || "N/A" },
   ];
 
   summaryCards.innerHTML = cards
@@ -106,9 +130,8 @@ function buildSummaryCards(overview) {
 }
 
 function buildHeroMetrics(overview) {
-  const leadSpecies = findSpeciesByName(overview.top_species_at_risk[0]);
-  const actions = overview.priority_actions.slice(0, 2);
-
+  const focus = activeOverview();
+  const leadActions = focus.habitat?.recommended_actions || overview.priority_actions || [];
   heroMetrics.innerHTML = `
     <article class="metric-pill">
       <span>Study area</span>
@@ -116,140 +139,208 @@ function buildHeroMetrics(overview) {
       <p>${studyAreaState.name}</p>
     </article>
     <article class="metric-pill">
-      <span>Selected species</span>
-      <strong>${leadSpecies ? leadSpecies.common_name : "N/A"}</strong>
-      <p>${leadSpecies ? leadSpecies.habitat_need : "Waiting for species rollup."}</p>
+      <span>Photo detections</span>
+      <strong>${uploadedEvidenceState.length || scanModelState.length}</strong>
+      <p>${uploadedEvidenceState.length ? "Uploaded evidence cards are ready for review." : "Scan-generated hotspots are ready for evidence review."}</p>
     </article>
     <article class="metric-pill">
       <span>Lead action</span>
-      <strong>${actions.length}</strong>
-      <p>${actions[0] || "No action identified yet."}</p>
+      <strong>${leadActions.length}</strong>
+      <p>${leadActions[0] || "No action identified yet."}</p>
     </article>
   `;
 }
 
-function buildNarrativeSummary(overview) {
-  const focusSpecies = findSpeciesByName(activeSpeciesName) || findSpeciesByName(overview.top_species_at_risk[0]);
-  const relevantHabitats = habitatState
-    .map((habitat) => ({
-      habitat,
-      score: scoreForSpecies(habitat, focusSpecies?.common_name || null),
-    }))
-    .sort((left, right) => right.score - left.score);
-  const leadHabitat = relevantHabitats[0]?.habitat;
-  const leadSpecies = focusSpecies || leadHabitat?.species_pressures?.[0];
-  const healthyHabitat = [...relevantHabitats].reverse().find((item) => item.habitat)?.habitat;
+function buildNarrativeSummary() {
+  const { species, habitat } = activeOverview();
   narrativeSummary.innerHTML = `
     <article class="summary-story">
-      <p class="panel-label">Selected signal</p>
-      <h3>${leadSpecies ? leadSpecies.common_name : "No species found"}</h3>
-      <p>${leadSpecies ? leadSpecies.narrative : "No species narrative yet."}</p>
-      <p><strong>Most stressed region:</strong> ${leadHabitat ? titleCase(leadHabitat.habitat_type) : "Not available"}.</p>
-      <p><strong>Healthier refuge:</strong> ${healthyHabitat ? titleCase(healthyHabitat.habitat_type) : "Not available"}.</p>
-      <p><strong>Action:</strong> ${overview.priority_actions[0] || "No intervention available."}</p>
+      <p class="panel-label">Current focus</p>
+      <h3>${species?.common_name || "No species found"}</h3>
+      <p>${species?.narrative || "No narrative available."}</p>
+      <div class="detail-stat-grid">
+        <div class="detail-stat">
+          <span>Detected hotspot</span>
+          <strong>${habitat ? titleCase(habitat.habitat_type) : "Not available"}</strong>
+        </div>
+        <div class="detail-stat">
+          <span>Habitat status</span>
+          <strong>${habitat ? titleCase(habitat.health_label) : "Not available"}</strong>
+        </div>
+      </div>
+      <p><strong>What was flagged:</strong> ${habitat?.habitat_story || "No scan story available."}</p>
+      <p><strong>Why it matters:</strong> ${species?.habitat_need || "No habitat need available."}</p>
     </article>
   `;
+}
+
+function buildActionList() {
+  const actions = new Set();
+  const habitat = findHabitatById(activeCellId) || habitatState[0];
+  (habitat?.recommended_actions || []).forEach((action) => actions.add(action));
+  (findSpeciesByName(activeSpeciesName)?.action_items || []).forEach((action) => actions.add(action));
+
+  actionList.innerHTML = [...actions]
+    .slice(0, 4)
+    .map(
+      (action, index) => `
+        <article class="action-card">
+          <span>Action ${index + 1}</span>
+          <strong>${action}</strong>
+        </article>
+      `,
+    )
+    .join("");
 }
 
 function buildHabitatList() {
   habitatList.innerHTML = habitatState
-    .slice(0, 6)
-    .map((habitat, index) => `
-      <button class="habitat-row ${habitat.health_label} ${habitat.cell_id === activeCellId ? "is-active" : ""}" data-cell-id="${habitat.cell_id}">
-        <span class="row-rank">#${index + 1}</span>
-        <span class="row-main">
-          <strong>${titleCase(habitat.habitat_type)}</strong>
-          <small>${activeSpeciesName || habitat.species_pressures[0].common_name}</small>
-        </span>
-        <span class="row-score">${formatPercent(scoreForSpecies(habitat, activeSpeciesName))}</span>
-      </button>
-    `)
+    .slice(0, 8)
+    .map(
+      (habitat, index) => `
+        <button class="habitat-row ${habitat.health_label} ${habitat.cell_id === activeCellId ? "is-active" : ""}" data-cell-id="${habitat.cell_id}">
+          <span class="row-rank">#${index + 1}</span>
+          <span class="row-main">
+            <strong>${titleCase(habitat.habitat_type)}</strong>
+            <small>${habitat.species_pressures[0].common_name}</small>
+          </span>
+          <span class="row-score">${formatPercent(habitat.risk_score)}</span>
+        </button>
+      `,
+    )
     .join("");
 
   habitatList.querySelectorAll(".habitat-row").forEach((button) => {
     button.addEventListener("click", () => {
       activeCellId = button.dataset.cellId;
-      activeSensorId = null;
-      activateView("mapView");
+      activeSpeciesName = findHabitatById(activeCellId)?.species_pressures[0]?.common_name || activeSpeciesName;
+      drawScanModel();
       drawMapLayers();
+      buildNarrativeSummary();
+      buildActionList();
+      buildStressedSpeciesRail();
+      buildSpeciesList();
+      buildDetectionFeed();
     });
   });
 }
 
 function buildStressedSpeciesRail() {
   stressedSpeciesRail.innerHTML = speciesCatalogState
-    .slice(0, 5)
-    .map((species) => `
-      <button class="rail-species ${species.status_label} ${species.common_name === activeSpeciesName ? "is-active" : ""}" data-species-name="${species.common_name}">
-        <span>${species.common_name}</span>
-        <strong>${formatPercent(species.avg_vulnerability_score)}</strong>
-      </button>
-    `)
+    .slice(0, 6)
+    .map(
+      (species) => `
+        <button class="rail-species ${species.status_label} ${species.common_name === activeSpeciesName ? "is-active" : ""}" data-species-name="${species.common_name}">
+          <span>${species.common_name}</span>
+          <strong>${formatPercent(species.avg_vulnerability_score)}</strong>
+        </button>
+      `,
+    )
     .join("");
 
   stressedSpeciesRail.querySelectorAll(".rail-species").forEach((button) => {
     button.addEventListener("click", () => {
       activeSpeciesName = button.dataset.speciesName;
-      activateView("speciesView");
+      activeCellId = habitatState.find((habitat) =>
+        habitat.species_pressures.some((pressure) => pressure.common_name === activeSpeciesName),
+      )?.cell_id || activeCellId;
+      buildHeroMetrics({ priority_actions: [] });
+      buildNarrativeSummary();
+      buildActionList();
+      drawScanModel();
       drawMapLayers();
-      buildSpeciesList();
       buildStressedSpeciesRail();
-      const card = speciesList.querySelector(`[data-species-name="${CSS.escape(activeSpeciesName)}"]`);
-      card?.scrollIntoView({ behavior: "smooth", block: "center" });
+      buildSpeciesList();
+      buildDetectionFeed();
+      activateView("speciesView");
     });
   });
 }
 
+function speciesExtremes(speciesName) {
+  const scored = habitatState
+    .map((habitat) => ({ habitat, score: scoreForSpecies(habitat, speciesName) }))
+    .sort((left, right) => right.score - left.score);
+  return {
+    high: scored[0] ? `${titleCase(scored[0].habitat.habitat_type)} at ${formatPercent(scored[0].score)}` : "Not available",
+    low: scored[scored.length - 1]
+      ? `${titleCase(scored[scored.length - 1].habitat.habitat_type)} at ${formatPercent(scored[scored.length - 1].score)}`
+      : "Not available",
+  };
+}
+
 function buildSpeciesList() {
   speciesList.innerHTML = speciesCatalogState
-    .map((species) => `
-      <article class="species-item species-card ${species.status_label} ${species.common_name === activeSpeciesName ? "is-active" : ""}" data-species-name="${species.common_name}">
-        <div class="species-topline">
-          <span>${titleCase(species.kingdom)}</span>
-          <strong>${species.common_name}</strong>
-        </div>
-        <p><em>${species.scientific_name}</em></p>
-        <p>${species.narrative}</p>
-        <div class="species-meta">
-          <span>${species.stressed_habitat_count}/${species.total_habitats} habitats under stress</span>
-          <strong>${formatPercent(species.avg_vulnerability_score)}</strong>
-        </div>
-        <div class="detail-stat">
-          <span>Habitat need</span>
-          <strong>${species.habitat_need}</strong>
-        </div>
-        <div>
-          <p class="panel-label">Pressure factors</p>
-          <div class="tag-row">
-            ${species.pressure_factors.map((factor) => `<span class="tag">${titleCase(factor)}</span>`).join("")}
+    .map((species) => {
+      const extremes = speciesExtremes(species.common_name);
+      return `
+        <article class="species-item species-card ${species.status_label} ${species.common_name === activeSpeciesName ? "is-active" : ""}" data-species-name="${species.common_name}">
+          <div class="species-image-grid">
+            <img src="${species.image_asset}" alt="${species.common_name}" class="species-hero-image" />
+            ${species.example_images
+              .map((image, index) => `<img src="${image}" alt="${species.common_name} example ${index + 1}" class="species-example-image" />`)
+              .join("")}
           </div>
-        </div>
-        <div class="source-link">
-          <a href="${species.source_url}" target="_blank" rel="noreferrer">Open pressure reference</a>
-        </div>
-        <div class="species-reveal ${species.common_name === activeSpeciesName ? "is-open" : ""}">
-          <p><strong>Where stress is strongest:</strong> ${describeSpeciesExtremes(species.common_name).high}</p>
-          <p><strong>Where habitat looks healthier:</strong> ${describeSpeciesExtremes(species.common_name).low}</p>
-          <p><strong>Action items:</strong> ${actionItemsForSpecies(species.common_name).join(" ")}</p>
-        </div>
-      </article>
-    `)
+          <div class="species-content">
+            <div class="species-topline">
+              <span>${titleCase(species.kingdom)}</span>
+              <strong>${species.common_name}</strong>
+            </div>
+            <p><em>${species.scientific_name}</em></p>
+            <p>${species.narrative}</p>
+            <div class="species-meta">
+              <span>${species.stressed_habitat_count}/${species.total_habitats} habitats under stress</span>
+              <strong>${formatPercent(species.avg_vulnerability_score)}</strong>
+            </div>
+            <div class="detail-stat-grid">
+              <div class="detail-stat">
+                <span>Habitat need</span>
+                <strong>${species.habitat_need}</strong>
+              </div>
+              <div class="detail-stat">
+                <span>Strongest hotspot</span>
+                <strong>${extremes.high}</strong>
+              </div>
+            </div>
+            <div>
+              <p class="panel-label">Pressure factors</p>
+              <div class="tag-row">
+                ${species.pressure_factors.map((factor) => `<span class="tag">${titleCase(factor)}</span>`).join("")}
+              </div>
+            </div>
+            <div>
+              <p class="panel-label">Action items</p>
+              <div class="tag-row">
+                ${species.action_items.map((action) => `<span class="tag action-tag">${action}</span>`).join("")}
+              </div>
+            </div>
+            <div class="species-footnote">
+              <span>Healthier refuge: ${extremes.low}</span>
+              <a href="${species.source_url}" target="_blank" rel="noreferrer">Open reference</a>
+            </div>
+          </div>
+        </article>
+      `;
+    })
     .join("");
 
-  speciesList.querySelectorAll(".species-item").forEach((button) => {
-    button.addEventListener("click", (event) => {
+  speciesList.querySelectorAll(".species-item").forEach((item) => {
+    item.addEventListener("click", (event) => {
       if (event.target.closest("a")) {
         return;
       }
-      activeSpeciesName = button.dataset.speciesName;
-      activeCellId = null;
-      activeSensorId = null;
-      drawMapLayers();
-      buildHeroMetrics({ top_species_at_risk: [activeSpeciesName], priority_actions: actionItemsForSpecies(activeSpeciesName) });
-      buildNarrativeSummary({ top_species_at_risk: [activeSpeciesName], priority_actions: actionItemsForSpecies(activeSpeciesName) });
+      activeSpeciesName = item.dataset.speciesName;
+      activeCellId = habitatState.find((habitat) =>
+        habitat.species_pressures.some((pressure) => pressure.common_name === activeSpeciesName),
+      )?.cell_id || activeCellId;
+      buildHeroMetrics({ priority_actions: [] });
+      buildNarrativeSummary();
+      buildActionList();
       buildStressedSpeciesRail();
       buildSpeciesList();
-      button.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      drawScanModel();
+      drawMapLayers();
+      buildDetectionFeed();
     });
   });
 }
@@ -258,23 +349,6 @@ function buildMapHeader() {
   mapTitle.textContent = activeSpeciesName
     ? `${studyAreaState.name} map • ${activeSpeciesName}`
     : `${studyAreaState.name} map`;
-}
-
-function styleColorForHealth(label) {
-  if (label === "fragile") {
-    return "#7f5547";
-  }
-  if (label === "stressed") {
-    return "#a67b5b";
-  }
-  return "#738771";
-}
-
-function habitatMatchesSpecies(habitat) {
-  if (!activeSpeciesName) {
-    return true;
-  }
-  return habitat.species_pressures.some((pressure) => pressure.common_name === activeSpeciesName);
 }
 
 function ensureMap() {
@@ -293,12 +367,11 @@ function ensureMap() {
   sensorLayerGroup = window.L.layerGroup().addTo(map);
   landmarkLayerGroup = window.L.layerGroup().addTo(map);
 
-  const center = studyAreaState.center || { lat: (studyAreaState.bounds.north + studyAreaState.bounds.south) / 2, lon: (studyAreaState.bounds.east + studyAreaState.bounds.west) / 2 };
+  const center = studyAreaState.center || {
+    lat: (studyAreaState.bounds.north + studyAreaState.bounds.south) / 2,
+    lon: (studyAreaState.bounds.east + studyAreaState.bounds.west) / 2,
+  };
   map.setView([center.lat, center.lon], 12);
-  map.setMaxBounds([
-    [studyAreaState.bounds.south - 0.015, studyAreaState.bounds.west - 0.02],
-    [studyAreaState.bounds.north + 0.015, studyAreaState.bounds.east + 0.02],
-  ]);
 }
 
 function drawLandmarks() {
@@ -307,7 +380,7 @@ function drawLandmarks() {
     const latLngs = landmark.coordinates.map(([lon, lat]) => [lat, lon]);
     if (landmark.kind === "waterway") {
       window.L.polyline(latLngs, {
-        color: "#718692",
+        color: "#6f93a4",
         weight: 4,
         opacity: 0.9,
       })
@@ -317,10 +390,10 @@ function drawLandmarks() {
     }
 
     window.L.polygon(latLngs, {
-      color: "rgba(75, 63, 55, 0.45)",
+      color: "rgba(57, 48, 41, 0.35)",
       weight: 1,
-      fillColor: landmark.kind === "urban_edge" ? "#b99277" : "#adb89e",
-      fillOpacity: landmark.kind === "urban_edge" ? 0.2 : 0.14,
+      fillColor: landmark.kind === "urban_edge" ? "#c79d7d" : "#b1bf9f",
+      fillOpacity: 0.16,
     })
       .bindTooltip(landmark.name)
       .addTo(landmarkLayerGroup);
@@ -333,7 +406,7 @@ function drawMapLayers() {
     document.getElementById("leafletMap").innerHTML = `
       <div class="map-fallback">
         <strong>Map tiles unavailable.</strong>
-        <p>Leaflet could not load, so the real Coyote Valley map is unavailable in this browser session.</p>
+        <p>The visual scan still works, but the spatial base map could not load in this browser session.</p>
       </div>
     `;
     return;
@@ -345,30 +418,31 @@ function drawMapLayers() {
   drawLandmarks();
 
   habitatState.forEach((habitat) => {
-    const leadPressure = activeSpeciesName
-      ? habitat.species_pressures.find((pressure) => pressure.common_name === activeSpeciesName)
-      : habitat.species_pressures[0];
-    const status = statusForSpecies(habitat, activeSpeciesName);
-    const emphasis = habitatMatchesSpecies(habitat);
+    const score = scoreForSpecies(habitat, activeSpeciesName);
+    const status = activeSpeciesName ? speciesRiskLevel(score) : habitat.health_label;
     const polygon = window.L.polygon(
       habitat.polygon.map(([lon, lat]) => [lat, lon]),
       {
-        color: styleColorForHealth(status),
-        weight: habitat.cell_id === activeCellId ? 3 : 1.4,
-        fillColor: styleColorForHealth(status),
-        fillOpacity: emphasis ? 0.58 : 0.12,
+        color: statusColor(status),
+        weight: habitat.cell_id === activeCellId ? 3.4 : 1.5,
+        fillColor: statusColor(status),
+        fillOpacity: habitat.cell_id === activeCellId ? 0.72 : 0.3,
       },
     );
 
     polygon.on("click", () => {
       activeCellId = habitat.cell_id;
-      activeSensorId = null;
+      activeSpeciesName = habitat.species_pressures[0].common_name;
       drawMapLayers();
+      drawScanModel();
       buildHabitatList();
+      buildNarrativeSummary();
+      buildActionList();
+      buildSpeciesList();
+      buildDetectionFeed();
     });
-    polygon.bindTooltip(
-      `${titleCase(habitat.habitat_type)} • ${titleCase(status)} • ${leadPressure?.common_name || "No species"}`,
-    );
+
+    polygon.bindTooltip(`${titleCase(habitat.habitat_type)} • ${formatPercent(score)}`);
     polygon.addTo(habitatLayerGroup);
   });
 
@@ -376,56 +450,343 @@ function drawMapLayers() {
     const profile = sensorProfilesState.find((item) => item.sensor_id === sensor.sensor_id);
     const marker = window.L.circleMarker([sensor.location[1], sensor.location[0]], {
       radius: sensor.sensor_id === activeSensorId ? 9 : 7,
-      color: "#241f1b",
+      color: "#2c241e",
       weight: 1.5,
-      fillColor: "#f5efe4",
-      fillOpacity: 0.92,
+      fillColor: "#fdf7ef",
+      fillOpacity: 0.94,
     });
-
     marker.on("click", () => {
       activeSensorId = sensor.sensor_id;
-      activeCellId = null;
-      drawMapLayers();
+      buildSensorList();
     });
     marker.bindTooltip(profile?.label || titleCase(sensor.sensor_id));
     marker.addTo(sensorLayerGroup);
   });
 }
 
-function describeSpeciesExtremes(speciesName) {
-  const scored = habitatState
-    .map((habitat) => ({
-      habitat,
-      score: scoreForSpecies(habitat, speciesName),
-    }))
-    .sort((left, right) => right.score - left.score);
+function buildSensorList() {
+  sensorList.innerHTML = sensorState
+    .map((sensor) => {
+      const profile = sensorProfilesState.find((item) => item.sensor_id === sensor.sensor_id);
+      return `
+        <button class="sensor-item ${sensor.sensor_id === activeSensorId ? "is-active" : ""}" data-sensor-id="${sensor.sensor_id}">
+          <div class="species-topline">
+            <span>${profile?.kind || "Field sensor"}</span>
+            <strong>${profile?.label || titleCase(sensor.sensor_id)}</strong>
+          </div>
+          <p>${profile?.summary || "Field context for nearby habitats."}</p>
+          <div class="sensor-grid">
+            <span>PM2.5 ${sensor.readings.pm25}</span>
+            <span>Humidity ${sensor.readings.humidity}</span>
+            <span>Soil ${sensor.readings.soil_moisture}</span>
+            <span>pH ${sensor.readings.water_ph}</span>
+          </div>
+        </button>
+      `;
+    })
+    .join("");
 
-  return {
-    high: scored[0] ? `${titleCase(scored[0].habitat.habitat_type)} at ${formatPercent(scored[0].score)} vulnerability` : "Not available",
-    low: scored[scored.length - 1]
-      ? `${titleCase(scored[scored.length - 1].habitat.habitat_type)} at ${formatPercent(scored[scored.length - 1].score)} vulnerability`
-      : "Not available",
-  };
+  sensorList.querySelectorAll(".sensor-item").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeSensorId = button.dataset.sensorId;
+      buildSensorList();
+    });
+  });
 }
 
-function actionItemsForSpecies(speciesName) {
-  const species = findSpeciesByName(speciesName);
-  if (!species) {
-    return [];
+function buildSourceList() {
+  sourceList.innerHTML = dataSourcesState
+    .map(
+      (source) => `
+        <article class="source-item">
+          <div class="species-topline">
+            <span>${source.kind}</span>
+            <strong>${source.name}</strong>
+          </div>
+          <p>${source.note}</p>
+          <a href="${source.url}" target="_blank" rel="noreferrer">Open source</a>
+        </article>
+      `,
+    )
+    .join("");
+}
+
+function scanCentroid(points) {
+  const x = points.reduce((sum, [px]) => sum + px, 0) / points.length;
+  const y = points.reduce((sum, [, py]) => sum + py, 0) / points.length;
+  return [x, y];
+}
+
+function projectScanPoint(point, height) {
+  const [px, py] = point;
+  const x = 120 + px * 620 + py * 160;
+  const y = 420 + py * 180 - px * 70 - height * 110;
+  return [x, y];
+}
+
+function offsetPolygon(points, offsetY) {
+  return points.map(([x, y]) => `${x},${y + offsetY}`).join(" ");
+}
+
+function pointsToString(points) {
+  return points.map(([x, y]) => `${x},${y}`).join(" ");
+}
+
+function drawScanModel() {
+  const visibleCells = scanModelState.filter((cell) => !activeSpeciesName || cell.detections.some((detection) => detection.species_name === activeSpeciesName));
+  const topCells = visibleCells.slice(0, 8);
+  scanTitle.textContent = activeSpeciesName
+    ? `3D scan focus • ${activeSpeciesName}`
+    : "Species hotspots across the scan";
+
+  scanLegend.innerHTML = `
+    <span><i class="legend-swatch thriving"></i>Lower risk</span>
+    <span><i class="legend-swatch stressed"></i>Heightened stress</span>
+    <span><i class="legend-swatch fragile"></i>Critical hotspot</span>
+  `;
+
+  if (!topCells.length) {
+    scanViewport.innerHTML = `<p class="empty-state">No scan cells match the current species filter.</p>`;
+    return;
   }
 
-  const actions = [];
-  habitatState.forEach((habitat) => {
-    if (habitat.species_pressures.some((pressure) => pressure.common_name === speciesName)) {
-      habitat.recommended_actions.forEach((action) => {
-        if (!actions.includes(action)) {
-          actions.push(action);
-        }
-      });
-    }
-  });
+  const svgMarkup = topCells
+    .map((cell) => {
+      const topFace = cell.projected_polygon.map((point) => projectScanPoint(point, cell.canopy_height));
+      const centroid = scanCentroid(topFace);
+      const isActive = cell.cell_id === activeCellId || cell.lead_species === activeSpeciesName;
+      const callout = cell.detections[0];
+      return `
+        <g class="scan-cell ${cell.health_label} ${isActive ? "is-active" : ""}" data-cell-id="${cell.cell_id}">
+          <polygon class="scan-wall" points="${offsetPolygon(topFace, 44)}"></polygon>
+          <polygon class="scan-top" points="${pointsToString(topFace)}"></polygon>
+          <circle cx="${centroid[0]}" cy="${centroid[1]}" r="${isActive ? 8 : 5}" class="scan-pin"></circle>
+          <text x="${centroid[0] + 14}" y="${centroid[1] - 10}" class="scan-label">${callout.species_name}</text>
+          <text x="${centroid[0] + 14}" y="${centroid[1] + 10}" class="scan-subtitle">${formatPercent(callout.confidence)}</text>
+        </g>
+      `;
+    })
+    .join("");
 
-  return actions.slice(0, 3);
+  scanViewport.innerHTML = `
+    <svg class="scan-svg" viewBox="0 0 1000 620" role="img" aria-label="Stylized 3D ecological scan">
+      <defs>
+        <linearGradient id="scanFloor" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#f7efe4"></stop>
+          <stop offset="100%" stop-color="#dcc8b1"></stop>
+        </linearGradient>
+      </defs>
+      <polygon points="110,470 730,360 905,470 275,590" fill="url(#scanFloor)" opacity="0.9"></polygon>
+      ${svgMarkup}
+    </svg>
+  `;
+
+  scanViewport.querySelectorAll(".scan-cell").forEach((group) => {
+    group.addEventListener("click", () => {
+      activeCellId = group.dataset.cellId;
+      activeSpeciesName = findScanCell(activeCellId)?.detections[0]?.species_name || activeSpeciesName;
+      buildHeroMetrics({ priority_actions: [] });
+      buildNarrativeSummary();
+      buildActionList();
+      buildHabitatList();
+      buildStressedSpeciesRail();
+      buildSpeciesList();
+      buildDetectionFeed();
+      drawMapLayers();
+      drawScanModel();
+    });
+  });
+}
+
+function detectionBoxes(index) {
+  const presets = [
+    [
+      { left: 10, top: 16, width: 45, height: 38 },
+      { left: 58, top: 48, width: 22, height: 18 },
+    ],
+    [
+      { left: 18, top: 22, width: 30, height: 26 },
+      { left: 52, top: 34, width: 30, height: 24 },
+    ],
+    [
+      { left: 14, top: 32, width: 38, height: 30 },
+      { left: 60, top: 16, width: 18, height: 16 },
+    ],
+  ];
+  return presets[index % presets.length];
+}
+
+function matchSpeciesForUpload(fileName, index) {
+  const normalized = fileName.toLowerCase();
+  const species = speciesCatalogState.find((item) =>
+    (item.aliases || []).some((alias) => normalized.includes(alias.toLowerCase())),
+  );
+  return species || speciesCatalogState[index % speciesCatalogState.length];
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error || new Error("Unable to read file"));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handlePhotoUploads(files) {
+  const uploads = await Promise.all(
+    [...files].map(async (file, index) => {
+      const previewUrl = await readFileAsDataUrl(file);
+      const species = matchSpeciesForUpload(file.name, index);
+      const linkedHabitat = habitatState.find((habitat) =>
+        habitat.species_pressures.some((pressure) => pressure.common_name === species.common_name),
+      ) || habitatState[index % habitatState.length];
+      return {
+        id: `${file.name}-${index}`,
+        name: file.name,
+        preview_url: previewUrl,
+        species_name: species.common_name,
+        scientific_name: species.scientific_name,
+        cell_id: linkedHabitat.cell_id,
+        confidence: Math.min(0.97, 0.63 + species.avg_vulnerability_score * 0.28 + index * 0.03),
+        boxes: detectionBoxes(index),
+        note: linkedHabitat.habitat_story,
+        action_items: linkedHabitat.recommended_actions,
+      };
+    }),
+  );
+
+  uploadedEvidenceState = uploads;
+  buildHeroMetrics({ priority_actions: [] });
+  buildPhotoGallery();
+  buildDetectionFeed();
+}
+
+function buildPhotoGallery() {
+  if (!uploadedEvidenceState.length) {
+    photoGallery.innerHTML = `<p class="empty-state">Upload photos to generate annotated detections.</p>`;
+    return;
+  }
+
+  photoGallery.innerHTML = uploadedEvidenceState
+    .map(
+      (evidence) => `
+        <article class="photo-card ${evidence.species_name === activeSpeciesName ? "is-active" : ""}" data-evidence-id="${evidence.id}">
+          <div class="photo-frame">
+            <img src="${evidence.preview_url}" alt="${evidence.species_name} upload ${evidence.name}" />
+            ${evidence.boxes
+              .map(
+                (box, index) => `
+                  <div
+                    class="annotation-box"
+                    style="left:${box.left}%; top:${box.top}%; width:${box.width}%; height:${box.height}%;"
+                  >
+                    <span>${index === 0 ? evidence.species_name : "supporting signal"}</span>
+                  </div>
+                `,
+              )
+              .join("")}
+          </div>
+          <div class="photo-meta">
+            <strong>${evidence.species_name}</strong>
+            <span>${formatPercent(evidence.confidence)}</span>
+          </div>
+          <p>${evidence.name}</p>
+        </article>
+      `,
+    )
+    .join("");
+
+  photoGallery.querySelectorAll(".photo-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      const evidence = uploadedEvidenceState.find((item) => item.id === card.dataset.evidenceId);
+      if (!evidence) {
+        return;
+      }
+      activeSpeciesName = evidence.species_name;
+      activeCellId = evidence.cell_id;
+      activateView("scanView");
+      buildNarrativeSummary();
+      buildActionList();
+      buildHabitatList();
+      buildStressedSpeciesRail();
+      buildSpeciesList();
+      drawScanModel();
+      drawMapLayers();
+      buildPhotoGallery();
+      buildDetectionFeed();
+    });
+  });
+}
+
+function evidenceFeedItems() {
+  const uploaded = uploadedEvidenceState.filter((item) => {
+    if (activeSpeciesName && item.species_name !== activeSpeciesName) {
+      return false;
+    }
+    if (activeCellId && item.cell_id !== activeCellId) {
+      return false;
+    }
+    return true;
+  });
+  if (uploaded.length) {
+    return uploaded.map((item) => ({
+      type: "photo",
+      title: item.species_name,
+      image: item.preview_url,
+      subtitle: `${item.name} • ${formatPercent(item.confidence)}`,
+      note: item.note,
+      actions: item.action_items,
+    }));
+  }
+
+  return scanModelState
+    .filter((cell) => !activeCellId || cell.cell_id === activeCellId)
+    .slice(0, 5)
+    .flatMap((cell) =>
+      cell.detections
+        .filter((detection) => !activeSpeciesName || detection.species_name === activeSpeciesName)
+        .map((detection) => {
+          const species = findSpeciesByName(detection.species_name);
+          return {
+            type: "scan",
+            title: detection.species_name,
+            image: species?.image_asset,
+            subtitle: `${cell.cell_id} • ${formatPercent(detection.confidence)}`,
+            note: detection.note,
+            actions: detection.action_items,
+          };
+        }),
+    );
+}
+
+function buildDetectionFeed() {
+  const items = evidenceFeedItems();
+  if (!items.length) {
+    detectionFeed.innerHTML = `<p class="empty-state">No detections match the current filters.</p>`;
+    return;
+  }
+
+  detectionFeed.innerHTML = items
+    .map(
+      (item) => `
+        <article class="detection-card">
+          <img src="${item.image}" alt="${item.title}" />
+          <div class="detection-copy">
+            <div class="species-topline">
+              <span>${item.type === "photo" ? "Uploaded proof" : "Scan evidence"}</span>
+              <strong>${item.title}</strong>
+            </div>
+            <p>${item.subtitle}</p>
+            <p>${item.note}</p>
+            <div class="tag-row">
+              ${item.actions.map((action) => `<span class="tag action-tag">${action}</span>`).join("")}
+            </div>
+          </div>
+        </article>
+      `,
+    )
+    .join("");
 }
 
 function buildSearchIndex() {
@@ -455,11 +816,14 @@ function buildSearchIndex() {
     value: source.name,
     kind: "source",
   }));
+  const scanEntries = scanModelState.map((cell) => ({
+    label: cell.cell_id,
+    value: cell.cell_id,
+    kind: "scan",
+  }));
 
-  searchIndex = [...speciesEntries, ...placeEntries, ...sensorEntries, ...sourceEntries];
-  searchSuggestions.innerHTML = searchIndex
-    .map((entry) => `<option value="${entry.value}"></option>`)
-    .join("");
+  searchIndex = [...speciesEntries, ...placeEntries, ...sensorEntries, ...sourceEntries, ...scanEntries];
+  searchSuggestions.innerHTML = searchIndex.map((entry) => `<option value="${entry.value}"></option>`).join("");
 }
 
 function focusSearchTarget(entry) {
@@ -469,14 +833,31 @@ function focusSearchTarget(entry) {
 
   if (entry.kind === "species") {
     activeSpeciesName = entry.value;
+    activeCellId = habitatState.find((habitat) =>
+      habitat.species_pressures.some((pressure) => pressure.common_name === activeSpeciesName),
+    )?.cell_id || activeCellId;
     activateView("speciesView");
-    drawMapLayers();
-    buildHeroMetrics({ top_species_at_risk: [activeSpeciesName], priority_actions: actionItemsForSpecies(activeSpeciesName) });
-    buildNarrativeSummary({ top_species_at_risk: [activeSpeciesName], priority_actions: actionItemsForSpecies(activeSpeciesName) });
+    buildNarrativeSummary();
+    buildActionList();
     buildStressedSpeciesRail();
     buildSpeciesList();
-    const card = speciesList.querySelector(`[data-species-name="${CSS.escape(activeSpeciesName)}"]`);
-    card?.scrollIntoView({ behavior: "smooth", block: "center" });
+    drawScanModel();
+    drawMapLayers();
+    buildDetectionFeed();
+    return;
+  }
+
+  if (entry.kind === "scan") {
+    activeCellId = entry.value;
+    activeSpeciesName = findScanCell(entry.value)?.detections[0]?.species_name || activeSpeciesName;
+    activateView("scanView");
+    buildNarrativeSummary();
+    buildActionList();
+    buildHabitatList();
+    buildSpeciesList();
+    drawScanModel();
+    drawMapLayers();
+    buildDetectionFeed();
     return;
   }
 
@@ -486,10 +867,16 @@ function focusSearchTarget(entry) {
     return;
   }
 
-  activateView("mapView");
+  activateView("scanView");
   if (map && entry.lat && entry.lon) {
     map.flyTo([entry.lat, entry.lon], entry.zoom || 13, { duration: 0.9 });
   }
+}
+
+function bindViewTabs() {
+  viewTabs.forEach((button) => {
+    button.addEventListener("click", () => activateView(button.dataset.viewTarget));
+  });
 }
 
 function bindSearch() {
@@ -500,53 +887,15 @@ function bindSearch() {
   });
 }
 
-function buildSensorList() {
-  sensorList.innerHTML = sensorState
-    .map((sensor) => {
-      const profile = sensorProfilesState.find((item) => item.sensor_id === sensor.sensor_id);
-      return `
-        <button class="sensor-item ${sensor.sensor_id === activeSensorId ? "is-active" : ""}" data-sensor-id="${sensor.sensor_id}">
-          <div class="species-topline">
-            <span>${profile?.kind || "Field sensor"}</span>
-            <strong>${profile?.label || titleCase(sensor.sensor_id)}</strong>
-          </div>
-          <p>${profile?.summary || "Field context for nearby habitats."}</p>
-          <div class="sensor-grid">
-            <span>PM2.5 ${sensor.readings.pm25}</span>
-            <span>Humidity ${sensor.readings.humidity}</span>
-            <span>Soil ${sensor.readings.soil_moisture}</span>
-            <span>pH ${sensor.readings.water_ph}</span>
-          </div>
-        </button>
-      `;
-    })
-    .join("");
-
-  sensorList.querySelectorAll(".sensor-item").forEach((button) => {
-    button.addEventListener("click", () => {
-      activeSensorId = button.dataset.sensorId;
-      activeCellId = null;
-      drawMapLayers();
-      buildSensorList();
-    });
+function bindPhotoUpload() {
+  photoUploadInput?.addEventListener("change", async (event) => {
+    const files = event.target.files;
+    if (!files?.length) {
+      return;
+    }
+    await handlePhotoUploads(files);
+    activateView("scanView");
   });
-}
-
-function buildSourceList() {
-  sourceList.innerHTML = dataSourcesState
-    .map(
-      (source) => `
-        <article class="source-item">
-          <div class="species-topline">
-            <span>${source.kind}</span>
-            <strong>${source.name}</strong>
-          </div>
-          <p>${source.note}</p>
-          <a href="${source.url}" target="_blank" rel="noreferrer">Open source</a>
-        </article>
-      `,
-    )
-    .join("");
 }
 
 async function loadDashboard() {
@@ -556,26 +905,32 @@ async function loadDashboard() {
   }
 
   const payload = await response.json();
-  habitatState = payload.habitats;
-  sensorState = payload.sensors;
+  habitatState = payload.habitats || [];
+  sensorState = payload.sensors || [];
   studyAreaState = payload.study_area;
   landmarkState = payload.landmarks || [];
   speciesCatalogState = payload.species_catalog || [];
   sensorProfilesState = payload.sensor_profiles || [];
   dataSourcesState = payload.data_sources || [];
   searchablePlacesState = payload.searchable_places || [];
+  scanModelState = payload.scan_model || [];
+
   activeCellId = habitatState[0]?.cell_id || null;
   activeSpeciesName = speciesCatalogState[0]?.common_name || null;
 
   buildSearchIndex();
   buildSummaryCards(payload.overview);
   buildHeroMetrics(payload.overview);
-  buildNarrativeSummary(payload.overview);
+  buildNarrativeSummary();
+  buildActionList();
   buildHabitatList();
   buildStressedSpeciesRail();
   buildSpeciesList();
   buildSensorList();
   buildSourceList();
+  buildPhotoGallery();
+  drawScanModel();
+  buildDetectionFeed();
   drawMapLayers();
 }
 
@@ -588,10 +943,15 @@ function renderError(message) {
   speciesList.innerHTML = markup;
   sensorList.innerHTML = markup;
   sourceList.innerHTML = markup;
+  actionList.innerHTML = markup;
+  scanViewport.innerHTML = markup;
+  detectionFeed.innerHTML = markup;
+  photoGallery.innerHTML = markup;
 }
 
 bindViewTabs();
 bindSearch();
+bindPhotoUpload();
 
 loadDashboard().catch((error) => {
   renderError(`Unable to load EcoScan data: ${error.message}`);

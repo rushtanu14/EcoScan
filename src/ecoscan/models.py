@@ -38,9 +38,32 @@ class SpeciesPressure:
     kingdom: str
     habitat_need: str
     source_url: str
+    image_asset: str
+    example_images: List[str]
     vulnerability_score: float
     pressure_factors: List[str]
     narrative: str
+
+
+@dataclass(frozen=True)
+class ScanDetection:
+    species_name: str
+    confidence: float
+    risk_level: str
+    note: str
+    action_items: List[str]
+
+
+@dataclass(frozen=True)
+class ScanCell:
+    cell_id: str
+    risk_score: float
+    health_label: str
+    habitat_type: str
+    projected_polygon: Polygon
+    canopy_height: float
+    lead_species: str
+    detections: List[ScanDetection]
 
 
 @dataclass(frozen=True)

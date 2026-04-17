@@ -1,0 +1,13 @@
+<svg width="640" height="420" viewBox="0 0 640 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="640" height="420" rx="36" fill="#F4E8D7"/>
+  <rect x="26" y="26" width="588" height="368" rx="28" fill="#FFF9F1"/>
+  <path d="M212 326V168" stroke="#6D8A67" stroke-width="14" stroke-linecap="round"/>
+  <path d="M320 326V144" stroke="#6D8A67" stroke-width="14" stroke-linecap="round"/>
+  <path d="M424 326V176" stroke="#6D8A67" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="212" cy="156" r="38" fill="#C6827E"/>
+  <circle cx="320" cy="130" r="48" fill="#D48F8C"/>
+  <circle cx="424" cy="164" r="40" fill="#E0AAA4"/>
+  <path d="M186 228C210 214 234 214 258 228" stroke="#8EB083" stroke-width="12" stroke-linecap="round"/>
+  <path d="M294 214C320 200 346 200 372 214" stroke="#8EB083" stroke-width="12" stroke-linecap="round"/>
+  <text x="52" y="74" fill="#34452F" font-family="Avenir Next, sans-serif" font-size="22" letter-spacing="4">CALIFORNIA MILKWEED</text>
+</svg>

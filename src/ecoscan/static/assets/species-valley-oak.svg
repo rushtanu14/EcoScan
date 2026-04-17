@@ -1,0 +1,12 @@
+<svg width="640" height="420" viewBox="0 0 640 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="640" height="420" rx="36" fill="#E8E1D1"/>
+  <rect x="26" y="26" width="588" height="368" rx="28" fill="#F7F3EC"/>
+  <path d="M320 330V178" stroke="#7B5A3D" stroke-width="22" stroke-linecap="round"/>
+  <path d="M320 210C274 228 246 258 222 300" stroke="#7B5A3D" stroke-width="16" stroke-linecap="round"/>
+  <path d="M320 192C362 204 396 236 426 286" stroke="#7B5A3D" stroke-width="16" stroke-linecap="round"/>
+  <circle cx="320" cy="142" r="92" fill="#7F9B61"/>
+  <circle cx="248" cy="184" r="58" fill="#91AD73"/>
+  <circle cx="392" cy="188" r="64" fill="#93AA71"/>
+  <circle cx="350" cy="94" r="44" fill="#A1B77D"/>
+  <text x="52" y="74" fill="#3A4127" font-family="Avenir Next, sans-serif" font-size="22" letter-spacing="4">VALLEY OAK SAPLINGS</text>
+</svg>

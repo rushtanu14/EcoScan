@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="40" x2="680" y2="560" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F4ECE0"/>
+      <stop offset="1" stop-color="#D6C3AF"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" rx="44" fill="url(#bg)"/>
+  <ellipse cx="430" cy="520" rx="280" ry="62" fill="#C4B19E" fill-opacity=".55"/>
+  <rect x="520" y="112" width="84" height="318" rx="42" fill="#6A5548"/>
+  <rect x="545" y="132" width="34" height="182" rx="17" fill="#F5EDE2"/>
+  <path d="M375 225c0-82 64-146 148-146h52c37 0 67 30 67 67v80c0 112-90 202-202 202H375V225Z" fill="#211C19"/>
+  <path d="M411 264c0-57 46-103 103-103h49c24 0 44 20 44 44v41c0 82-66 148-148 148h-48V264Z" fill="#F5E8D7"/>
+  <circle cx="538" cy="214" r="13" fill="#211C19"/>
+  <path d="M607 252l92-21-74 59-18-38Z" fill="#B88A53"/>
+  <path d="M373 231c8-83 74-152 158-163-18 36-20 76-2 118-58 5-113 30-156 45Z" fill="#C64136"/>
+  <path d="M312 361c29 7 58 14 88 19-18 20-40 31-68 34-19 2-33-21-20-36Z" fill="#211C19"/>
+  <path d="M506 420h58l22 76h-27l-18-51-24 51h-27l16-76Z" fill="#6A5548"/>
+  <path d="M615 412h47l-14 84h-25l-8-84Z" fill="#8D7463"/>
+  <path d="M119 520c76-88 163-145 259-171" stroke="#A4907D" stroke-width="12" stroke-linecap="round"/>
+</svg>

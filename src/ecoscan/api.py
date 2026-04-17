@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Optional
 
 from .dataio import load_input_bundle
-from .pipeline import build_habitat_model, summarize_habitat_zones, summarize_species_catalog
+from .pipeline import build_habitat_model, build_scan_model, summarize_habitat_zones, summarize_species_catalog
 
 try:
     from fastapi import FastAPI
@@ -47,6 +47,7 @@ def _demo_payload(
         "cols": len({cell.centroid[0] for cell in cells}),
         "overview": summarize_habitat_zones(habitats),
         "species_catalog": summarize_species_catalog(habitats),
+        "scan_model": [asdict(cell) for cell in build_scan_model(habitats, map_data["study_area"]["bounds"])],
         "study_area": map_data["study_area"],
         "landmarks": map_data["landmarks"],
         "sensors": [asdict(sensor) for sensor in sensors],

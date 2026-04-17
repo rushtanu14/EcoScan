@@ -1,0 +1,12 @@
+<svg width="640" height="420" viewBox="0 0 640 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="640" height="420" rx="36" fill="#E9E0D2"/>
+  <rect x="26" y="26" width="588" height="368" rx="28" fill="#F7F2EA"/>
+  <path d="M110 308C152 226 216 192 286 190C356 188 422 220 510 306" stroke="#667B5F" stroke-width="20" stroke-linecap="round"/>
+  <path d="M164 264C176 228 204 198 236 180" stroke="#8CA67E" stroke-width="16" stroke-linecap="round"/>
+  <path d="M318 222C342 182 380 156 426 148" stroke="#8CA67E" stroke-width="16" stroke-linecap="round"/>
+  <circle cx="236" cy="180" r="42" fill="#9CB489"/>
+  <circle cx="312" cy="170" r="58" fill="#7B946D"/>
+  <circle cx="414" cy="148" r="46" fill="#8AA077"/>
+  <circle cx="202" cy="220" r="38" fill="#AFC29B"/>
+  <text x="52" y="74" fill="#253126" font-family="Avenir Next, sans-serif" font-size="22" letter-spacing="4">COYOTE BRUSH</text>
+</svg>

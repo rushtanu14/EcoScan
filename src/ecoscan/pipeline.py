@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional, Tuple
 
 from .fusion import fuse_cells
-from .models import HabitatZone, RasterCell, SensorReading, SpeciesPressure
+from .models import HabitatZone, RasterCell, ScanCell, ScanDetection, SensorReading, SpeciesPressure
 
 
 SPECIES_LIBRARY = [
@@ -11,6 +11,9 @@ SPECIES_LIBRARY = [
         "kingdom": "animal",
         "habitat_need": "Milkweed patches and nectar corridors",
         "source_url": "https://wildlife.ca.gov/Conservation/Invertebrates/Monarch-Butterfly",
+        "image_asset": "/assets/species-monarch.svg",
+        "example_images": ["/assets/species-monarch.svg", "/assets/species-california-milkweed.svg"],
+        "aliases": ["monarch", "butterfly", "milkweed"],
         "factors": ["vegetation_stress", "dry_air_stress", "air_pollution_stress"],
         "narrative": "Milkweed patches and nectar corridors are thinning, which raises migration and breeding stress for monarchs.",
     },
@@ -20,6 +23,9 @@ SPECIES_LIBRARY = [
         "kingdom": "animal",
         "habitat_need": "Slow-moving freshwater and connected upland refuge",
         "source_url": "https://www.fws.gov/rivers/species/california-red-legged-frog-rana-draytonii",
+        "image_asset": "/assets/species-frog.svg",
+        "example_images": ["/assets/species-frog.svg", "/assets/species-western-pond-turtle.svg"],
+        "aliases": ["frog", "amphibian", "wetland"],
         "factors": ["moisture_stress", "water_quality_stress", "thermal_stress"],
         "narrative": "Warm, drying wetland margins and altered water chemistry are shrinking safe breeding habitat for the frog.",
     },
@@ -29,6 +35,9 @@ SPECIES_LIBRARY = [
         "kingdom": "animal",
         "habitat_need": "Mature oaks, cavity trees, and reliable acorn stores",
         "source_url": "https://www.audubon.org/field-guide/bird/acorn-woodpecker",
+        "image_asset": "/assets/species-acorn-woodpecker.svg",
+        "example_images": ["/assets/species-acorn-woodpecker.svg", "/assets/species-valley-oak.svg"],
+        "aliases": ["woodpecker", "bird", "oak"],
         "factors": ["vegetation_stress", "thermal_stress", "air_pollution_stress"],
         "narrative": "Oak canopy stress and hotter edge conditions are reducing food storage and nesting quality for woodpeckers.",
     },
@@ -38,6 +47,9 @@ SPECIES_LIBRARY = [
         "kingdom": "plant",
         "habitat_need": "Deep-rooted riparian and savanna soils with groundwater access",
         "source_url": "https://research.fs.usda.gov/feis/species-reviews/quelob",
+        "image_asset": "/assets/species-valley-oak.svg",
+        "example_images": ["/assets/species-valley-oak.svg", "/assets/species-acorn-woodpecker.svg"],
+        "aliases": ["oak", "sapling", "tree"],
         "factors": ["soil_stress", "thermal_stress", "dry_air_stress"],
         "narrative": "Dry, compacted soil and rising heat are weakening young valley oak recruitment across the corridor.",
     },
@@ -47,6 +59,9 @@ SPECIES_LIBRARY = [
         "kingdom": "animal",
         "habitat_need": "Clean creeks, quiet pools, and open basking banks",
         "source_url": "https://wildlife.ca.gov/Conservation/Reptiles/Western-Pond-Turtle",
+        "image_asset": "/assets/species-western-pond-turtle.svg",
+        "example_images": ["/assets/species-western-pond-turtle.svg", "/assets/species-frog.svg"],
+        "aliases": ["turtle", "pond", "reptile"],
         "factors": ["water_quality_stress", "moisture_stress", "thermal_stress"],
         "narrative": "Reduced pool quality and hotter, shallower water are lowering refuge quality for western pond turtles.",
     },
@@ -56,6 +71,9 @@ SPECIES_LIBRARY = [
         "kingdom": "animal",
         "habitat_need": "Streamside insect habitat and open riparian edges",
         "source_url": "https://www.allaboutbirds.org/guide/Black_Phoebe/overview",
+        "image_asset": "/assets/species-black-phoebe.svg",
+        "example_images": ["/assets/species-black-phoebe.svg", "/assets/species-frog.svg"],
+        "aliases": ["phoebe", "bird", "riparian"],
         "factors": ["air_pollution_stress", "vegetation_stress", "dry_air_stress"],
         "narrative": "Insect decline and degraded streamside cover are likely reducing foraging quality for black phoebes.",
     },
@@ -65,6 +83,9 @@ SPECIES_LIBRARY = [
         "kingdom": "plant",
         "habitat_need": "Sunny native grassland edges with low pesticide pressure",
         "source_url": "https://wildlife.ca.gov/Conservation/Invertebrates/Monarch-Butterfly",
+        "image_asset": "/assets/species-california-milkweed.svg",
+        "example_images": ["/assets/species-california-milkweed.svg", "/assets/species-monarch.svg"],
+        "aliases": ["milkweed", "plant", "grassland"],
         "factors": ["vegetation_stress", "soil_stress", "dry_air_stress"],
         "narrative": "Drying grassland edges are reducing milkweed vigor, which weakens the host plant base for monarch breeding.",
     },
@@ -74,6 +95,9 @@ SPECIES_LIBRARY = [
         "kingdom": "plant",
         "habitat_need": "Native scrub edges that buffer wind and heat",
         "source_url": "https://calscape.org/Baccharis-pilularis-(Coyote-Brush)",
+        "image_asset": "/assets/species-coyote-brush.svg",
+        "example_images": ["/assets/species-coyote-brush.svg", "/assets/species-california-milkweed.svg"],
+        "aliases": ["coyote", "brush", "shrub"],
         "factors": ["soil_stress", "dry_air_stress", "thermal_stress"],
         "narrative": "Heat and soil stress are reducing shrub cover that normally buffers edge habitat for birds and insects.",
     },
@@ -140,6 +164,8 @@ def _species_pressure(
     kingdom: str,
     habitat_need: str,
     source_url: str,
+    image_asset: str,
+    example_images: List[str],
     derived_features: Dict[str, float],
     factors: List[str],
     narrative: str,
@@ -152,6 +178,8 @@ def _species_pressure(
         kingdom=kingdom,
         habitat_need=habitat_need,
         source_url=source_url,
+        image_asset=image_asset,
+        example_images=example_images,
         vulnerability_score=score,
         pressure_factors=ordered_factors[:2],
         narrative=narrative,
@@ -167,6 +195,8 @@ def infer_species_pressures(derived_features: Dict[str, float], habitat_type: st
             profile["kingdom"],
             profile["habitat_need"],
             profile["source_url"],
+            profile["image_asset"],
+            profile["example_images"],
             derived_features,
             profile["factors"],
             profile["narrative"],
@@ -179,6 +209,8 @@ def infer_species_pressures(derived_features: Dict[str, float], habitat_type: st
                 kingdom=pressure.kingdom,
                 habitat_need=pressure.habitat_need,
                 source_url=pressure.source_url,
+                image_asset=pressure.image_asset,
+                example_images=pressure.example_images,
                 vulnerability_score=round(min(1.0, pressure.vulnerability_score * multiplier), 4),
                 pressure_factors=pressure.pressure_factors,
                 narrative=pressure.narrative,
@@ -213,6 +245,74 @@ def recommend_actions(key_signals: List[str]) -> List[str]:
         if action and action not in actions:
             actions.append(action)
     return actions[:3]
+
+
+def species_profile(common_name: str) -> Dict[str, object]:
+    for profile in SPECIES_LIBRARY:
+        if profile["common_name"] == common_name:
+            return profile
+    raise KeyError(f"Unknown species: {common_name}")
+
+
+def _project_polygon(
+    polygon: List[Tuple[float, float]],
+    bounds: Dict[str, float],
+) -> List[Tuple[float, float]]:
+    west = bounds["west"]
+    east = bounds["east"]
+    south = bounds["south"]
+    north = bounds["north"]
+    lon_span = max(east - west, 1e-6)
+    lat_span = max(north - south, 1e-6)
+
+    projected: List[Tuple[float, float]] = []
+    for lon, lat in polygon:
+        x = (lon - west) / lon_span
+        y = (north - lat) / lat_span
+        projected.append((round(x, 4), round(y, 4)))
+    return projected
+
+
+def build_scan_model(
+    zones: List[HabitatZone],
+    bounds: Dict[str, float],
+) -> List[ScanCell]:
+    scan_cells: List[ScanCell] = []
+    for index, zone in enumerate(zones):
+        lead = zone.species_pressures[0]
+        secondary = zone.species_pressures[1]
+        scan_cells.append(
+            ScanCell(
+                cell_id=zone.cell_id,
+                risk_score=zone.risk_score,
+                health_label=zone.health_label,
+                habitat_type=zone.habitat_type,
+                projected_polygon=_project_polygon(zone.polygon, bounds),
+                canopy_height=round(0.22 + (zone.biodiversity_score / 100) * 0.68, 3),
+                lead_species=lead.common_name,
+                detections=[
+                    ScanDetection(
+                        species_name=lead.common_name,
+                        confidence=round(min(0.98, 0.55 + lead.vulnerability_score * 0.4), 3),
+                        risk_level=speciesRiskLevel(lead.vulnerability_score),
+                        note=f"{lead.common_name} is driving the strongest alert in this {zone.habitat_type}.",
+                        action_items=zone.recommended_actions[:2],
+                    ),
+                    ScanDetection(
+                        species_name=secondary.common_name,
+                        confidence=round(min(0.96, 0.48 + secondary.vulnerability_score * 0.35 + index * 0.002), 3),
+                        risk_level=speciesRiskLevel(secondary.vulnerability_score),
+                        note=f"{secondary.common_name} is the secondary signal in the same scan slice.",
+                        action_items=zone.recommended_actions[1:3] or zone.recommended_actions[:1],
+                    ),
+                ],
+            )
+        )
+    return scan_cells
+
+
+def speciesRiskLevel(score: float) -> str:
+    return classify_habitat_health(score)
 
 
 def build_habitat_model(
@@ -303,6 +403,8 @@ def summarize_species_catalog(zones: List[HabitatZone]) -> List[Dict[str, object
                     "kingdom": pressure.kingdom,
                     "habitat_need": pressure.habitat_need,
                     "source_url": pressure.source_url,
+                    "image_asset": pressure.image_asset,
+                    "example_images": pressure.example_images,
                     "narrative": pressure.narrative,
                     "max_vulnerability_score": 0.0,
                     "avg_vulnerability_score": 0.0,
@@ -323,6 +425,8 @@ def summarize_species_catalog(zones: List[HabitatZone]) -> List[Dict[str, object
         item["avg_vulnerability_score"] = round(item["avg_vulnerability_score"] / item["total_habitats"], 4)
         item["pressure_factors"] = list(dict.fromkeys(item["pressure_factors"]))[:4]
         item["status_label"] = classify_habitat_health(item["avg_vulnerability_score"])
+        item["action_items"] = recommend_actions(item["pressure_factors"])
+        item["aliases"] = species_profile(item["common_name"])["aliases"]
         catalog.append(item)
 
     return sorted(catalog, key=lambda species: species["avg_vulnerability_score"], reverse=True)
