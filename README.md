@@ -2,6 +2,12 @@
 
 EcoScan is a biodiversity health dashboard that combines habitat cells, environmental sensor context, and species-specific habitat rules to show which plants and animals are under stress first.
 
+It now also supports:
+
+- photo upload analysis through a target-taxa detector pipeline that can prefer a fine-tuned local checkpoint
+- binary and ASCII mesh / point-cloud ingestion for `PLY`, `OBJ`, `LAS`, `LAZ`, `XYZ`, and `PTS` files
+- surface-aware scan segmentation, calibrated confidence scores, batch analysis jobs, and exportable HTML reports
+
 The current demo is centered on the real Coyote Valley and Coyote Creek corridor in South San Jose, California. It is built to be hackathon-friendly:
 
 - `./run.sh` starts everything locally
@@ -21,6 +27,14 @@ For each habitat polygon, EcoScan:
 4. Scores each habitat as `thriving`, `stressed`, or `fragile`
 5. Estimates which species and plants are most likely to be suffering in that habitat
 6. Displays the results in a local web app with tabs for overview, real map, species watch, and data sources
+
+When you upload visual evidence, EcoScan additionally:
+
+1. Runs a fine-tuned species detector when you provide a local target-taxa checkpoint, otherwise falls back to the zero-shot detector
+2. Calibrates those model scores using a local labeled validation set
+3. Parses uploaded point-cloud or mesh geometry into surface-aware segments or point clusters
+4. Aligns scan segments to the study-area map using real coordinates when the file provides them
+5. Annotates the resulting detections with evidence, action items, and exportable reports
 
 ## Current Demo Story
 
@@ -74,6 +88,22 @@ If you want to run manually:
 ```bash
 PYTHONPATH=src python3 -m ecoscan.cli serve --data-dir data/sample_inputs
 ```
+
+For the full vision + geometry stack in a fresh environment:
+
+```bash
+python3 -m pip install -e '.[full]'
+```
+
+To swap in your own fine-tuned detector, point EcoScan at a local Hugging Face object-detection checkpoint and an optional manifest:
+
+```bash
+export ECOSCAN_FINE_TUNED_MODEL=/absolute/path/to/your/fine-tuned-checkpoint
+export ECOSCAN_FINE_TUNED_MANIFEST=data/model_manifests/target_taxa_detector.example.json
+PYTHONPATH=src python3 -m ecoscan.cli serve --data-dir data/sample_inputs
+```
+
+The checkpoint should be compatible with `transformers.AutoModelForObjectDetection` and `AutoImageProcessor`. The manifest maps the model's labels onto EcoScan's species names and declares the target taxa surfaced in the explanation panel.
 
 ## Sample Screenshot
 

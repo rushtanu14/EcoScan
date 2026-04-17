@@ -75,19 +75,34 @@
                 <p class="panel-note">Upload habitat or species photos to create evidence cards and annotations.</p>
               </div>
               <div class="upload-shell">
-                <label class="upload-dropzone" for="photoUploadInput">
-                  <input id="photoUploadInput" type="file" accept="image/*" multiple />
-                  <strong>Add field photos</strong>
-                  <span>JPG, PNG, or WebP. The demo links each upload to the strongest habitat-risk signal.</span>
-                </label>
+                <div class="upload-stack">
+                  <label class="upload-dropzone" for="photoUploadInput">
+                    <input id="photoUploadInput" type="file" accept="image/*" multiple />
+                    <strong>Add field photos</strong>
+                    <span>JPG, PNG, or WebP. Files are sent to the backend for real image-feature analysis.</span>
+                  </label>
+                  <label class="upload-dropzone secondary" for="scanUploadInput">
+                    <input id="scanUploadInput" type="file" accept=".ply,.obj,.las,.laz,.xyz,.pts,.txt" />
+                    <strong>Add a 3D scan</strong>
+                    <span>Binary or ASCII `PLY`, `OBJ`, `LAS`, `LAZ`, `XYZ`, or `PTS` point-cloud / mesh files are parsed on the server.</span>
+                  </label>
+                </div>
                 <div class="intake-summary">
                   <div class="detail-stat">
                     <span>Inference mode</span>
-                    <strong>Photo + scan fusion</strong>
+                    <strong>Pretrained detection + surface-aware geometry analysis</strong>
                   </div>
                   <div class="detail-stat">
                     <span>Annotated outputs</span>
-                    <strong>Bounding boxes, scan hotspots, action items</strong>
+                    <strong>Localized detections, calibrated scores, reports</strong>
+                  </div>
+                  <div class="detail-stat">
+                    <span>Job status</span>
+                    <strong id="jobStatusText">Idle</strong>
+                  </div>
+                  <div class="detail-stat">
+                    <span>Report export</span>
+                    <strong><button id="exportReportButton" class="inline-button" type="button">Generate report</button></strong>
                   </div>
                 </div>
               </div>
@@ -157,6 +172,9 @@
               <div id="scanViewport" class="scan-viewport">
                 <p class="empty-state">Loading scan...</p>
               </div>
+              <div id="scanMetaPanel" class="detail-stat-grid">
+                <p class="empty-state">Upload a scan to inspect segmentation details.</p>
+              </div>
             </article>
 
             <article class="panel reveal delay-2">
@@ -168,6 +186,13 @@
               </div>
               <div id="detectionFeed" class="detection-feed">
                 <p class="empty-state">Upload photos or select a hotspot to inspect detections.</p>
+              </div>
+              <div class="panel-divider"></div>
+              <div>
+                <p class="panel-label">Why this species</p>
+                <div id="explanationPanel" class="explanation-panel">
+                  <p class="empty-state">Model explanations will appear here after analysis.</p>
+                </div>
               </div>
             </article>
           </div>
