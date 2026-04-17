@@ -60,6 +60,13 @@ def _demo_payload(
             "source_epsg": None,
             "segmentation_mode": "demo-grid",
         },
+        "detector_summary": {
+            "mode": "idle",
+            "label": "No photo analysis yet",
+            "model_name": "Photo detector idle",
+            "target_taxa": [],
+            "message": "Upload photos to see which detector path is used.",
+        },
         "study_area": map_data["study_area"],
         "landmarks": map_data["landmarks"],
         "sensors": [asdict(sensor) for sensor in sensors],
@@ -145,7 +152,7 @@ def create_analysis_job(
 ) -> dict[str, object]:
     job = create_job(
         payload,
-        lambda submitted: analyze_visual_payload(
+        lambda submitted, progress_callback=None: analyze_visual_payload(
             submitted,
             rows=rows,
             cols=cols,
@@ -153,9 +160,10 @@ def create_analysis_job(
             cells_file=cells_file,
             sensors_file=sensors_file,
             map_file=map_file,
+            progress_callback=progress_callback,
         ),
     )
-    return {"job_id": job.job_id, "status": job.status}
+    return {"job_id": job.job_id, "status": job.status, "progress": job.progress, "stage": job.stage, "message": job.message}
 
 
 @app.get("/api/jobs/{job_id}")
@@ -166,6 +174,9 @@ def get_analysis_job(job_id: str) -> dict[str, object]:
     return {
         "job_id": job.job_id,
         "status": job.status,
+        "progress": job.progress,
+        "stage": job.stage,
+        "message": job.message,
         "result": job.result,
         "error": job.error,
         "report": job.report,

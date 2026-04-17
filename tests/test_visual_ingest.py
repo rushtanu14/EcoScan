@@ -46,6 +46,7 @@ class VisualIngestTests(unittest.TestCase):
         self.assertTrue(detections[0]["boxes"])
         self.assertIn(detections[0]["species_name"], {"Monarch butterfly", "California milkweed"})
         self.assertEqual(len(detections[0]["top_matches"]), 3)
+        self.assertIn(detections[0]["explanation"]["detector_family"], {"fallback", "zero-shot", "fine-tuned"})
 
     @mock.patch("ecoscan.vision._active_detector_backend")
     def test_fine_tuned_detector_metadata_flows_into_results(self, mock_backend) -> None:

@@ -22,7 +22,10 @@ class JobAndReportTests(unittest.TestCase):
         current = get_job(job.job_id)
         self.assertIsNotNone(current)
         self.assertEqual(current.status, "completed")
+        self.assertEqual(current.progress, 100)
+        self.assertEqual(current.stage, "completed")
         self.assertIn("scan_model", current.result)
+        self.assertIn("detector_summary", current.result)
 
     def test_report_generation_writes_html(self) -> None:
         payload = analyze_visual_payload({})

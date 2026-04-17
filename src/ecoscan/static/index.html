@@ -88,9 +88,14 @@
                   </label>
                 </div>
                 <div class="intake-summary">
+                  <div id="modelStatusBanner" class="model-status-banner idle">
+                    <span class="model-status-kicker">Detector path</span>
+                    <strong>Photo detector idle</strong>
+                    <p>Upload photos to see whether EcoScan used the fine-tuned detector, zero-shot fallback, or heuristic fallback.</p>
+                  </div>
                   <div class="detail-stat">
                     <span>Inference mode</span>
-                    <strong>Pretrained detection + surface-aware geometry analysis</strong>
+                    <strong>Fine-tuned preferred + surface-aware geometry analysis</strong>
                   </div>
                   <div class="detail-stat">
                     <span>Annotated outputs</span>
@@ -99,6 +104,10 @@
                   <div class="detail-stat">
                     <span>Job status</span>
                     <strong id="jobStatusText">Idle</strong>
+                    <div class="progress-track" aria-hidden="true">
+                      <span id="jobProgressBar" class="progress-bar"></span>
+                    </div>
+                    <small id="jobProgressText">0% complete</small>
                   </div>
                   <div class="detail-stat">
                     <span>Report export</span>

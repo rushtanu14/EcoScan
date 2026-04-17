@@ -1,9 +1,10 @@
 import json
+import os
 from dataclasses import asdict
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional
 from urllib.parse import parse_qs, urlparse
 
 from .dataio import load_input_bundle
@@ -16,6 +17,48 @@ from .vision import analyze_photos
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
+
+
+def _default_detector_summary() -> dict[str, object]:
+    fine_tuned_model = os.environ.get("ECOSCAN_FINE_TUNED_MODEL", "").strip()
+    if fine_tuned_model:
+        return {
+            "mode": "fine-tuned-configured",
+            "label": "Fine-tuned checkpoint configured",
+            "model_name": Path(fine_tuned_model).name,
+            "target_taxa": [],
+            "message": "A fine-tuned checkpoint is configured and will be used when photo analysis runs successfully.",
+        }
+    return {
+        "mode": "idle",
+        "label": "No photo analysis yet",
+        "model_name": "Photo detector idle",
+        "target_taxa": [],
+        "message": "Upload photos to see whether EcoScan used the fine-tuned detector, zero-shot fallback, or heuristic fallback.",
+    }
+
+
+def _detector_summary_from_evidence(uploaded_evidence: list[dict[str, object]]) -> dict[str, object]:
+    if not uploaded_evidence:
+        return _default_detector_summary()
+
+    explanation = uploaded_evidence[0].get("explanation", {})
+    family = str(explanation.get("detector_family", "fallback"))
+    model_name = str(explanation.get("model") or uploaded_evidence[0].get("model_source") or "EcoScan detector")
+    target_taxa = list(explanation.get("target_taxa", []))
+    if family == "fine-tuned":
+        message = "This analysis used your fine-tuned target-taxa checkpoint for localized species detection."
+    elif family == "zero-shot":
+        message = "This analysis used the zero-shot fallback detector because a fine-tuned checkpoint was not active for this run."
+    else:
+        message = "This analysis fell back to the calibrated heuristic ranker because localized model detections were unavailable."
+    return {
+        "mode": family,
+        "label": model_name,
+        "model_name": model_name,
+        "target_taxa": target_taxa,
+        "message": message,
+    }
 
 
 def build_demo_payload(
@@ -54,6 +97,7 @@ def build_demo_payload(
             "source_epsg": None,
             "segmentation_mode": "demo-grid",
         },
+        "detector_summary": _default_detector_summary(),
         "study_area": map_data["study_area"],
         "landmarks": map_data["landmarks"],
         "sensors": [asdict(sensor) for sensor in sensors],
@@ -90,7 +134,10 @@ def analyze_visual_payload(
     cells_file: Optional[str] = None,
     sensors_file: Optional[str] = None,
     map_file: Optional[str] = None,
+    progress_callback: Optional[Callable[[int, str, str], None]] = None,
 ) -> dict[str, object]:
+    if progress_callback:
+        progress_callback(10, "loading-context", "Loading habitat and map context")
     _, _, map_data, habitats = build_loaded_state(
         rows=rows,
         cols=cols,
@@ -103,12 +150,17 @@ def analyze_visual_payload(
     if not isinstance(photos, list):
         raise ValueError("'photos' must be a list")
     active_cell_id = str(payload.get("active_cell_id", "") or "")
+    if progress_callback:
+        progress_callback(25, "analyzing-photos", f"Analyzing {len(photos)} uploaded photo(s)")
     uploaded_evidence = analyze_photos(photos, habitats, active_cell_id=active_cell_id) if photos else []
+    detector_summary = _detector_summary_from_evidence(uploaded_evidence)
 
     scan_payload = payload.get("scan_file")
     if scan_payload:
         if not isinstance(scan_payload, dict):
             raise ValueError("'scan_file' must be an object")
+        if progress_callback:
+            progress_callback(65, "analyzing-scan", f"Parsing and segmenting {scan_payload.get('name', 'uploaded scan')}")
         scan_result = ingest_scan(
             str(scan_payload.get("name", "scan.xyz")),
             str(scan_payload.get("content", "")),
@@ -125,6 +177,8 @@ def analyze_visual_payload(
             "scan_summary": {"filename": "", "point_count": 0, "tile_count": 0, "max_height": 0.0},
         }
 
+    if progress_callback:
+        progress_callback(95, "assembling-results", "Assembling detections, scan overlays, and action items")
     focus_species = (
         uploaded_evidence[0]["species_name"]
         if uploaded_evidence
@@ -135,6 +189,7 @@ def analyze_visual_payload(
         "scan_model": scan_result["scan_model"],
         "scan_summary": scan_result["scan_summary"],
         "focus_species": focus_species,
+        "detector_summary": detector_summary,
     }
 
 
@@ -146,7 +201,7 @@ def _build_job_runner(
     sensors_file: Optional[str],
     map_file: Optional[str],
 ):
-    def _runner(payload: dict[str, object]) -> dict[str, object]:
+    def _runner(payload: dict[str, object], progress_callback: Optional[Callable[[int, str, str], None]] = None) -> dict[str, object]:
         return analyze_visual_payload(
             payload,
             rows=rows,
@@ -155,6 +210,7 @@ def _build_job_runner(
             cells_file=cells_file,
             sensors_file=sensors_file,
             map_file=map_file,
+            progress_callback=progress_callback,
         )
 
     return _runner
@@ -198,6 +254,9 @@ class EcoScanHandler(SimpleHTTPRequestHandler):
                 {
                     "job_id": job.job_id,
                     "status": job.status,
+                    "progress": job.progress,
+                    "stage": job.stage,
+                    "message": job.message,
                     "result": job.result,
                     "error": job.error,
                     "report": job.report,
@@ -271,7 +330,10 @@ class EcoScanHandler(SimpleHTTPRequestHandler):
                         self.map_file,
                     ),
                 )
-                self._write_json({"job_id": job.job_id, "status": job.status}, status=HTTPStatus.ACCEPTED)
+                self._write_json(
+                    {"job_id": job.job_id, "status": job.status, "progress": job.progress, "stage": job.stage, "message": job.message},
+                    status=HTTPStatus.ACCEPTED,
+                )
                 return
 
             job_id = str(payload.get("job_id", ""))

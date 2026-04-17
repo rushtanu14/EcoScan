@@ -14,6 +14,8 @@ const searchSuggestions = document.getElementById("ecoscanSuggestions");
 const photoUploadInput = document.getElementById("photoUploadInput");
 const scanUploadInput = document.getElementById("scanUploadInput");
 const jobStatusText = document.getElementById("jobStatusText");
+const jobProgressBar = document.getElementById("jobProgressBar");
+const jobProgressText = document.getElementById("jobProgressText");
 const exportReportButton = document.getElementById("exportReportButton");
 const photoGallery = document.getElementById("photoGallery");
 const scanViewport = document.getElementById("scanViewport");
@@ -21,6 +23,7 @@ const scanLegend = document.getElementById("scanLegend");
 const scanMetaPanel = document.getElementById("scanMetaPanel");
 const detectionFeed = document.getElementById("detectionFeed");
 const explanationPanel = document.getElementById("explanationPanel");
+const modelStatusBanner = document.getElementById("modelStatusBanner");
 
 const viewTabs = [...document.querySelectorAll("[data-view-target]")];
 const views = [...document.querySelectorAll(".dashboard-view")];
@@ -41,6 +44,7 @@ let selectedScanFile = null;
 let scanSummaryState = null;
 let currentJobId = null;
 let currentReportUrl = null;
+let detectorSummaryState = null;
 
 let activeCellId = null;
 let activeSensorId = null;
@@ -208,6 +212,39 @@ function setJobStatus(text) {
   if (jobStatusText) {
     jobStatusText.textContent = text;
   }
+}
+
+function setJobProgress(progress, message = "") {
+  const safeProgress = Math.max(0, Math.min(Number(progress || 0), 100));
+  if (jobProgressBar) {
+    jobProgressBar.style.width = `${safeProgress}%`;
+  }
+  if (jobProgressText) {
+    jobProgressText.textContent = message ? `${safeProgress}% complete • ${message}` : `${safeProgress}% complete`;
+  }
+}
+
+function buildModelStatusBanner() {
+  if (!modelStatusBanner) {
+    return;
+  }
+  const summary = detectorSummaryState || {
+    mode: "idle",
+    label: "Photo detector idle",
+    message: "Upload photos to see whether EcoScan used the fine-tuned detector, zero-shot fallback, or heuristic fallback.",
+    target_taxa: [],
+  };
+  modelStatusBanner.className = `model-status-banner ${summary.mode || "idle"}`;
+  modelStatusBanner.innerHTML = `
+    <span class="model-status-kicker">Detector path</span>
+    <strong>${summary.label || summary.model_name || "Photo detector idle"}</strong>
+    <p>${summary.message || "Upload photos to inspect the active detector path."}</p>
+    ${
+      summary.target_taxa?.length
+        ? `<div class="tag-row">${summary.target_taxa.slice(0, 6).map((label) => `<span class="tag">${label}</span>`).join("")}</div>`
+        : ""
+    }
+  `;
 }
 
 function buildHabitatList() {
@@ -713,6 +750,7 @@ async function createAnalysisJob() {
   const payload = await response.json();
   currentJobId = payload.job_id;
   setJobStatus(`Queued ${currentJobId.slice(0, 8)}`);
+  setJobProgress(payload.progress || 0, payload.message || "Waiting to start");
   return payload.job_id;
 }
 
@@ -723,7 +761,9 @@ async function waitForJob(jobId) {
       throw new Error(`Unable to fetch job ${jobId}`);
     }
     const payload = await response.json();
-    setJobStatus(titleCase(payload.status));
+    const statusText = payload.message ? `${titleCase(payload.status)} • ${payload.message}` : titleCase(payload.status);
+    setJobStatus(statusText);
+    setJobProgress(payload.progress || 0, payload.stage ? titleCase(String(payload.stage).replace(/-/g, " ")) : "");
     if (payload.status === "completed") {
       return payload.result;
     }
@@ -738,6 +778,7 @@ function applyAnalysisResult(payload) {
   uploadedEvidenceState = payload.uploaded_evidence || [];
   scanModelState = payload.scan_model || scanModelState;
   scanSummaryState = payload.scan_summary || null;
+  detectorSummaryState = payload.detector_summary || detectorSummaryState;
   activeSpeciesName = payload.focus_species || uploadedEvidenceState[0]?.species_name || activeSpeciesName;
   activeCellId = uploadedEvidenceState[0]?.cell_id || scanModelState[0]?.cell_id || activeCellId;
   currentReportUrl = null;
@@ -750,10 +791,12 @@ function applyAnalysisResult(payload) {
   buildSpeciesList();
   buildPhotoGallery();
   buildScanMetaPanel();
+  buildModelStatusBanner();
   buildExplanationPanel();
   drawScanModel();
   drawMapLayers();
   buildDetectionFeed();
+  setJobProgress(100, "Analysis complete");
 }
 
 function buildPhotoGallery() {
@@ -866,6 +909,7 @@ function buildExplanationPanel() {
   const isFallbackModel = String(explanation.model || "").toLowerCase().includes("fallback");
   const targetTaxa = explanation.target_taxa || [];
   const isFineTunedModel = explanation.detector_family === "fine-tuned";
+  const isZeroShotModel = explanation.detector_family === "zero-shot";
   explanationPanel.innerHTML = `
     <article class="explanation-card">
       <div class="detail-stat-grid">
@@ -895,6 +939,11 @@ function buildExplanationPanel() {
       ${
         isFineTunedModel && targetTaxa.length
           ? `<p class="panel-note">Fine-tuned target taxa: ${targetTaxa.join(", ")}.</p>`
+          : ""
+      }
+      ${
+        isZeroShotModel
+          ? `<p class="panel-note">This run used the zero-shot fallback detector because a fine-tuned checkpoint was not active for this analysis.</p>`
           : ""
       }
       ${
@@ -1163,10 +1212,12 @@ async function loadDashboard() {
   searchablePlacesState = payload.searchable_places || [];
   scanModelState = payload.scan_model || [];
   scanSummaryState = payload.scan_summary || null;
+  detectorSummaryState = payload.detector_summary || null;
 
   activeCellId = habitatState[0]?.cell_id || null;
   activeSpeciesName = speciesCatalogState[0]?.common_name || null;
   setJobStatus("Idle");
+  setJobProgress(0, "Waiting for uploads");
 
   buildSearchIndex();
   buildSummaryCards(payload.overview);
@@ -1180,6 +1231,7 @@ async function loadDashboard() {
   buildSourceList();
   buildPhotoGallery();
   buildScanMetaPanel();
+  buildModelStatusBanner();
   buildExplanationPanel();
   drawScanModel();
   buildDetectionFeed();
@@ -1202,6 +1254,7 @@ function renderError(message) {
   detectionFeed.innerHTML = markup;
   photoGallery.innerHTML = markup;
   setJobStatus("Error");
+  setJobProgress(0, "Analysis failed");
 }
 
 bindViewTabs();
