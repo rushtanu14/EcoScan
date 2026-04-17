@@ -12,22 +12,10 @@ const scanTitle = document.getElementById("scanTitle");
 const searchInput = document.getElementById("ecoscanSearch");
 const searchSuggestions = document.getElementById("ecoscanSuggestions");
 const photoUploadInput = document.getElementById("photoUploadInput");
-const scanUploadInput = document.getElementById("scanUploadInput");
-const selectedPhotosSummary = document.getElementById("selectedPhotosSummary");
-const selectedScanSummary = document.getElementById("selectedScanSummary");
-const runAnalysisButton = document.getElementById("runAnalysisButton");
-const clearInputsButton = document.getElementById("clearInputsButton");
-const jobStatusText = document.getElementById("jobStatusText");
-const jobProgressBar = document.getElementById("jobProgressBar");
-const jobProgressText = document.getElementById("jobProgressText");
-const exportReportButton = document.getElementById("exportReportButton");
 const photoGallery = document.getElementById("photoGallery");
 const scanViewport = document.getElementById("scanViewport");
 const scanLegend = document.getElementById("scanLegend");
-const scanMetaPanel = document.getElementById("scanMetaPanel");
 const detectionFeed = document.getElementById("detectionFeed");
-const explanationPanel = document.getElementById("explanationPanel");
-const modelStatusBanner = document.getElementById("modelStatusBanner");
 
 const viewTabs = [...document.querySelectorAll("[data-view-target]")];
 const views = [...document.querySelectorAll(".dashboard-view")];
@@ -43,12 +31,6 @@ let searchablePlacesState = [];
 let scanModelState = [];
 let uploadedEvidenceState = [];
 let searchIndex = [];
-let selectedPhotoFiles = [];
-let selectedScanFile = null;
-let scanSummaryState = null;
-let currentJobId = null;
-let currentReportUrl = null;
-let detectorSummaryState = null;
 
 let activeCellId = null;
 let activeSensorId = null;
@@ -56,7 +38,6 @@ let activeSpeciesName = null;
 
 let map = null;
 let habitatLayerGroup = null;
-let scanOverlayLayerGroup = null;
 let sensorLayerGroup = null;
 let landmarkLayerGroup = null;
 
@@ -212,59 +193,6 @@ function buildActionList() {
     .join("");
 }
 
-function setJobStatus(text) {
-  if (jobStatusText) {
-    jobStatusText.textContent = text;
-  }
-}
-
-function updateInputSummary() {
-  if (selectedPhotosSummary) {
-    selectedPhotosSummary.textContent = selectedPhotoFiles.length
-      ? `${selectedPhotoFiles.length} file${selectedPhotoFiles.length === 1 ? "" : "s"} selected`
-      : "None selected";
-  }
-  if (selectedScanSummary) {
-    selectedScanSummary.textContent = selectedScanFile ? selectedScanFile.name : "None selected";
-  }
-  if (runAnalysisButton) {
-    runAnalysisButton.disabled = !selectedPhotoFiles.length && !selectedScanFile;
-  }
-}
-
-function setJobProgress(progress, message = "") {
-  const safeProgress = Math.max(0, Math.min(Number(progress || 0), 100));
-  if (jobProgressBar) {
-    jobProgressBar.style.width = `${safeProgress}%`;
-  }
-  if (jobProgressText) {
-    jobProgressText.textContent = message ? `${safeProgress}% complete • ${message}` : `${safeProgress}% complete`;
-  }
-}
-
-function buildModelStatusBanner() {
-  if (!modelStatusBanner) {
-    return;
-  }
-  const summary = detectorSummaryState || {
-    mode: "idle",
-    label: "Photo detector idle",
-    message: "Upload photos to see whether EcoScan used the fine-tuned detector, zero-shot fallback, or heuristic fallback.",
-    target_taxa: [],
-  };
-  modelStatusBanner.className = `model-status-banner ${summary.mode || "idle"}`;
-  modelStatusBanner.innerHTML = `
-    <span class="model-status-kicker">Detector path</span>
-    <strong>${summary.label || summary.model_name || "Photo detector idle"}</strong>
-    <p>${summary.message || "Upload photos to inspect the active detector path."}</p>
-    ${
-      summary.target_taxa?.length
-        ? `<div class="tag-row">${summary.target_taxa.slice(0, 6).map((label) => `<span class="tag">${label}</span>`).join("")}</div>`
-        : ""
-    }
-  `;
-}
-
 function buildHabitatList() {
   habitatList.innerHTML = habitatState
     .slice(0, 8)
@@ -292,7 +220,6 @@ function buildHabitatList() {
       buildActionList();
       buildStressedSpeciesRail();
       buildSpeciesList();
-      buildExplanationPanel();
       buildDetectionFeed();
     });
   });
@@ -324,7 +251,6 @@ function buildStressedSpeciesRail() {
       drawMapLayers();
       buildStressedSpeciesRail();
       buildSpeciesList();
-      buildExplanationPanel();
       buildDetectionFeed();
       activateView("speciesView");
     });
@@ -414,7 +340,6 @@ function buildSpeciesList() {
       buildSpeciesList();
       drawScanModel();
       drawMapLayers();
-      buildExplanationPanel();
       buildDetectionFeed();
     });
   });
@@ -439,7 +364,6 @@ function ensureMap() {
   }).addTo(map);
 
   habitatLayerGroup = window.L.layerGroup().addTo(map);
-  scanOverlayLayerGroup = window.L.layerGroup().addTo(map);
   sensorLayerGroup = window.L.layerGroup().addTo(map);
   landmarkLayerGroup = window.L.layerGroup().addTo(map);
 
@@ -490,7 +414,6 @@ function drawMapLayers() {
 
   ensureMap();
   habitatLayerGroup.clearLayers();
-  scanOverlayLayerGroup.clearLayers();
   sensorLayerGroup.clearLayers();
   drawLandmarks();
 
@@ -539,32 +462,6 @@ function drawMapLayers() {
     marker.bindTooltip(profile?.label || titleCase(sensor.sensor_id));
     marker.addTo(sensorLayerGroup);
   });
-
-  scanModelState
-    .filter((cell) => cell.map_polygon && cell.map_polygon.length && (!activeSpeciesName || cell.detections.some((detection) => detection.species_name === activeSpeciesName)))
-    .slice(0, 10)
-    .forEach((cell) => {
-      const polygon = window.L.polygon(
-        cell.map_polygon.map(([lon, lat]) => [lat, lon]),
-        {
-          color: "#163128",
-          weight: cell.cell_id === activeCellId ? 2.8 : 1.2,
-          dashArray: "6 4",
-          fillColor: statusColor(cell.health_label),
-          fillOpacity: cell.cell_id === activeCellId ? 0.18 : 0.08,
-        },
-      );
-      polygon.on("click", () => {
-        activeCellId = cell.cell_id;
-        activeSpeciesName = cell.detections?.[0]?.species_name || activeSpeciesName;
-        buildExplanationPanel();
-        drawMapLayers();
-        drawScanModel();
-        buildDetectionFeed();
-      });
-      polygon.bindTooltip(`Segment ${cell.segment_kind || "scan"} • ${cell.detections?.[0]?.species_name || "species"}`);
-      polygon.addTo(scanOverlayLayerGroup);
-    });
 }
 
 function buildSensorList() {
@@ -694,12 +591,37 @@ function drawScanModel() {
       buildHabitatList();
       buildStressedSpeciesRail();
       buildSpeciesList();
-      buildExplanationPanel();
       buildDetectionFeed();
       drawMapLayers();
       drawScanModel();
     });
   });
+}
+
+function detectionBoxes(index) {
+  const presets = [
+    [
+      { left: 10, top: 16, width: 45, height: 38 },
+      { left: 58, top: 48, width: 22, height: 18 },
+    ],
+    [
+      { left: 18, top: 22, width: 30, height: 26 },
+      { left: 52, top: 34, width: 30, height: 24 },
+    ],
+    [
+      { left: 14, top: 32, width: 38, height: 30 },
+      { left: 60, top: 16, width: 18, height: 16 },
+    ],
+  ];
+  return presets[index % presets.length];
+}
+
+function matchSpeciesForUpload(fileName, index) {
+  const normalized = fileName.toLowerCase();
+  const species = speciesCatalogState.find((item) =>
+    (item.aliases || []).some((alias) => normalized.includes(alias.toLowerCase())),
+  );
+  return species || speciesCatalogState[index % speciesCatalogState.length];
 }
 
 function readFileAsDataUrl(file) {
@@ -711,137 +633,33 @@ function readFileAsDataUrl(file) {
   });
 }
 
-function readFileAsBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const bytes = new Uint8Array(reader.result);
-      let binary = "";
-      for (let index = 0; index < bytes.byteLength; index += 1) {
-        binary += String.fromCharCode(bytes[index]);
-      }
-      resolve(window.btoa(binary));
-    };
-    reader.onerror = () => reject(reader.error || new Error("Unable to read file"));
-    reader.readAsArrayBuffer(file);
-  });
-}
-
-async function createAnalysisJob() {
-  if (!selectedPhotoFiles.length && !selectedScanFile) {
-    return;
-  }
-
-  setJobStatus("Preparing upload");
-  const photos = await Promise.all(
-    selectedPhotoFiles.map(async (file) => ({
-      name: file.name,
-      data_url: await readFileAsDataUrl(file),
-    })),
-  );
-  const scanFile = selectedScanFile
-    ? {
-        name: selectedScanFile.name,
-        content: await readFileAsBase64(selectedScanFile),
-        encoding: "base64",
-      }
-    : null;
-
-  const response = await fetch("/api/jobs/analyze", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      photos,
-      scan_file: scanFile,
-      active_cell_id: activeCellId,
-      active_species_name: activeSpeciesName,
+async function handlePhotoUploads(files) {
+  const uploads = await Promise.all(
+    [...files].map(async (file, index) => {
+      const previewUrl = await readFileAsDataUrl(file);
+      const species = matchSpeciesForUpload(file.name, index);
+      const linkedHabitat = habitatState.find((habitat) =>
+        habitat.species_pressures.some((pressure) => pressure.common_name === species.common_name),
+      ) || habitatState[index % habitatState.length];
+      return {
+        id: `${file.name}-${index}`,
+        name: file.name,
+        preview_url: previewUrl,
+        species_name: species.common_name,
+        scientific_name: species.scientific_name,
+        cell_id: linkedHabitat.cell_id,
+        confidence: Math.min(0.97, 0.63 + species.avg_vulnerability_score * 0.28 + index * 0.03),
+        boxes: detectionBoxes(index),
+        note: linkedHabitat.habitat_story,
+        action_items: linkedHabitat.recommended_actions,
+      };
     }),
-  });
+  );
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: "Upload failed" }));
-    throw new Error(error.error || `Upload failed with ${response.status}`);
-  }
-
-  const payload = await response.json();
-  currentJobId = payload.job_id;
-  setJobStatus(`Queued ${currentJobId.slice(0, 8)}`);
-  setJobProgress(payload.progress || 0, payload.message || "Waiting to start");
-  return payload.job_id;
-}
-
-async function runSelectedAnalysis(targetView = "scanView") {
-  if (!selectedPhotoFiles.length && !selectedScanFile) {
-    renderError("Add at least one photo or one scan before running analysis.");
-    return;
-  }
-  try {
-    const jobId = await createAnalysisJob();
-    const result = await waitForJob(jobId);
-    applyAnalysisResult(result);
-    activateView(targetView);
-  } catch (error) {
-    renderError(`Unable to analyze inputs: ${error.message}`);
-  }
-}
-
-function clearSelectedInputs() {
-  selectedPhotoFiles = [];
-  selectedScanFile = null;
-  if (photoUploadInput) {
-    photoUploadInput.value = "";
-  }
-  if (scanUploadInput) {
-    scanUploadInput.value = "";
-  }
-  updateInputSummary();
-}
-
-async function waitForJob(jobId) {
-  while (true) {
-    const response = await fetch(`/api/jobs/${jobId}`);
-    if (!response.ok) {
-      throw new Error(`Unable to fetch job ${jobId}`);
-    }
-    const payload = await response.json();
-    const statusText = payload.message ? `${titleCase(payload.status)} • ${payload.message}` : titleCase(payload.status);
-    setJobStatus(statusText);
-    setJobProgress(payload.progress || 0, payload.stage ? titleCase(String(payload.stage).replace(/-/g, " ")) : "");
-    if (payload.status === "completed") {
-      return payload.result;
-    }
-    if (payload.status === "failed") {
-      throw new Error(payload.error || "Analysis failed");
-    }
-    await new Promise((resolve) => window.setTimeout(resolve, 900));
-  }
-}
-
-function applyAnalysisResult(payload) {
-  uploadedEvidenceState = payload.uploaded_evidence || [];
-  scanModelState = payload.scan_model || scanModelState;
-  scanSummaryState = payload.scan_summary || null;
-  detectorSummaryState = payload.detector_summary || detectorSummaryState;
-  activeSpeciesName = payload.focus_species || uploadedEvidenceState[0]?.species_name || activeSpeciesName;
-  activeCellId = uploadedEvidenceState[0]?.cell_id || scanModelState[0]?.cell_id || activeCellId;
-  currentReportUrl = null;
-  buildSearchIndex();
+  uploadedEvidenceState = uploads;
   buildHeroMetrics({ priority_actions: [] });
-  buildNarrativeSummary();
-  buildActionList();
-  buildHabitatList();
-  buildStressedSpeciesRail();
-  buildSpeciesList();
   buildPhotoGallery();
-  buildScanMetaPanel();
-  buildModelStatusBanner();
-  buildExplanationPanel();
-  drawScanModel();
-  drawMapLayers();
   buildDetectionFeed();
-  setJobProgress(100, "Analysis complete");
 }
 
 function buildPhotoGallery() {
@@ -899,112 +717,6 @@ function buildPhotoGallery() {
       buildDetectionFeed();
     });
   });
-}
-
-function buildScanMetaPanel() {
-  if (!scanSummaryState) {
-    scanMetaPanel.innerHTML = `<p class="empty-state">Upload a scan to inspect segmentation details.</p>`;
-    return;
-  }
-
-  const alignmentLabel = scanSummaryState.source_epsg ? `EPSG:${scanSummaryState.source_epsg}` : "Study-area aligned";
-
-  scanMetaPanel.innerHTML = `
-    <div class="detail-stat">
-      <span>Scan file</span>
-      <strong>${scanSummaryState.filename || "Not provided"}</strong>
-    </div>
-    <div class="detail-stat">
-      <span>Points</span>
-      <strong>${scanSummaryState.point_count || 0}</strong>
-    </div>
-    <div class="detail-stat">
-      <span>Faces</span>
-      <strong>${scanSummaryState.face_count || 0}</strong>
-    </div>
-    <div class="detail-stat">
-      <span>Segmentation</span>
-      <strong>${titleCase((scanSummaryState.segmentation_mode || "unknown").replace(/-/g, " "))}</strong>
-    </div>
-    <div class="detail-stat">
-      <span>Spatial alignment</span>
-      <strong>${alignmentLabel}</strong>
-    </div>
-  `;
-}
-
-function activeExplanation() {
-  const evidence = uploadedEvidenceState.find((item) => item.species_name === activeSpeciesName && (!activeCellId || item.cell_id === activeCellId));
-  if (evidence?.explanation) {
-    return evidence.explanation;
-  }
-  const scanCell = findScanCell(activeCellId) || scanModelState.find((cell) => cell.detections.some((detection) => detection.species_name === activeSpeciesName));
-  return scanCell?.detections?.[0]?.explanation || null;
-}
-
-function buildExplanationPanel() {
-  const explanation = activeExplanation();
-  if (!explanation) {
-    explanationPanel.innerHTML = `<p class="empty-state">Model explanations will appear here after analysis.</p>`;
-    return;
-  }
-
-  const features = explanation.visual_features || {};
-  const matchedQueries = explanation.matched_queries || [];
-  const isFallbackModel = String(explanation.model || "").toLowerCase().includes("fallback");
-  const targetTaxa = explanation.target_taxa || [];
-  const isFineTunedModel = explanation.detector_family === "fine-tuned";
-  const isZeroShotModel = explanation.detector_family === "zero-shot";
-  explanationPanel.innerHTML = `
-    <article class="explanation-card">
-      <div class="detail-stat-grid">
-        <div class="detail-stat">
-          <span>Detector score</span>
-          <strong>${formatPercent(explanation.detector_score || 0)}</strong>
-        </div>
-        <div class="detail-stat">
-          <span>Calibrated score</span>
-          <strong>${formatPercent(explanation.calibrated_score || 0)}</strong>
-        </div>
-        <div class="detail-stat">
-          <span>Habitat prior</span>
-          <strong>${formatPercent(explanation.habitat_prior || 0)}</strong>
-        </div>
-        <div class="detail-stat">
-          <span>Model</span>
-          <strong>${explanation.model || explanation.segment_kind || "EcoScan"}</strong>
-        </div>
-      </div>
-      <p>${explanation.reason || "This species combined the strongest model evidence with the strongest habitat prior."}</p>
-      ${
-        isFallbackModel
-          ? `<p class="panel-note">This run fell back to the calibrated visual ranker because localized pretrained detections were unavailable for the uploaded image.</p>`
-          : ""
-      }
-      ${
-        isFineTunedModel && targetTaxa.length
-          ? `<p class="panel-note">Fine-tuned target taxa: ${targetTaxa.join(", ")}.</p>`
-          : ""
-      }
-      ${
-        isZeroShotModel
-          ? `<p class="panel-note">This run used the zero-shot fallback detector because a fine-tuned checkpoint was not active for this analysis.</p>`
-          : ""
-      }
-      ${
-        Object.keys(features).length
-          ? `<div class="tag-row">${Object.entries(features)
-              .map(([key, value]) => `<span class="tag">${titleCase(key)} ${Number(value).toFixed(2)}</span>`)
-              .join("")}</div>`
-          : ""
-      }
-      ${
-        matchedQueries.length
-          ? `<div class="tag-row">${matchedQueries.map((label) => `<span class="tag">${label}</span>`).join("")}</div>`
-          : ""
-      }
-    </article>
-  `;
 }
 
 function evidenceFeedItems() {
@@ -1131,7 +843,6 @@ function focusSearchTarget(entry) {
     buildSpeciesList();
     drawScanModel();
     drawMapLayers();
-    buildExplanationPanel();
     buildDetectionFeed();
     return;
   }
@@ -1146,7 +857,6 @@ function focusSearchTarget(entry) {
     buildSpeciesList();
     drawScanModel();
     drawMapLayers();
-    buildExplanationPanel();
     buildDetectionFeed();
     return;
   }
@@ -1181,63 +891,10 @@ function bindPhotoUpload() {
   photoUploadInput?.addEventListener("change", async (event) => {
     const files = event.target.files;
     if (!files?.length) {
-      selectedPhotoFiles = [];
-      updateInputSummary();
       return;
     }
-    selectedPhotoFiles = [...files];
-    updateInputSummary();
-  });
-}
-
-function bindScanUpload() {
-  scanUploadInput?.addEventListener("change", async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      selectedScanFile = null;
-      updateInputSummary();
-      return;
-    }
-    selectedScanFile = file;
-    updateInputSummary();
-  });
-}
-
-function bindInputActions() {
-  runAnalysisButton?.addEventListener("click", () => {
-    runSelectedAnalysis("scanView");
-  });
-  clearInputsButton?.addEventListener("click", () => {
-    clearSelectedInputs();
-    setJobStatus("Idle");
-    setJobProgress(0, "Waiting for uploads");
-  });
-}
-
-function bindExportReport() {
-  exportReportButton?.addEventListener("click", async () => {
-    if (!currentJobId) {
-      renderError("Generate an analysis job before exporting a report.");
-      return;
-    }
-    try {
-      const response = await fetch("/api/jobs/report", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ job_id: currentJobId }),
-      });
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: "Report export failed" }));
-        throw new Error(error.error || `Report export failed with ${response.status}`);
-      }
-      const payload = await response.json();
-      currentReportUrl = payload.report_url;
-      window.open(currentReportUrl, "_blank", "noopener");
-    } catch (error) {
-      renderError(`Unable to export report: ${error.message}`);
-    }
+    await handlePhotoUploads(files);
+    activateView("scanView");
   });
 }
 
@@ -1257,13 +914,9 @@ async function loadDashboard() {
   dataSourcesState = payload.data_sources || [];
   searchablePlacesState = payload.searchable_places || [];
   scanModelState = payload.scan_model || [];
-  scanSummaryState = payload.scan_summary || null;
-  detectorSummaryState = payload.detector_summary || null;
 
   activeCellId = habitatState[0]?.cell_id || null;
   activeSpeciesName = speciesCatalogState[0]?.common_name || null;
-  setJobStatus("Idle");
-  setJobProgress(0, "Waiting for uploads");
 
   buildSearchIndex();
   buildSummaryCards(payload.overview);
@@ -1276,9 +929,6 @@ async function loadDashboard() {
   buildSensorList();
   buildSourceList();
   buildPhotoGallery();
-  buildScanMetaPanel();
-  buildModelStatusBanner();
-  buildExplanationPanel();
   drawScanModel();
   buildDetectionFeed();
   drawMapLayers();
@@ -1295,21 +945,13 @@ function renderError(message) {
   sourceList.innerHTML = markup;
   actionList.innerHTML = markup;
   scanViewport.innerHTML = markup;
-  scanMetaPanel.innerHTML = markup;
-  explanationPanel.innerHTML = markup;
   detectionFeed.innerHTML = markup;
   photoGallery.innerHTML = markup;
-  setJobStatus("Error");
-  setJobProgress(0, "Analysis failed");
 }
 
 bindViewTabs();
 bindSearch();
 bindPhotoUpload();
-bindScanUpload();
-bindInputActions();
-bindExportReport();
-updateInputSummary();
 
 loadDashboard().catch((error) => {
   renderError(`Unable to load EcoScan data: ${error.message}`);

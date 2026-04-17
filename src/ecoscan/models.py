@@ -1,5 +1,5 @@
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Dict, List, Tuple
 
 
 Coordinate = Tuple[float, float]
@@ -52,12 +52,6 @@ class ScanDetection:
     risk_level: str
     note: str
     action_items: List[str]
-    raw_confidence: float = 0.0
-    calibrated_confidence: float = 0.0
-    habitat_prior: float = 0.0
-    model_source: str = "ecoscan"
-    explanation: Dict[str, object] = field(default_factory=dict)
-    segment_id: str = ""
 
 
 @dataclass(frozen=True)
@@ -70,13 +64,6 @@ class ScanCell:
     canopy_height: float
     lead_species: str
     detections: List[ScanDetection]
-    map_polygon: Polygon = field(default_factory=list)
-    world_polygon: List[Tuple[float, float, float]] = field(default_factory=list)
-    point_count: int = 0
-    face_count: int = 0
-    surface_area: float = 0.0
-    segment_kind: str = "scan-segment"
-    metadata: Dict[str, object] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)

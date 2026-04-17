@@ -22,58 +22,6 @@ DEMO_LANDMARKS = [
     {"name": "Urban Edge", "kind": "urban_edge", "coordinates": [(-121.81, 37.305), (-121.785, 37.305), (-121.785, 37.235), (-121.81, 37.235)]},
 ]
 
-DEMO_DATA_SOURCES = [
-    {
-        "kind": "Species guide",
-        "name": "California biodiversity watch references",
-        "note": "Public species pages that ground the ecological pressure stories in this demo.",
-        "url": "https://wildlife.ca.gov/Conservation",
-    },
-    {
-        "kind": "Remote sensing",
-        "name": "EcoScan fused habitat raster",
-        "note": "Demo habitat cells combine vegetation, heat, and moisture signals across the corridor.",
-        "url": "https://github.com/v1shay/phyto-vision",
-    },
-]
-
-DEMO_SENSOR_PROFILES = [
-    {
-        "sensor_id": "roadside-fragment",
-        "label": "Roadside fragment station",
-        "kind": "Air and soil node",
-        "summary": "Captures heat, fine particulate spikes, and dry-soil pressure near the urban edge.",
-        "coordinates": [-121.805, 37.258],
-    },
-    {
-        "sensor_id": "wetland-refuge",
-        "label": "Wetland refuge station",
-        "kind": "Hydrology node",
-        "summary": "Tracks humidity, soil water, and water chemistry near amphibian and turtle habitat.",
-        "coordinates": [-121.902, 37.286],
-    },
-    {
-        "sensor_id": "forest-interior",
-        "label": "Oak interior station",
-        "kind": "Canopy node",
-        "summary": "Monitors cooler canopy conditions across the woodland corridor.",
-        "coordinates": [-121.874, 37.246],
-    },
-    {
-        "sensor_id": "dry-grassland",
-        "label": "Dry grassland station",
-        "kind": "Heat exposure node",
-        "summary": "Watches for dry-air stress in open grassland and shrub edges.",
-        "coordinates": [-121.836, 37.301],
-    },
-]
-
-DEMO_SEARCHABLE_PLACES = [
-    {"label": "Coyote Creek", "kind": "waterway", "lat": 37.27, "lon": -121.865, "zoom": 13},
-    {"label": "Wetland Refuge", "kind": "refuge", "lat": 37.283, "lon": -121.898, "zoom": 14},
-    {"label": "Urban Edge", "kind": "urban edge", "lat": 37.27, "lon": -121.797, "zoom": 13},
-]
-
 
 def _bounded(value: float, lower: float, upper: float) -> float:
     return round(min(max(value, lower), upper), 3)
@@ -105,15 +53,6 @@ def build_demo_map(rows: int, cols: int) -> Dict[str, object]:
     return {
         "study_area": DEMO_STUDY_AREA,
         "landmarks": DEMO_LANDMARKS,
-        "system_snapshot": {
-            "title": "Visual biodiversity scan",
-            "summary": "Photo evidence and scan annotations are layered on top of the demo habitat fusion model.",
-            "observed_window": "Latest simulated pass",
-            "data_mode": "demo",
-        },
-        "data_sources": DEMO_DATA_SOURCES,
-        "sensor_profiles": DEMO_SENSOR_PROFILES,
-        "searchable_places": DEMO_SEARCHABLE_PLACES,
         "cell_polygons": {
             f"cell-{row}-{col}": _cell_polygon(row, col, rows, cols)
             for row in range(rows)

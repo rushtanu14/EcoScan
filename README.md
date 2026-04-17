@@ -2,13 +2,7 @@
 
 EcoScan is a biodiversity health dashboard that combines habitat cells, environmental sensor context, and species-specific habitat rules to show which plants and animals are under stress first.
 
-It now also supports:
-
-- photo upload analysis through a target-taxa detector pipeline that can prefer a fine-tuned local checkpoint
-- binary and ASCII mesh / point-cloud ingestion for `PLY`, `OBJ`, `LAS`, `LAZ`, `XYZ`, and `PTS` files
-- surface-aware scan segmentation, calibrated confidence scores, batch analysis jobs, and exportable HTML reports
-
-The current demo is centered on the real Coyote Valley and Coyote Creek corridor in South San Jose, California:
+The current demo is centered on the real Coyote Valley and Coyote Creek corridor in South San Jose, California. It is built to be hackathon-friendly:
 
 - `./run.sh` starts everything locally
 - the website has compact interactive views instead of one long scrolling page
@@ -27,14 +21,6 @@ For each habitat polygon, EcoScan:
 4. Scores each habitat as `thriving`, `stressed`, or `fragile`
 5. Estimates which species and plants are most likely to be suffering in that habitat
 6. Displays the results in a local web app with tabs for overview, real map, species watch, and data sources
-
-When you upload visual evidence, EcoScan additionally:
-
-1. Runs a fine-tuned species detector when you provide a local target-taxa checkpoint, otherwise falls back to the zero-shot detector
-2. Calibrates those model scores using a local labeled validation set
-3. Parses uploaded point-cloud or mesh geometry into surface-aware segments or point clusters
-4. Aligns scan segments to the study-area map using real coordinates when the file provides them
-5. Annotates the resulting detections with evidence, action items, and exportable reports
 
 ## Current Demo Story
 
@@ -73,8 +59,6 @@ From the project root:
 
 `run.sh` will:
 
-- create a local `.venv` if needed
-- install the full app dependencies if they are missing
 - start the local EcoScan server
 - use the source-backed sample files in `data/sample_inputs/`
 - open the dashboard automatically on macOS
@@ -85,65 +69,11 @@ Then open:
 http://127.0.0.1:8000
 ```
 
-To stop EcoScan from another terminal:
-
-```bash
-./stop.sh
-```
-
 If you want to run manually:
 
 ```bash
 PYTHONPATH=src python3 -m ecoscan.cli serve --data-dir data/sample_inputs
 ```
-
-That means the default local startup path is a single command:
-
-```bash
-./run.sh
-```
-
-The input flow inside the app is:
-
-1. Add one or more field photos
-2. Optionally add a scan file
-3. Review the selected input summary in the intake panel
-4. Click `Run analysis`
-
-The app then shows the active detector path, progress percent, annotated detections, scan overlays, and action items in one place.
-
-To swap in your own fine-tuned detector, point EcoScan at a local Hugging Face object-detection checkpoint and an optional manifest:
-
-```bash
-export ECOSCAN_FINE_TUNED_MODEL=/absolute/path/to/your/fine-tuned-checkpoint
-export ECOSCAN_FINE_TUNED_MANIFEST=data/model_manifests/target_taxa_detector.example.json
-PYTHONPATH=src python3 -m ecoscan.cli serve --data-dir data/sample_inputs
-```
-
-The checkpoint should be compatible with `transformers.AutoModelForObjectDetection` and `AutoImageProcessor`. The manifest maps the model's labels onto EcoScan's species names and declares the target taxa surfaced in the explanation panel.
-
-## Evaluation
-
-Current detector and calibration numbers are based on the bundled validation file at `data/validation/species_detector_validation.json`.
-
-- Validation set size: `24` labeled samples across `8` tracked species
-- Score range in the current validation file: raw detector scores from `0.27` to `0.91`
-- Raw-score baseline on that small validation set: `1.00` accuracy, `0.1033` Brier score, `0.3727` log loss
-- Current logistic calibration output on that same set: `0.7917` accuracy, `0.1309` Brier score, `0.4321` log loss
-
-Interpretation:
-
-- The calibration plumbing is in place, but the bundled validation corpus is still too small and too tidy to claim production-grade probability calibration.
-- On the current sample file, calibration actually performs worse than the raw scores, which is a sign that the model should be re-fit on a larger and more realistic evaluation set before treating the confidences as decision-grade.
-- Fine-tuned detector validation on real field images is not bundled in this repo. To claim true field performance, you still need a held-out photo benchmark for your target taxa and a checkpoint trained for those species.
-
-Supported input limits today:
-
-- Photos: multiple `JPG`, `PNG`, or `WebP` images per analysis job
-- Scans: `PLY`, `OBJ`, `LAS`, `LAZ`, `XYZ`, `PTS`, and `TXT`
-- Minimum geometry for scan ingestion: `3` points or vertices
-- Background processing concurrency: `2` jobs at a time
-- Large uploads are currently constrained by available machine memory and CPU; there is no separate application-level file size cap yet
 
 ## Sample Screenshot
 

@@ -3,8 +3,6 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-venv_dir=".venv"
-pid_file=".ecoscan.pid"
 port=8000
 args=()
 
@@ -19,48 +17,16 @@ while (($#)); do
   shift
 done
 
-if ! command -v python3 >/dev/null 2>&1; then
-  echo "EcoScan requires python3 to run."
-  exit 1
-fi
-
-if [[ ! -d "$venv_dir" ]]; then
-  echo "Creating local virtual environment in $venv_dir"
-  python3 -m venv "$venv_dir"
-fi
-
-# shellcheck disable=SC1091
-source "$venv_dir/bin/activate"
-
-python3 -m pip install --upgrade pip >/dev/null
-
-if ! python3 -c "import ecoscan, PIL" >/dev/null 2>&1; then
-  echo "Installing EcoScan dependencies"
-  python3 -m pip install -e '.[full]' >/dev/null
-fi
-
 server_cmd=(python3 -m ecoscan.cli serve --data-dir data/sample_inputs)
 if ((${#args[@]})); then
   server_cmd+=("${args[@]}")
 fi
 
-if [[ -f "$pid_file" ]]; then
-  existing_pid="$(cat "$pid_file" 2>/dev/null || true)"
-  if [[ -n "$existing_pid" ]] && kill -0 "$existing_pid" 2>/dev/null; then
-    echo "EcoScan is already running with PID $existing_pid."
-    echo "Open http://127.0.0.1:${port} or run ./stop.sh first."
-    exit 0
-  fi
-  rm -f "$pid_file"
-fi
-
 PYTHONPATH=src "${server_cmd[@]}" &
 server_pid=$!
-echo "$server_pid" > "$pid_file"
 
 cleanup() {
   kill "$server_pid" 2>/dev/null || true
-  rm -f "$pid_file"
 }
 
 trap cleanup EXIT INT TERM
@@ -73,7 +39,6 @@ for _ in $(seq 1 30); do
 done
 
 echo "Opening EcoScan dashboard at http://127.0.0.1:${port}"
-echo "Press Ctrl+C here or run ./stop.sh from another terminal to stop EcoScan."
 
 if command -v open >/dev/null 2>&1; then
   open "http://127.0.0.1:${port}" >/dev/null 2>&1 || true

@@ -18,30 +18,6 @@ api = [
   "fastapi>=0.111.0",
   "uvicorn>=0.30.0",
 ]
-ml = [
-  "numpy>=2.0.0",
-  "torch>=2.8.0",
-  "torchvision>=0.23.0",
-  "transformers>=4.57.0",
-  "scikit-learn>=1.6.0",
-  "trimesh>=4.11.0",
-  "laspy>=2.6.0",
-  "lazrs>=0.8.0",
-  "pyproj>=3.6.0",
-]
-full = [
-  "fastapi>=0.111.0",
-  "uvicorn>=0.30.0",
-  "numpy>=2.0.0",
-  "torch>=2.8.0",
-  "torchvision>=0.23.0",
-  "transformers>=4.57.0",
-  "scikit-learn>=1.6.0",
-  "trimesh>=4.11.0",
-  "laspy>=2.6.0",
-  "lazrs>=0.8.0",
-  "pyproj>=3.6.0",
-]
 
 [project.scripts]
 ecoscan = "ecoscan.cli:main"
@@ -51,3 +27,4 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+

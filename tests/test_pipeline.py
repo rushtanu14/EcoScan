@@ -5,7 +5,6 @@ from ecoscan.dataio import load_input_bundle, load_raster_cells_csv, load_sensor
 from ecoscan.demo import build_demo_map, generate_demo_grid, generate_demo_sensors
 from ecoscan.pipeline import (
     build_habitat_model,
-    build_scan_model,
     classify_habitat_health,
     summarize_habitat_zones,
     summarize_species_catalog,
@@ -68,23 +67,6 @@ class HabitatModelingTests(unittest.TestCase):
         self.assertGreaterEqual(len(catalog), 6)
         self.assertIn("status_label", catalog[0])
         self.assertIn("source_url", catalog[0])
-        self.assertIn("image_asset", catalog[0])
-        self.assertTrue(catalog[0]["example_images"])
-        self.assertTrue(catalog[0]["action_items"])
-
-    def test_scan_model_contains_annotations(self) -> None:
-        map_data = build_demo_map(rows=3, cols=3)
-        habitats = build_habitat_model(
-            generate_demo_grid(rows=3, cols=3),
-            generate_demo_sensors(),
-            cell_polygons=map_data["cell_polygons"],
-        )
-        scan_model = build_scan_model(habitats, map_data["study_area"]["bounds"])
-
-        self.assertEqual(len(scan_model), len(habitats))
-        self.assertTrue(scan_model[0].projected_polygon)
-        self.assertEqual(len(scan_model[0].detections), 2)
-        self.assertTrue(scan_model[0].detections[0].action_items)
 
 
 if __name__ == "__main__":
