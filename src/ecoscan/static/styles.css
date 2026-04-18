@@ -71,9 +71,9 @@ body::before {
 }
 
 .page-shell {
-  width: min(1240px, calc(100% - 28px));
+  width: min(1500px, calc(100% - 56px));
   margin: 0 auto;
-  padding: 24px 0 40px;
+  padding: 34px 0 74px;
 }
 
 .page-flow,
@@ -95,7 +95,7 @@ body::before {
 .action-list,
 .button-row {
   display: grid;
-  gap: 18px;
+  gap: 24px;
 }
 
 .topbar,
@@ -123,11 +123,11 @@ body::before {
 .topbar {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
+  gap: 24px;
   align-items: center;
-  padding: 16px 18px;
+  padding: 20px 24px;
   border-radius: 999px;
-  margin-bottom: 18px;
+  margin-bottom: 28px;
   border: 1px solid var(--line);
   background: rgba(255, 252, 248, 0.76);
   backdrop-filter: blur(20px);
@@ -232,7 +232,7 @@ body::before {
 .intake-card {
   position: relative;
   overflow: hidden;
-  padding: 24px;
+  padding: 30px;
   border-radius: var(--radius-xl);
 }
 
@@ -347,6 +347,49 @@ body::before {
   font-size: 1.08rem;
 }
 
+.howto-gallery {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.howto-card {
+  display: grid;
+  gap: 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: rgba(255, 252, 248, 0.8);
+  box-shadow: var(--shadow);
+}
+
+.howto-image {
+  min-height: 250px;
+  background: #e9dfd2;
+}
+
+.howto-image img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.howto-copy {
+  padding: 18px;
+  display: grid;
+  gap: 10px;
+}
+
+.howto-copy h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.howto-copy p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
 .intake-copy h2,
 .action-panel h3,
 .panel h3 {
@@ -454,9 +497,12 @@ body::before {
 .action-list,
 .summary-cards,
 .photo-gallery,
-.species-list,
 .deep-dive-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.species-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .action-card,
@@ -729,9 +775,9 @@ body::before {
 
 .species-card {
   display: grid;
-  grid-template-columns: 148px minmax(0, 1fr);
-  gap: 16px;
-  padding: 16px;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  padding: 14px;
   border-radius: 22px;
 }
 
@@ -749,7 +795,7 @@ body::before {
 }
 
 .species-primary-image {
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 16 / 10;
   object-fit: cover;
 }
 
@@ -849,6 +895,8 @@ body::before {
 
   .hero-metrics,
   .story-ribbon,
+  .howto-gallery,
+  .species-list,
   .photo-gallery {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -881,7 +929,9 @@ body::before {
 
   .hero-metrics,
   .story-ribbon,
+  .howto-gallery,
   .summary-cards,
+  .species-list,
   .photo-gallery,
   .deep-dive-grid {
     grid-template-columns: 1fr;

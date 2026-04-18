@@ -40,6 +40,7 @@ let selectedPhotoFiles = [];
 let uploadedEvidenceState = [];
 let previewUrls = [];
 let evidenceModeState = "none";
+let uploadAnalysisInFlight = false;
 
 let activeCellId = null;
 let activeSpeciesName = null;
@@ -53,6 +54,22 @@ const SPECIES_WIKI_PAGES = {
   "Black phoebe": "Black_phoebe",
   "California milkweed": "Asclepias_californica",
   "Coyote brush": "Baccharis_pilularis",
+};
+
+const SCENE_KEYWORDS = {
+  wetland: ["frog", "turtle", "wetland", "water", "riparian", "pond", "creek"],
+  canopy: ["oak", "woodpecker", "tree", "monarch", "milkweed", "grassland", "plant"],
+  dry: ["coyote", "brush", "dry", "edge", "oak", "monarch", "milkweed"],
+  urban: ["urban", "edge", "phoebe", "bird", "monarch", "oak"],
+  mixed: ["monarch", "frog", "oak", "turtle", "milkweed", "phoebe", "brush"],
+};
+
+const SCENE_LABELS = {
+  wetland: "Wetland / waterline",
+  canopy: "Green canopy / vegetation",
+  dry: "Dry grassland edge",
+  urban: "Urban or low-vegetation edge",
+  mixed: "Mixed habitat scene",
 };
 
 function titleCase(value) {
@@ -170,7 +187,10 @@ function evidenceModeText() {
 
 function updateIntakeState() {
   const fileCount = selectedPhotoFiles.length;
-  if (fileCount === 0 && evidenceModeState === "guided") {
+  if (uploadAnalysisInFlight) {
+    selectedPhotoSummary.textContent = "Analyzing uploaded photos...";
+    selectedPhotoNames.textContent = "Running photo-based species matching and hotspot risk detection.";
+  } else if (fileCount === 0 && evidenceModeState === "guided") {
     selectedPhotoSummary.textContent = "Curated evidence ready";
     selectedPhotoNames.textContent = "Guided demo evidence is loaded and ready for presentation.";
   } else {
@@ -183,7 +203,8 @@ function updateIntakeState() {
   }
 
   evidenceModeLabel.textContent = evidenceModeText();
-  analyzeUploadsButton.disabled = fileCount === 0;
+  analyzeUploadsButton.disabled = fileCount === 0 || uploadAnalysisInFlight;
+  analyzeUploadsButton.textContent = uploadAnalysisInFlight ? "Analyzing photos..." : "Analyze selected photos";
 }
 
 function buildHeroMetrics() {
@@ -321,6 +342,16 @@ function buildSummaryCards() {
 
 function buildPhotoGallery() {
   if (!uploadedEvidenceState.length) {
+    if (uploadAnalysisInFlight && evidenceModeState === "uploaded") {
+      photoGallery.innerHTML = `
+        <article class="empty-card">
+          <strong>Analyzing uploaded photos...</strong>
+          <p>Running visual species matching and hotspot risk detection.</p>
+        </article>
+      `;
+      return;
+    }
+
     photoGallery.innerHTML = `
       <article class="empty-card">
         <strong>No photo evidence loaded yet.</strong>
@@ -357,6 +388,16 @@ function buildPhotoGallery() {
 }
 
 function buildDetectionFeed() {
+  if (uploadAnalysisInFlight && evidenceModeState === "uploaded") {
+    detectionFeed.innerHTML = `
+      <article class="empty-card">
+        <strong>Detection pipeline running...</strong>
+        <p>Your uploaded photos are being processed to identify likely at-risk species in each image.</p>
+      </article>
+    `;
+    return;
+  }
+
   const evidence = focusEvidence();
 
   if (evidence.length) {
@@ -697,31 +738,217 @@ function bestSpeciesMatch(fileName, fallbackIndex = 0) {
   return speciesCatalogState[fallbackIndex % speciesCatalogState.length] || speciesCatalogState[0];
 }
 
-function buildUploadEvidence(files) {
+function speciesTextBlob(species) {
+  return `${species.common_name} ${species.scientific_name} ${species.habitat_need} ${(species.aliases || []).join(
+    " ",
+  )}`.toLowerCase();
+}
+
+function sceneFromMetrics(metrics) {
+  if (!metrics) {
+    return { id: "mixed", strength: 0.18 };
+  }
+
+  if (metrics.blueRatio > 0.24 || (metrics.blueRatio > 0.17 && metrics.avgLuma < 0.58)) {
+    return { id: "wetland", strength: Math.max(metrics.blueRatio, metrics.avgSaturation) };
+  }
+
+  if (metrics.greenRatio > 0.27 && metrics.avgSaturation > 0.13) {
+    return { id: "canopy", strength: Math.max(metrics.greenRatio, metrics.avgSaturation) };
+  }
+
+  if (metrics.warmRatio > 0.26 && metrics.brightRatio > 0.2) {
+    return { id: "dry", strength: Math.max(metrics.warmRatio, metrics.brightRatio) };
+  }
+
+  if (metrics.darkRatio > 0.45 && metrics.avgSaturation < 0.16) {
+    return { id: "urban", strength: Math.max(metrics.darkRatio, 0.2) };
+  }
+
+  return { id: "mixed", strength: Math.max(metrics.avgSaturation, 0.18) };
+}
+
+function extractPhotoMetrics(file) {
+  return new Promise((resolve) => {
+    const image = new Image();
+    const imageUrl = URL.createObjectURL(file);
+
+    image.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d", { willReadFrequently: true });
+        if (!context) {
+          resolve(null);
+          return;
+        }
+
+        const maxEdge = 96;
+        const scale = Math.min(maxEdge / image.width, maxEdge / image.height, 1);
+        const width = Math.max(32, Math.floor(image.width * scale));
+        const height = Math.max(32, Math.floor(image.height * scale));
+        canvas.width = width;
+        canvas.height = height;
+        context.drawImage(image, 0, 0, width, height);
+
+        const pixels = context.getImageData(0, 0, width, height).data;
+        let count = 0;
+        let greenCount = 0;
+        let blueCount = 0;
+        let warmCount = 0;
+        let darkCount = 0;
+        let brightCount = 0;
+        let saturationSum = 0;
+        let lumaSum = 0;
+
+        for (let i = 0; i < pixels.length; i += 4) {
+          const alpha = pixels[i + 3];
+          if (alpha < 16) {
+            continue;
+          }
+
+          const r = pixels[i] / 255;
+          const g = pixels[i + 1] / 255;
+          const b = pixels[i + 2] / 255;
+          const max = Math.max(r, g, b);
+          const min = Math.min(r, g, b);
+          const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+          const saturation = max === 0 ? 0 : (max - min) / max;
+
+          if (g > r + 0.08 && g > b + 0.05) {
+            greenCount += 1;
+          }
+          if (b > g + 0.06 && b > r + 0.06) {
+            blueCount += 1;
+          }
+          if (r > g + 0.07 && r > b + 0.04) {
+            warmCount += 1;
+          }
+          if (luma < 0.32) {
+            darkCount += 1;
+          }
+          if (luma > 0.68) {
+            brightCount += 1;
+          }
+
+          saturationSum += saturation;
+          lumaSum += luma;
+          count += 1;
+        }
+
+        if (!count) {
+          resolve(null);
+          return;
+        }
+
+        resolve({
+          greenRatio: greenCount / count,
+          blueRatio: blueCount / count,
+          warmRatio: warmCount / count,
+          darkRatio: darkCount / count,
+          brightRatio: brightCount / count,
+          avgSaturation: saturationSum / count,
+          avgLuma: lumaSum / count,
+        });
+      } catch {
+        resolve(null);
+      } finally {
+        URL.revokeObjectURL(imageUrl);
+      }
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(imageUrl);
+      resolve(null);
+    };
+
+    image.src = imageUrl;
+  });
+}
+
+async function detectSpeciesFromPhoto(file, fallbackIndex = 0) {
+  const metrics = await extractPhotoMetrics(file);
+  const scene = sceneFromMetrics(metrics);
+  const sceneKeywords = SCENE_KEYWORDS[scene.id] || SCENE_KEYWORDS.mixed;
+  const fileName = String(file?.name || "").toLowerCase();
+
+  const ranked = speciesCatalogState
+    .map((species) => {
+      const text = speciesTextBlob(species);
+      const keywordHits = sceneKeywords.reduce((total, keyword) => total + (text.includes(keyword) ? 1 : 0), 0);
+      const aliasMatch = (species.aliases || []).some((alias) => fileName.includes(alias.toLowerCase()));
+
+      let score = Number(species.avg_vulnerability_score || 0) * 0.46 + Number(species.max_vulnerability_score || 0) * 0.26;
+      score += keywordHits * 0.14;
+
+      if (aliasMatch) {
+        score += 0.42;
+      }
+
+      if (species.kingdom === "plant" && (scene.id === "canopy" || scene.id === "dry")) {
+        score += 0.08;
+      }
+      if (species.kingdom === "animal" && (scene.id === "wetland" || scene.id === "urban")) {
+        score += 0.08;
+      }
+
+      return { species, score, aliasMatch };
+    })
+    .sort((left, right) => right.score - left.score);
+
+  const fallbackSpecies = bestSpeciesMatch(file.name, fallbackIndex);
+  const best = ranked[0]?.species || fallbackSpecies;
+  const secondScore = ranked[1]?.score || ranked[0]?.score || 0;
+  const topScore = ranked[0]?.score || 0;
+  const gap = Math.max(0, topScore - secondScore);
+
+  const confidence = Math.min(
+    0.97,
+    Math.max(
+      0.55,
+      0.52 +
+        Number(best?.avg_vulnerability_score || 0) * 0.2 +
+        scene.strength * 0.45 +
+        gap * 0.2 +
+        (ranked[0]?.aliasMatch ? 0.08 : 0),
+    ),
+  );
+
+  return {
+    species: best,
+    confidence,
+    sceneLabel: SCENE_LABELS[scene.id] || SCENE_LABELS.mixed,
+  };
+}
+
+async function buildUploadEvidence(files) {
   releasePreviewUrls();
 
-  return files.map((file, index) => {
-    const species = bestSpeciesMatch(file.name, index) || speciesCatalogState[index % speciesCatalogState.length];
+  return Promise.all(files.map(async (file, index) => {
+    const detection = await detectSpeciesFromPhoto(file, index);
+    const species = detection.species || bestSpeciesMatch(file.name, index) || speciesCatalogState[index % speciesCatalogState.length];
     const habitat = topHabitatForSpecies(species.common_name) || habitatState[index % habitatState.length];
     const previewUrl = URL.createObjectURL(file);
     previewUrls.push(previewUrl);
+    const inferredRisk = habitatTone(Math.max(Number(habitat.risk_score || 0), Number(species.avg_vulnerability_score || 0)));
 
     return {
       id: `upload-${index}-${file.name}`,
       image: previewUrl,
       title: file.name,
-      subtitle: `${species.common_name} matched to ${titleCase(habitat.habitat_type)}`,
-      annotation: `Detected focus: ${species.common_name} · hotspot ${habitat.cell_id}`,
+      subtitle: `${species.common_name} detected in a ${detection.sceneLabel.toLowerCase()} scene`,
+      annotation: `${titleCase(inferredRisk)} risk focus · hotspot ${habitat.cell_id} · ${formatPercent(detection.confidence)}`,
       speciesName: species.common_name,
       cellId: habitat.cell_id,
-      confidence: Math.min(0.95, species.avg_vulnerability_score + 0.16),
-      note: `This uploaded photo is paired with the strongest at-risk habitat signal for ${species.common_name} in the current corridor model.`,
+      confidence: detection.confidence,
+      note: `${species.common_name} was vision-matched from the uploaded image and linked to ${titleCase(
+        habitat.habitat_type,
+      )} where risk is currently ${titleCase(inferredRisk)}.`,
       healthLabel: habitat.health_label,
-      badge: "Uploaded photo",
+      badge: "Photo detection",
       actionItems: [...new Set([...(species.action_items || []), ...(habitat.recommended_actions || [])])].slice(0, 3),
       sourceUrl: species.source_url,
     };
-  });
+  }));
 }
 
 function sampleEvidence() {
@@ -758,6 +985,7 @@ function clearEvidence() {
   selectedPhotoFiles = [];
   uploadedEvidenceState = [];
   evidenceModeState = "none";
+  uploadAnalysisInFlight = false;
   photoUploadInput.value = "";
   renderExperience();
 }
@@ -776,13 +1004,24 @@ function bindEvents() {
     sampleEvidence();
   });
 
-  analyzeUploadsButton.addEventListener("click", () => {
-    if (!selectedPhotoFiles.length) {
+  analyzeUploadsButton.addEventListener("click", async () => {
+    if (!selectedPhotoFiles.length || uploadAnalysisInFlight) {
       return;
     }
-    uploadedEvidenceState = buildUploadEvidence(selectedPhotoFiles);
+
+    uploadAnalysisInFlight = true;
     evidenceModeState = "uploaded";
-    setFocus(uploadedEvidenceState[0]?.speciesName, uploadedEvidenceState[0]?.cellId);
+    uploadedEvidenceState = [];
+    updateIntakeState();
+    renderExperience();
+
+    try {
+      uploadedEvidenceState = await buildUploadEvidence(selectedPhotoFiles);
+      setFocus(uploadedEvidenceState[0]?.speciesName, uploadedEvidenceState[0]?.cellId);
+    } finally {
+      uploadAnalysisInFlight = false;
+      updateIntakeState();
+    }
   });
 
   clearEvidenceButton.addEventListener("click", () => {
