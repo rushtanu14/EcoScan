@@ -31,6 +31,25 @@ clean_stale_pid() {
   fi
 }
 
+port_in_use() {
+  local port="$1"
+  python3 - "$port" <<'PY'
+import socket
+import sys
+
+port = int(sys.argv[1])
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+try:
+    sock.bind(("127.0.0.1", port))
+except OSError:
+    sys.exit(0)
+finally:
+    sock.close()
+
+sys.exit(1)
+PY
+}
+
 while (($#)); do
   case "$1" in
     --port|--backend-port)
@@ -70,6 +89,12 @@ if is_running "$existing_backend_pid" || is_running "$existing_frontend_pid" || 
   [[ -n "$existing_frontend_pid" ]] && echo "Frontend PID: $existing_frontend_pid"
   [[ -n "$existing_legacy_pid" ]] && echo "Legacy PID: $existing_legacy_pid"
   echo "Use ./stop.sh first if you want to restart it."
+  exit 1
+fi
+
+if port_in_use "$backend_port"; then
+  echo "Backend port ${backend_port} is already in use by another process."
+  echo "Stop the existing process, or start EcoScan on another port: ./run.sh --port 8123"
   exit 1
 fi
 
