@@ -101,6 +101,26 @@ const THREAT_CONTENT = {
   },
 };
 
+const NO_DETECTION_COPY = {
+  title: "No species detected",
+  reason:
+    "This image appears outside the current corridor taxa scope. Upload clear corridor wildlife/plant photos or use the sample field set.",
+};
+
+const NON_CORRIDOR_FILENAME_HINTS = [
+  "beach",
+  "ocean",
+  "sea",
+  "shore",
+  "sunset",
+  "city",
+  "street",
+  "dog",
+  "cat",
+  "selfie",
+  "portrait",
+];
+
 function titleCase(value) {
   return String(value || "")
     .split(/[_\s-]+/)
@@ -207,6 +227,33 @@ function focusEvidence() {
     (item) => item.cellId === activeCellId || item.speciesName === activeSpeciesName,
   );
   return exact.length ? exact : uploadedEvidenceState;
+}
+
+function hasDetectedEvidence() {
+  return uploadedEvidenceState.some((item) => item.detected !== false);
+}
+
+function outOfScopePhotoHint(fileName = "", metrics = null, sceneId = "mixed", gap = 0, aliasMatch = false) {
+  const normalizedName = String(fileName || "").toLowerCase();
+  const hasOutOfScopeName = NON_CORRIDOR_FILENAME_HINTS.some((hint) => normalizedName.includes(hint));
+  if (hasOutOfScopeName && !aliasMatch) {
+    return "Filename indicates a scene outside corridor taxa scope.";
+  }
+
+  if (metrics) {
+    const likelyOpenCoast =
+      metrics.blueRatio > 0.3 && metrics.greenRatio < 0.13 && metrics.warmRatio < 0.24 && metrics.avgSaturation > 0.18;
+    if (likelyOpenCoast && !aliasMatch) {
+      return "Color profile indicates open coast / beach conditions outside supported corridor habitats.";
+    }
+  }
+
+  const weakSignal = !aliasMatch && sceneId === "mixed" && gap < 0.04;
+  if (weakSignal) {
+    return "Visual evidence is too ambiguous to confidently map to a corridor target species.";
+  }
+
+  return "";
 }
 
 function primaryActions() {
@@ -336,6 +383,17 @@ function buildSpotlight() {
     return;
   }
 
+  if (evidenceModeState === "uploaded" && uploadedEvidenceState.length && !hasDetectedEvidence()) {
+    verdictHeadline.textContent = "No corridor species were detected in the uploaded photos.";
+    verdictBody.textContent = NO_DETECTION_COPY.reason;
+    focusChipRow.innerHTML = ["Mode: Uploaded photos", "Detection: none", "Threat estimate unavailable"]
+      .map((chip) => `<span class="focus-chip">${chip}</span>`)
+      .join("");
+    mapTitle.textContent = "Upload corridor photos to activate species map overlays";
+    scanTitle.textContent = "Upload corridor photos to activate species scan overlays";
+    return;
+  }
+
   const threat = threatProfile(habitat.health_label);
   verdictHeadline.textContent = `${species.common_name} is the clearest species-risk signal in this corridor right now.`;
   verdictBody.textContent = evidenceLead
@@ -390,6 +448,7 @@ function buildSummaryCards() {
 
   const habitat = activeHabitat();
   const species = activeSpecies();
+  const noDetectionState = evidenceModeState === "uploaded" && uploadedEvidenceState.length && !hasDetectedEvidence();
   const currentThreat = threatProfile(habitat?.health_label || "thriving");
   const cards = [
     {
@@ -405,14 +464,18 @@ function buildSummaryCards() {
     },
     {
       label: "Lead species",
-      value: species?.common_name || overviewState.top_species_at_risk[0] || "Not available",
-      note: species ? `${formatPercent(species.avg_vulnerability_score)} average vulnerability` : "Watchlist driver",
+      value: noDetectionState ? NO_DETECTION_COPY.title : species?.common_name || overviewState.top_species_at_risk[0] || "Not available",
+      note: noDetectionState
+        ? "Current upload did not match a corridor species in model scope."
+        : species
+          ? `${formatPercent(species.avg_vulnerability_score)} average vulnerability`
+          : "Watchlist driver",
     },
     {
       label: "Current threat level",
-      value: currentThreat.shortLabel,
-      note: currentThreat.description,
-      tone: currentThreat.level === "High" ? "danger" : currentThreat.level === "Medium" ? "warning" : undefined,
+      value: noDetectionState ? "Unavailable" : currentThreat.shortLabel,
+      note: noDetectionState ? "Threat labels resume after a valid corridor species detection." : currentThreat.description,
+      tone: noDetectionState ? undefined : currentThreat.level === "High" ? "danger" : currentThreat.level === "Medium" ? "warning" : undefined,
     },
     {
       label: "Next move",
@@ -458,7 +521,7 @@ function buildPhotoGallery() {
   photoGallery.innerHTML = uploadedEvidenceState
     .map(
       (item) => `
-        <button class="evidence-card ${item.cellId === activeCellId || item.speciesName === activeSpeciesName ? "is-active" : ""}" data-evidence-id="${item.id}">
+        <button class="evidence-card ${item.detected === false ? "no-detection" : ""} ${item.cellId === activeCellId || item.speciesName === activeSpeciesName ? "is-active" : ""}" data-evidence-id="${item.id}">
           <img src="${item.image}" alt="${item.title}" />
           <div class="evidence-copy">
             <span>${item.badge}</span>
@@ -475,6 +538,10 @@ function buildPhotoGallery() {
     button.addEventListener("click", () => {
       const item = uploadedEvidenceState.find((entry) => entry.id === button.dataset.evidenceId);
       if (item) {
+        if (item.detected === false) {
+          renderExperience();
+          return;
+        }
         setFocus(item.speciesName, item.cellId);
       }
     });
@@ -500,11 +567,11 @@ function buildDetectionFeed() {
         (item) => `
           <article class="feed-card">
             <span>${item.badge}</span>
-            <strong>${item.speciesName}</strong>
+            <strong>${item.detected === false ? NO_DETECTION_COPY.title : item.speciesName}</strong>
             <p>${item.note}</p>
             <div class="feed-meta">
-              <span>${titleCase(item.healthLabel)}</span>
-              <span>${formatPercent(item.confidence)} confidence</span>
+              <span>${item.detected === false ? "Detection: none" : threatProfile(item.healthLabel).shortLabel}</span>
+              <span>${item.detected === false ? "--" : `${formatPercent(item.confidence)} confidence`}</span>
             </div>
             <div class="tag-row">
               ${(item.actionItems || []).map((action) => `<span class="tag action-tag">${action}</span>`).join("")}
@@ -677,7 +744,7 @@ function drawCorridorMap() {
           <text x="${projectMapCoordinate(habitat.centroid[0], habitat.centroid[1])[0].toFixed(2)}" y="${projectMapCoordinate(
             habitat.centroid[0],
             habitat.centroid[1],
-          )[1].toFixed(2)}">${habitat.cell_id}</text>
+          )[1].toFixed(2)}" class="map-cell-label">${habitat.cell_id}</text>
         </g>
       `;
     })
@@ -759,7 +826,7 @@ function drawScanModel() {
       return `
         <g class="scan-cell ${cell.health_label} ${isActive ? "is-active" : ""}" data-cell-id="${cell.cell_id}">
           <polygon points="${points}"></polygon>
-          <text x="${(centroidX * 100).toFixed(2)}" y="${(100 - centroidY * 100).toFixed(2)}">${cell.cell_id}</text>
+          <text x="${(centroidX * 100).toFixed(2)}" y="${(100 - centroidY * 100).toFixed(2)}" class="scan-cell-label">${cell.cell_id}</text>
         </g>
       `;
     })
@@ -995,6 +1062,18 @@ async function detectSpeciesFromPhoto(file, fallbackIndex = 0) {
   const secondScore = ranked[1]?.score || ranked[0]?.score || 0;
   const topScore = ranked[0]?.score || 0;
   const gap = Math.max(0, topScore - secondScore);
+  const aliasMatch = Boolean(ranked[0]?.aliasMatch);
+  const outOfScopeReason = outOfScopePhotoHint(fileName, metrics, scene.id, gap, aliasMatch);
+
+  if (outOfScopeReason) {
+    return {
+      species: null,
+      confidence: 0,
+      sceneLabel: SCENE_LABELS[scene.id] || SCENE_LABELS.mixed,
+      detected: false,
+      reason: outOfScopeReason,
+    };
+  }
 
   const confidence = Math.min(
     0.97,
@@ -1012,6 +1091,8 @@ async function detectSpeciesFromPhoto(file, fallbackIndex = 0) {
     species: best,
     confidence,
     sceneLabel: SCENE_LABELS[scene.id] || SCENE_LABELS.mixed,
+    detected: true,
+    reason: "",
   };
 }
 
@@ -1020,10 +1101,37 @@ async function buildUploadEvidence(files) {
 
   return Promise.all(files.map(async (file, index) => {
     const detection = await detectSpeciesFromPhoto(file, index);
+    const fallbackHabitat = habitatState.find((entry) => entry.cell_id === activeCellId) || habitatState[index % habitatState.length];
     const species = detection.species || bestSpeciesMatch(file.name, index) || speciesCatalogState[index % speciesCatalogState.length];
-    const habitat = topHabitatForSpecies(species.common_name) || habitatState[index % habitatState.length];
+    const habitat = detection.detected === false
+      ? fallbackHabitat
+      : (topHabitatForSpecies(species.common_name) || fallbackHabitat);
     const previewUrl = URL.createObjectURL(file);
     previewUrls.push(previewUrl);
+
+    if (detection.detected === false) {
+      return {
+        id: `upload-${index}-${file.name}`,
+        image: previewUrl,
+        title: file.name,
+        subtitle: "No corridor species detected in this image",
+        annotation: `Detection none · ${detection.sceneLabel}`,
+        speciesName: NO_DETECTION_COPY.title,
+        cellId: habitat?.cell_id || activeCellId || habitatState[0]?.cell_id || null,
+        confidence: 0,
+        note: `${NO_DETECTION_COPY.reason} ${detection.reason || ""}`.trim(),
+        healthLabel: habitat?.health_label || "thriving",
+        badge: "Photo detection",
+        actionItems: [
+          "Upload a closer photo where the species is centered and clearly visible.",
+          "Use corridor habitat photos (wetland edge, oak canopy, pollinator plants) for this detector scope.",
+          "Use sample field set to review expected detections and map behavior.",
+        ],
+        sourceUrl: "#",
+        detected: false,
+      };
+    }
+
     const inferredRisk = habitatTone(Math.max(Number(habitat.risk_score || 0), Number(species.avg_vulnerability_score || 0)));
 
     return {
@@ -1042,6 +1150,7 @@ async function buildUploadEvidence(files) {
       badge: "Photo detection",
       actionItems: [...new Set([...(species.action_items || []), ...(habitat.recommended_actions || [])])].slice(0, 3),
       sourceUrl: species.source_url,
+      detected: true,
     };
   }));
 }
@@ -1132,7 +1241,12 @@ function bindEvents() {
 
     try {
       uploadedEvidenceState = await buildUploadEvidence(selectedPhotoFiles);
-      setFocus(uploadedEvidenceState[0]?.speciesName, uploadedEvidenceState[0]?.cellId);
+      const lead = uploadedEvidenceState[0];
+      if (lead?.detected === false) {
+        setFocus(speciesCatalogState[0]?.common_name, lead.cellId);
+      } else {
+        setFocus(lead?.speciesName, lead?.cellId);
+      }
     } finally {
       uploadAnalysisInFlight = false;
       updateIntakeState();
@@ -1178,7 +1292,9 @@ async function loadDashboard() {
 
   activeCellId = habitatState[0]?.cell_id || null;
   activeSpeciesName = speciesCatalogState[0]?.common_name || null;
-  sampleEvidence();
+  evidenceModeState = "none";
+  uploadedEvidenceState = [];
+  renderExperience();
 }
 
 bindEvents();

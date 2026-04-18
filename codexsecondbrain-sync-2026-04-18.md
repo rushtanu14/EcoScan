@@ -206,3 +206,40 @@
 
 ### Operating note
 - For continuation chats, use codexsecondbrain sync notes as the default context anchor before making new direction changes.
+
+---
+
+## Session Update — 2026-04-18 22:40 PDT
+
+### Conversation (condensed)
+- User reported the case-study images did not match card text.
+- User previously flagged key UX issues that were still pending:
+  - uploaded non-corridor photos (e.g., beach) should return **no species detected**
+  - sample evidence should only appear after clicking **Use sample field set**
+  - map/scan grid labels were visually broken
+  - location mini-map should expand much larger with map-like background
+
+### Work completed
+- Fixed case-study image mapping and cache-busted asset URLs in static landing:
+  - corridor overview → Coyote Valley image
+  - wetland pressure → frog evidence visual
+  - pollinator decline signal → monarch evidence visual
+  - oak recruitment risk → valley oak evidence visual
+- Added out-of-scope photo handling in upload detection path:
+  - non-corridor filename/scene heuristics now produce **No species detected**
+  - no-detection cards now carry explicit guidance actions
+  - lead summary + spotlight now show no-detection state correctly
+- Enforced sample evidence behavior:
+  - app no longer auto-loads sample evidence on first load
+  - sample evidence appears only after user clicks the sample button
+- Fixed map/scan text overlay bug:
+  - map and scan cell labels now use dedicated classes with controlled font sizing
+- Enhanced location mini-map expansion:
+  - expanded state now opens much larger
+  - added stylized map backdrop asset for expanded view
+
+### Files touched in this pass
+- `src/ecoscan/static/index.html`
+- `src/ecoscan/static/app.js`
+- `src/ecoscan/static/styles.css`
+- `src/ecoscan/static/assets/mini-map-backdrop.svg`

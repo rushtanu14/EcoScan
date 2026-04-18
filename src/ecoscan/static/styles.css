@@ -872,6 +872,14 @@ body {
   box-shadow: 0 0 0 1px rgba(255, 71, 95, 0.25);
 }
 
+.evidence-card.no-detection {
+  border-color: rgba(139, 158, 206, 0.42);
+}
+
+.evidence-card.no-detection img {
+  filter: saturate(0.72) contrast(0.95) brightness(0.9);
+}
+
 .detection-feed,
 .habitat-list,
 .sensor-list,
@@ -1095,10 +1103,26 @@ body {
 }
 
 .location-mini-card.is-expanded {
-  width: 360px;
-  height: 280px;
+  width: min(640px, 90vw);
+  height: min(430px, 72vh);
   border-color: rgba(99, 253, 197, 0.45);
   box-shadow: 0 0 0 1px rgba(68, 237, 173, 0.2), 0 24px 50px rgba(0, 0, 0, 0.42);
+}
+
+.location-mini-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background-image: linear-gradient(180deg, rgba(3, 8, 14, 0.22), rgba(3, 8, 14, 0.75)),
+    url("/assets/mini-map-backdrop.svg?v=20260418");
+  background-size: cover;
+  background-position: center;
+  transition: opacity 0.24s ease;
+}
+
+.location-mini-card.is-expanded::before {
+  opacity: 0.95;
 }
 
 .location-mini-grid {
@@ -1225,6 +1249,12 @@ body {
   fill: #d5ddfb;
   font-size: 2.1px;
   font-weight: 600;
+}
+
+.scan-cell-label {
+  fill: #d5ddfb;
+  font-size: 2.4px;
+  font-weight: 650;
 }
 
 .landmark-line {
