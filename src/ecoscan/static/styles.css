@@ -464,21 +464,22 @@ body::before {
 
 .species-card {
   display: grid;
-  grid-template-columns: 0.95fr 1.05fr;
+  grid-template-columns: 1fr;
   gap: 18px;
   padding: 18px;
   border-radius: var(--radius-lg);
+  align-content: start;
 }
 
 .species-image-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: 200px 96px;
-  gap: 10px;
+  grid-template-columns: 1fr;
+  gap: 0;
 }
 
 .species-hero-image {
-  grid-column: 1 / -1;
+  display: block;
+  min-height: 250px;
 }
 
 .species-image-grid img,
@@ -493,6 +494,11 @@ body::before {
 .species-content {
   display: grid;
   gap: 12px;
+  align-content: start;
+}
+
+.species-card .detail-stat-grid {
+  grid-template-columns: 1fr;
 }
 
 .species-topline {

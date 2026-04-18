@@ -40,6 +40,18 @@ let map = null;
 let habitatLayerGroup = null;
 let sensorLayerGroup = null;
 let landmarkLayerGroup = null;
+let highlightLayerGroup = null;
+
+const SPECIES_WIKI_PAGES = {
+  "Monarch butterfly": "Monarch_butterfly",
+  "California red-legged frog": "California_red-legged_frog",
+  "Acorn woodpecker": "Acorn_woodpecker",
+  "Valley oak saplings": "Quercus_lobata",
+  "Western pond turtle": "Western_pond_turtle",
+  "Black phoebe": "Black_phoebe",
+  "California milkweed": "Asclepias_californica",
+  "Coyote brush": "Baccharis_pilularis",
+};
 
 const titleCase = (value) =>
   value
@@ -79,6 +91,15 @@ function activateView(targetId) {
   views.forEach((view) => {
     view.classList.toggle("is-active", view.id === targetId);
   });
+  if (targetId === "scanView" && map) {
+    window.setTimeout(() => {
+      map.invalidateSize();
+      const center = studyAreaState?.center;
+      if (center) {
+        map.setView([center.lat, center.lon], Math.max(map.getZoom(), 12), { animate: false });
+      }
+    }, 60);
+  }
 }
 
 function findSpeciesByName(name) {
@@ -276,10 +297,7 @@ function buildSpeciesList() {
       return `
         <article class="species-item species-card ${species.status_label} ${species.common_name === activeSpeciesName ? "is-active" : ""}" data-species-name="${species.common_name}">
           <div class="species-image-grid">
-            <img src="${species.image_asset}" alt="${species.common_name}" class="species-hero-image" />
-            ${species.example_images
-              .map((image, index) => `<img src="${image}" alt="${species.common_name} example ${index + 1}" class="species-example-image" />`)
-              .join("")}
+            <img src="${species.photo_url || species.image_asset}" alt="${species.common_name}" class="species-hero-image" />
           </div>
           <div class="species-content">
             <div class="species-topline">
@@ -316,7 +334,7 @@ function buildSpeciesList() {
             </div>
             <div class="species-footnote">
               <span>Healthier refuge: ${extremes.low}</span>
-              <a href="${species.source_url}" target="_blank" rel="noreferrer">Open reference</a>
+              <a href="${species.photo_page_url || species.source_url}" target="_blank" rel="noreferrer">${species.photo_url ? "Open photo source" : "Open reference"}</a>
             </div>
           </div>
         </article>
@@ -366,6 +384,7 @@ function ensureMap() {
   habitatLayerGroup = window.L.layerGroup().addTo(map);
   sensorLayerGroup = window.L.layerGroup().addTo(map);
   landmarkLayerGroup = window.L.layerGroup().addTo(map);
+  highlightLayerGroup = window.L.layerGroup().addTo(map);
 
   const center = studyAreaState.center || {
     lat: (studyAreaState.bounds.north + studyAreaState.bounds.south) / 2,
@@ -413,8 +432,10 @@ function drawMapLayers() {
   }
 
   ensureMap();
+  map.invalidateSize();
   habitatLayerGroup.clearLayers();
   sensorLayerGroup.clearLayers();
+  highlightLayerGroup.clearLayers();
   drawLandmarks();
 
   habitatState.forEach((habitat) => {
@@ -444,6 +465,9 @@ function drawMapLayers() {
 
     polygon.bindTooltip(`${titleCase(habitat.habitat_type)} • ${formatPercent(score)}`);
     polygon.addTo(habitatLayerGroup);
+    if (habitat.cell_id === activeCellId) {
+      polygon.bringToFront();
+    }
   });
 
   sensorState.forEach((sensor) => {
@@ -461,6 +485,31 @@ function drawMapLayers() {
     });
     marker.bindTooltip(profile?.label || titleCase(sensor.sensor_id));
     marker.addTo(sensorLayerGroup);
+  });
+
+  const stressed = habitatState
+    .map((habitat) => ({ habitat, score: scoreForSpecies(habitat, activeSpeciesName) }))
+    .sort((left, right) => right.score - left.score);
+
+  const stressedHotspot = stressed[0]?.habitat;
+  const healthyRefuge = stressed[stressed.length - 1]?.habitat;
+
+  [
+    { habitat: stressedHotspot, label: "Most stressed", color: "#8e4d3d" },
+    { habitat: healthyRefuge, label: "Healthier refuge", color: "#5d7f63" },
+  ].forEach((entry) => {
+    if (!entry.habitat) {
+      return;
+    }
+    window.L.circleMarker([entry.habitat.centroid[1], entry.habitat.centroid[0]], {
+      radius: 9,
+      color: "#fff8ef",
+      weight: 2,
+      fillColor: entry.color,
+      fillOpacity: 0.98,
+    })
+      .bindTooltip(`${entry.label}: ${titleCase(entry.habitat.habitat_type)}`, { permanent: false, direction: "top" })
+      .addTo(highlightLayerGroup);
   });
 }
 
@@ -751,7 +800,7 @@ function evidenceFeedItems() {
           return {
             type: "scan",
             title: detection.species_name,
-            image: species?.image_asset,
+            image: species?.photo_url || species?.image_asset,
             subtitle: `${cell.cell_id} • ${formatPercent(detection.confidence)}`,
             note: detection.note,
             actions: detection.action_items,
@@ -910,6 +959,7 @@ async function loadDashboard() {
   studyAreaState = payload.study_area;
   landmarkState = payload.landmarks || [];
   speciesCatalogState = payload.species_catalog || [];
+  speciesCatalogState = await enrichSpeciesPhotos(speciesCatalogState);
   sensorProfilesState = payload.sensor_profiles || [];
   dataSourcesState = payload.data_sources || [];
   searchablePlacesState = payload.searchable_places || [];
@@ -932,6 +982,32 @@ async function loadDashboard() {
   drawScanModel();
   buildDetectionFeed();
   drawMapLayers();
+}
+
+async function enrichSpeciesPhotos(speciesCatalog) {
+  const results = await Promise.all(
+    speciesCatalog.map(async (species) => {
+      const page = SPECIES_WIKI_PAGES[species.common_name];
+      if (!page) {
+        return species;
+      }
+      try {
+        const response = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(page)}`);
+        if (!response.ok) {
+          return species;
+        }
+        const summary = await response.json();
+        return {
+          ...species,
+          photo_url: summary.originalimage?.source || summary.thumbnail?.source || species.image_asset,
+          photo_page_url: summary.content_urls?.desktop?.page || species.source_url,
+        };
+      } catch {
+        return species;
+      }
+    }),
+  );
+  return results;
 }
 
 function renderError(message) {
