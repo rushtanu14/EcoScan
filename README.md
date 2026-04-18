@@ -2,10 +2,10 @@
 
 EcoScan is a biodiversity health dashboard that combines habitat cells, environmental sensor context, and species-specific habitat rules to show which plants and animals are under stress first.
 
-The current demo is centered on the real Coyote Valley and Coyote Creek corridor in South San Jose, California. It is built to be hackathon-friendly:
+The current demo is centered on the real Coyote Valley and Coyote Creek corridor in South San Jose, California.
 
 - `./run.sh` starts everything locally
-- the website has compact interactive views instead of one long scrolling page
+- the website now follows one guided demo path instead of a dense multi-tab dashboard
 - the sample data is tied to real places and public conservation references
 - you can swap in your own `CSV` and `JSON` files without editing the code
 
@@ -20,7 +20,7 @@ For each habitat polygon, EcoScan:
 3. Computes stress indicators like vegetation stress, moisture stress, thermal stress, and water-quality stress
 4. Scores each habitat as `thriving`, `stressed`, or `fragile`
 5. Estimates which species and plants are most likely to be suffering in that habitat
-6. Displays the results in a local web app with tabs for overview, real map, species watch, and data sources
+6. Displays the results in a local web app with one clear flow: upload, analyze, and act
 
 ## Current Demo Story
 
@@ -61,6 +61,7 @@ From the project root:
 
 - start the local EcoScan server
 - use the source-backed sample files in `data/sample_inputs/`
+- create a PID file so you can stop the demo cleanly from another terminal
 - open the dashboard automatically on macOS
 
 Then open:
@@ -68,6 +69,19 @@ Then open:
 ```text
 http://127.0.0.1:8000
 ```
+
+To stop the app from another terminal:
+
+```bash
+./stop.sh
+```
+
+Best live-demo flow:
+
+1. Click `Use guided demo` for the safest walkthrough.
+2. Optionally upload one to three close-up field photos.
+3. Start your explanation from the main takeaway card.
+4. Use the map and 3D scan as supporting evidence, not the first thing judges have to decode.
 
 If you want to run manually:
 
@@ -100,6 +114,7 @@ This prints:
 ```text
 EcoScan/
 ├── run.sh
+├── stop.sh
 ├── data/
 │   └── sample_inputs/
 │       ├── habitats.csv
@@ -250,14 +265,16 @@ If you want to take this farther after the hackathon:
 2. add a periodic fetch from NOAA, USGS, or your own sensor API
 3. add species-specific rules for your exact ecosystem instead of the current Coyote Valley demo species set
 
-## Website Views
+## Website Experience
 
-The website is intentionally split into focused views so judges can understand the project quickly.
+The current UI is intentionally optimized for a live hackathon walkthrough:
 
-- `Overview`: system snapshot, plain-English narrative, top habitats, and top stressed species
-- `Real map`: Leaflet map with real location coordinates, polygons, stations, and interactive detail panel
-- `Species watch`: a larger species catalog with stress levels and habitat needs
-- `Data & sources`: sensor context and public reference links
+- `Hero`: what EcoScan does and why this corridor matters
+- `Intake`: one recommended path, with optional photo upload
+- `Main takeaway`: the one verdict to read first
+- `Evidence`: supporting photos and compact detection cards
+- `Map + 3D scan`: spatial proof after the main story is already clear
+- `Deep dive`: habitat, species, sensor, and source detail when a judge wants more
 
 ## Useful Commands
 
