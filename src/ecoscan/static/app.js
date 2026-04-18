@@ -177,7 +177,7 @@ function setFocus(speciesName = activeSpeciesName, cellId = activeCellId) {
 
 function evidenceModeText() {
   if (evidenceModeState === "guided") {
-    return "Guided demo evidence";
+    return "Sample field evidence";
   }
   if (evidenceModeState === "uploaded") {
     return "Uploaded photos";
@@ -191,14 +191,14 @@ function updateIntakeState() {
     selectedPhotoSummary.textContent = "Analyzing uploaded photos...";
     selectedPhotoNames.textContent = "Running photo-based species matching and hotspot risk detection.";
   } else if (fileCount === 0 && evidenceModeState === "guided") {
-    selectedPhotoSummary.textContent = "Curated evidence ready";
-    selectedPhotoNames.textContent = "Guided demo evidence is loaded and ready for presentation.";
+    selectedPhotoSummary.textContent = "Sample evidence ready";
+    selectedPhotoNames.textContent = "Sample field evidence is loaded and ready for species-risk review.";
   } else {
     selectedPhotoSummary.textContent =
       fileCount === 0 ? "No files selected yet" : `${fileCount} photo${fileCount === 1 ? "" : "s"} ready`;
     selectedPhotoNames.textContent =
       fileCount === 0
-        ? "Guided demo is the best path for a judge walkthrough."
+        ? "Use sample field evidence or upload photos to detect at-risk species."
         : selectedPhotoFiles.map((file) => file.name).join(" • ");
   }
 
@@ -254,7 +254,7 @@ function buildSpotlight() {
 
   if (!habitat || !species) {
     verdictHeadline.textContent = "No habitat result available.";
-    verdictBody.textContent = "Load the demo payload to begin.";
+    verdictBody.textContent = "Load the data payload to begin.";
     focusChipRow.innerHTML = "";
     return;
   }
@@ -355,7 +355,7 @@ function buildPhotoGallery() {
     photoGallery.innerHTML = `
       <article class="empty-card">
         <strong>No photo evidence loaded yet.</strong>
-        <p>Use the guided demo for an instant walkthrough, or upload one to three field photos.</p>
+        <p>Use the sample field set for instant evidence, or upload one to three field photos.</p>
       </article>
     `;
     return;
@@ -965,9 +965,9 @@ function sampleEvidence() {
       speciesName: species.common_name,
       cellId: habitat.cell_id,
       confidence: Math.min(0.97, species.avg_vulnerability_score + 0.18),
-      note: `${species.narrative} This curated evidence is preloaded so the live demo always has a clean visual path.`,
+      note: `${species.narrative} This curated field set gives immediate conservation context before custom uploads.`,
       healthLabel: habitat.health_label,
-      badge: "Guided demo",
+      badge: "Sample field set",
       actionItems: [...new Set([...(species.action_items || []), ...(habitat.recommended_actions || [])])].slice(0, 3),
       sourceUrl:
         species.source_url ||

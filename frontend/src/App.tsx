@@ -41,8 +41,8 @@ const MODEL_STATUS_TEXT: Record<ModelStatus, { label: string; detail: string }> 
     detail: "Photo uploads are driving species classification with habitat-constrained reranking.",
   },
   zero_shot: {
-    label: "Zero-shot guided fallback",
-    detail: "Guided demo evidence is active to keep the walkthrough stable and predictable.",
+    label: "Zero-shot sample fallback",
+    detail: "Sample field evidence is active to keep species-risk review stable before custom uploads.",
   },
   heuristic: {
     label: "Heuristic fallback",
@@ -296,8 +296,8 @@ export default function App() {
         speciesName: species.common_name,
         cellId: habitat?.cell_id || "",
         confidence: Math.min(0.97, species.avg_vulnerability_score + 0.18),
-        note: `${species.narrative} This guided item keeps the walkthrough clear in the first minute.`,
-        badge: "Guided demo",
+        note: `${species.narrative} This sample field card keeps the conservation story clear in the first minute.`,
+        badge: "Sample field set",
         actionItems: [...new Set([...(species.action_items || []), ...(habitat?.recommended_actions || [])])].slice(0, 3),
         sourceUrl: species.source_url || "#",
       };
@@ -467,7 +467,7 @@ export default function App() {
           menu={[
             { title: "Home", url: "#home" },
             {
-              title: "Demo",
+              title: "Workflow",
               url: "#story",
               items: [
                 { title: "Story", url: "#story", description: "One clear verdict in the first 30 seconds." },
@@ -480,8 +480,8 @@ export default function App() {
             { title: "Sources", url: "#sources" },
           ]}
           auth={{
-            login: { text: "Guided Demo", url: "#upload" },
-            signup: { text: "Run Upload", url: "#upload" },
+            login: { text: "Sample Set", url: "#upload" },
+            signup: { text: "Run Analysis", url: "#upload" },
           }}
         />
       </header>
@@ -503,7 +503,7 @@ export default function App() {
                     {titleCase(activeHabitat?.health_label || "thriving")} hotspot
                   </span>
                   <span className="inline-flex items-center rounded-full border border-border/70 bg-white/60 px-3 py-1 text-xs font-semibold">
-                    Mode: {evidenceMode === "uploaded" ? "Uploaded photos" : evidenceMode === "guided" ? "Guided demo" : "Habitat model only"}
+                    Mode: {evidenceMode === "uploaded" ? "Uploaded photos" : evidenceMode === "guided" ? "Sample field set" : "Habitat model only"}
                   </span>
                   <span className="inline-flex items-center rounded-full border border-border/70 bg-white/60 px-3 py-1 text-xs font-semibold">
                     {MODEL_STATUS_TEXT[modelStatus].label}
@@ -561,7 +561,7 @@ export default function App() {
                   </div>
                 ))}
                 {!combinedActions.length ? (
-                  <p className="text-sm text-muted-foreground">No action items yet. Run guided or upload analysis first.</p>
+                  <p className="text-sm text-muted-foreground">No action items yet. Start with the sample set or run upload analysis first.</p>
                 ) : null}
               </CardContent>
             </Card>
@@ -572,7 +572,7 @@ export default function App() {
           <ContainerScroll
             titleComponent={
               <div className="space-y-2">
-                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Demo-safe narrative lane</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Clear conservation narrative lane</p>
                 <h2 className="text-3xl md:text-5xl font-semibold">
                   Start with one hotspot, then show evidence and action.
                 </h2>
@@ -637,7 +637,7 @@ export default function App() {
             <div className="flex gap-2">
               <Button variant="outline" onClick={runGuidedDemo}>
                 <Sparkles className="size-4 mr-2" />
-                Use guided demo
+                Use sample field set
               </Button>
               <Button onClick={analyzeUploads}>
                 <UploadCloud className="size-4 mr-2" />
@@ -653,7 +653,7 @@ export default function App() {
             <Card className="glass-card">
               <CardHeader>
                 <CardTitle>Primary photo uploader</CardTitle>
-                <CardDescription>Use this for a clean single-file guided demo path.</CardDescription>
+                <CardDescription>Use this for a clean single-photo conservation analysis path.</CardDescription>
               </CardHeader>
               <CardContent>
                 <FileUpload05
@@ -688,7 +688,7 @@ export default function App() {
               <CardDescription>
                 {focusEvidence.length
                   ? "Click a card to focus map and scan sections."
-                  : "Run guided demo or upload files to generate visual evidence cards."}
+                  : "Use the sample field set or upload files to generate visual evidence cards."}
               </CardDescription>
             </CardHeader>
             <CardContent>

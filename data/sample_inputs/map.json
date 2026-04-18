@@ -22,7 +22,7 @@
     "what_is_real": [
       "Study area, landmarks, and sensor place references are tied to real Coyote Valley and Coyote Creek locations.",
       "Species stress rules are tied to public habitat guidance from California and federal conservation sources.",
-      "The sensor values in this sample are representative snapshots mapped into EcoScan's simplified schema for hackathon testing."
+      "The sensor values in this sample are representative snapshots mapped into EcoScan's simplified schema for local conservation simulation."
     ]
   },
   "location_context": {

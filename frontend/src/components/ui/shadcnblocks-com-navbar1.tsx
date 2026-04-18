@@ -60,7 +60,7 @@ const Navbar1 = ({
       items: [
         {
           title: "Story",
-          description: "Rapid species-risk brief for judges and field teams",
+          description: "Rapid species-risk brief for conservation teams",
           icon: <Book className="size-5 shrink-0" />,
           url: "#story",
         },
@@ -113,7 +113,7 @@ const Navbar1 = ({
   ],
   auth = {
     login: { text: "Docs", url: "#sources" },
-    signup: { text: "Run Demo", url: "#upload" },
+    signup: { text: "Run Analysis", url: "#upload" },
   },
 }: Navbar1Props) => {
   return (

@@ -84,7 +84,7 @@ Then wire Tailwind in `index.css` and set up `@/*` path aliases plus `src/compon
 
 1. Open the UI.
 2. Start from the story card (one clear narrative).
-3. Use `Guided demo` for the safest walkthrough.
+3. Use `Sample field set` for an instant conservation walkthrough.
 4. Optionally upload photos and run `Analyze uploads`.
 5. Click evidence cards to synchronize species + map + scan views.
 6. Show action items and source links.
@@ -137,4 +137,3 @@ EcoScan/
 │   └── static/assets/
 └── tests/
 ```
-
