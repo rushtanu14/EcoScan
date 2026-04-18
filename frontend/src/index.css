@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 42 33% 95%;
+  --foreground: 132 22% 10%;
+  --muted: 40 26% 89%;
+  --muted-foreground: 130 10% 33%;
+  --popover: 42 40% 98%;
+  --popover-foreground: 132 22% 10%;
+  --card: 42 40% 98%;
+  --card-foreground: 132 22% 10%;
+  --border: 38 19% 80%;
+  --input: 38 19% 78%;
+  --primary: 146 28% 30%;
+  --primary-foreground: 48 100% 96%;
+  --secondary: 32 42% 74%;
+  --secondary-foreground: 136 21% 14%;
+  --accent: 151 19% 88%;
+  --accent-foreground: 136 21% 14%;
+  --destructive: 8 62% 46%;
+  --destructive-foreground: 0 0% 98%;
+  --ring: 146 28% 30%;
+  --radius: 0.95rem;
+}
+
+* {
+  @apply border-border;
+}
+
+body {
+  @apply bg-background text-foreground antialiased;
+  font-family: "Plus Jakarta Sans", "Avenir Next", "Segoe UI", sans-serif;
+  background-image:
+    radial-gradient(circle at 12% 10%, rgba(255, 255, 255, 0.8), transparent 28%),
+    radial-gradient(circle at 88% 4%, rgba(58, 121, 82, 0.16), transparent 22%),
+    linear-gradient(180deg, #f7f1e7 0%, #efe7da 45%, #e8dccf 100%);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: "Fraunces", "Iowan Old Style", Georgia, serif;
+}
+
+.texture-grid {
+  background-image:
+    linear-gradient(rgba(17, 26, 22, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17, 26, 22, 0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.glass-card {
+  @apply border border-border/80 bg-white/70 backdrop-blur-md shadow-[0_20px_70px_rgba(56,43,27,0.14)];
+}
+
+.surface-noise::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.12) 0.7px, transparent 0.7px);
+  background-size: 4px 4px;
+  opacity: 0.16;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(61, 101, 76, 0.45);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.4);
+}
