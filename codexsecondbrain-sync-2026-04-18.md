@@ -155,3 +155,25 @@
 - `src/ecoscan/static/index.html`
 - `src/ecoscan/static/styles.css`
 - `src/ecoscan/static/app.js`
+
+---
+
+## Session Update — 2026-04-18 21:58 PDT
+
+### Conversation (condensed)
+- User requested EcoScan UI in a separate desktop window (not browser tab).
+
+### Work completed
+- Added native desktop launcher via `pywebview`:
+  - `src/ecoscan/desktop.py`
+  - starts backend, waits for health, opens native app window, cleans up on close.
+- Added one-command desktop script:
+  - `run-desktop.sh`
+  - checks `pywebview` presence and launches desktop mode.
+- Updated stop flow to include desktop processes:
+  - `stop.sh` now stops desktop app pid + desktop backend pid.
+- Added packaging support:
+  - `pyproject.toml` optional dependency group `desktop` (`pywebview>=5.1`)
+  - script entry point `ecoscan-desktop`.
+- Updated docs:
+  - `README.md` includes desktop run path and setup command `pip install -e ".[api,desktop]"`.

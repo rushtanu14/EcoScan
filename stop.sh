@@ -6,6 +6,8 @@ cd "$(dirname "$0")"
 backend_pid_file=".ecoscan.backend.pid"
 frontend_pid_file=".ecoscan.frontend.pid"
 legacy_pid_file=".ecoscan.pid"
+desktop_pid_file=".ecoscan.desktop.pid"
+desktop_backend_pid_file=".ecoscan.desktop.backend.pid"
 
 stop_by_pid_file() {
   local pid_file="$1"
@@ -44,9 +46,11 @@ stop_by_pid_file() {
 stop_by_pid_file "$frontend_pid_file" "EcoScan frontend"
 stop_by_pid_file "$backend_pid_file" "EcoScan backend"
 stop_by_pid_file "$legacy_pid_file" "EcoScan legacy server"
+stop_by_pid_file "$desktop_backend_pid_file" "EcoScan desktop backend"
+stop_by_pid_file "$desktop_pid_file" "EcoScan desktop app"
 
-if [[ -f "$frontend_pid_file" || -f "$backend_pid_file" || -f "$legacy_pid_file" ]]; then
-  rm -f "$frontend_pid_file" "$backend_pid_file" "$legacy_pid_file"
+if [[ -f "$frontend_pid_file" || -f "$backend_pid_file" || -f "$legacy_pid_file" || -f "$desktop_backend_pid_file" || -f "$desktop_pid_file" ]]; then
+  rm -f "$frontend_pid_file" "$backend_pid_file" "$legacy_pid_file" "$desktop_backend_pid_file" "$desktop_pid_file"
 fi
 
 echo "EcoScan stop command completed."

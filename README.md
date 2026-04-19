@@ -29,10 +29,27 @@ To stop everything:
 ./stop.sh
 ```
 
+## One-Command Desktop App Window (No Browser Tab)
+
+If you want EcoScan in its own native window:
+
+```bash
+./run-desktop.sh
+```
+
+This opens EcoScan in a standalone desktop app window using `pywebview`.
+
+To stop it:
+
+```bash
+./stop.sh
+```
+
 ## Requirements
 
 - Python 3.10+
 - Node.js 20+ (for the React UI)
+- `pywebview` (for desktop app window mode)
 
 If `frontend/node_modules` is missing, `run.sh` installs frontend dependencies automatically.
 
@@ -41,13 +58,19 @@ If `frontend/node_modules` is missing, `run.sh` installs frontend dependencies a
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -e ".[api]"
+pip install -e ".[api,desktop]"
 ```
 
 Then run:
 
 ```bash
 ./run.sh
+```
+
+or desktop mode:
+
+```bash
+./run-desktop.sh
 ```
 
 ## UI Stack
