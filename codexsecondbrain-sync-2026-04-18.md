@@ -177,3 +177,32 @@
   - script entry point `ecoscan-desktop`.
 - Updated docs:
   - `README.md` includes desktop run path and setup command `pip install -e ".[api,desktop]"`.
+
+---
+
+## Session Update — 2026-04-18 22:12 PDT
+
+### Conversation (condensed)
+- User requested threat levels to be more descriptive and explicitly categorized as **Low / Medium / High**.
+- User requested commit + codexsecondbrain sync, and asked that future chats reference codexsecondbrain context.
+
+### Work completed
+- Added a shared threat taxonomy in both app layers:
+  - Low threat (`thriving`)
+  - Medium threat (`stressed`)
+  - High threat (`fragile`)
+- Added descriptive threat explanations and applied them across:
+  - spotlight/verdict context
+  - summary cards
+  - detection feed chips
+  - habitat list entries
+  - map legend and scan legend labels
+  - scan hotspot callout
+  - guided/upload evidence annotations and notes
+
+### Files touched in this pass
+- `src/ecoscan/static/app.js`
+- `frontend/src/App.tsx`
+
+### Operating note
+- For continuation chats, use codexsecondbrain sync notes as the default context anchor before making new direction changes.

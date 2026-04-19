@@ -80,6 +80,27 @@ const SCENE_LABELS = {
   mixed: "Mixed habitat scene",
 };
 
+const THREAT_CONTENT = {
+  fragile: {
+    level: "High",
+    shortLabel: "High threat",
+    description:
+      "Severe pressure is active in this zone. Species are at high risk without immediate habitat intervention.",
+  },
+  stressed: {
+    level: "Medium",
+    shortLabel: "Medium threat",
+    description:
+      "Stress signals are rising in this zone. Early restoration now can prevent this area from shifting into high threat.",
+  },
+  thriving: {
+    level: "Low",
+    shortLabel: "Low threat",
+    description:
+      "This zone is currently stable. Ongoing monitoring and protection are needed to keep species pressure low.",
+  },
+};
+
 function titleCase(value) {
   return String(value || "")
     .split(/[_\s-]+/)
@@ -110,6 +131,20 @@ function habitatTone(score) {
     return "stressed";
   }
   return "thriving";
+}
+
+function normalizeThreatKey(value) {
+  if (typeof value === "string" && THREAT_CONTENT[value]) {
+    return value;
+  }
+  if (typeof value === "number") {
+    return habitatTone(value);
+  }
+  return "thriving";
+}
+
+function threatProfile(value) {
+  return THREAT_CONTENT[normalizeThreatKey(value)];
 }
 
 function normalizePage(pageName) {
@@ -301,17 +336,18 @@ function buildSpotlight() {
     return;
   }
 
+  const threat = threatProfile(habitat.health_label);
   verdictHeadline.textContent = `${species.common_name} is the clearest species-risk signal in this corridor right now.`;
   verdictBody.textContent = evidenceLead
     ? `${habitat.habitat_story} The uploaded evidence points back to ${species.common_name}, so the next move is to focus on ${titleCase(
         habitat.habitat_type,
-      )} and act on the recommendations below.`
-    : `${habitat.habitat_story} ${species.narrative} ${locationStory}`.trim();
+      )}. ${threat.description}`
+    : `${habitat.habitat_story} ${species.narrative} ${locationStory} ${threat.description}`.trim();
 
   const chips = [
     `Mode: ${evidenceModeText()}`,
     `Cell ${habitat.cell_id}`,
-    titleCase(habitat.health_label),
+    threat.shortLabel,
     `${formatPercent(habitat.risk_score)} risk`,
     titleCase(habitat.habitat_type),
   ];
@@ -354,6 +390,7 @@ function buildSummaryCards() {
 
   const habitat = activeHabitat();
   const species = activeSpecies();
+  const currentThreat = threatProfile(habitat?.health_label || "thriving");
   const cards = [
     {
       label: "Average biodiversity score",
@@ -363,13 +400,19 @@ function buildSummaryCards() {
     {
       label: "Cells under pressure",
       value: `${overviewState.fragile_cells + overviewState.stressed_cells}`,
-      note: `${overviewState.fragile_cells} fragile, ${overviewState.stressed_cells} stressed`,
+      note: `${overviewState.fragile_cells} high threat, ${overviewState.stressed_cells} medium threat`,
       tone: "warning",
     },
     {
       label: "Lead species",
       value: species?.common_name || overviewState.top_species_at_risk[0] || "Not available",
       note: species ? `${formatPercent(species.avg_vulnerability_score)} average vulnerability` : "Watchlist driver",
+    },
+    {
+      label: "Current threat level",
+      value: currentThreat.shortLabel,
+      note: currentThreat.description,
+      tone: currentThreat.level === "High" ? "danger" : currentThreat.level === "Medium" ? "warning" : undefined,
     },
     {
       label: "Next move",
@@ -484,7 +527,7 @@ function buildDetectionFeed() {
                 <strong>${detection.species_name}</strong>
                 <p>${detection.note}</p>
                 <div class="feed-meta">
-                  <span>${titleCase(detection.risk_level)}</span>
+                  <span>${threatProfile(detection.risk_level).shortLabel}</span>
                   <span>${formatPercent(detection.confidence)} confidence</span>
                 </div>
                 <div class="tag-row">
@@ -512,7 +555,7 @@ function buildHabitatList() {
           <span class="row-rank">#${index + 1}</span>
           <div class="row-main">
             <strong>${titleCase(habitat.habitat_type)}</strong>
-            <small>${habitat.species_pressures[0]?.common_name || "No lead species"}</small>
+            <small>${habitat.species_pressures[0]?.common_name || "No lead species"} · ${threatProfile(habitat.health_label).shortLabel}</small>
           </div>
           <span class="row-score">${formatPercent(habitat.risk_score)}</span>
         </button>
@@ -671,9 +714,9 @@ function drawCorridorMap() {
       ${sensorMarkup}
     </svg>
     <div class="map-legend">
-      <span><i class="legend-swatch thriving"></i>Thriving</span>
-      <span><i class="legend-swatch stressed"></i>Stressed</span>
-      <span><i class="legend-swatch fragile"></i>Fragile</span>
+      <span><i class="legend-swatch thriving"></i>Low threat</span>
+      <span><i class="legend-swatch stressed"></i>Medium threat</span>
+      <span><i class="legend-swatch fragile"></i>High threat</span>
       <span><i class="legend-dot"></i>Sensor</span>
     </div>
   `;
@@ -697,9 +740,9 @@ function drawScanModel() {
   const scanCell = scanModelState.find((cell) => cell.cell_id === activeCellId) || scanModelState[0];
 
   scanLegend.innerHTML = `
-    <span><i class="legend-swatch thriving"></i>Thriving</span>
-    <span><i class="legend-swatch stressed"></i>Stressed</span>
-    <span><i class="legend-swatch fragile"></i>Fragile</span>
+    <span><i class="legend-swatch thriving"></i>Low threat</span>
+    <span><i class="legend-swatch stressed"></i>Medium threat</span>
+    <span><i class="legend-swatch fragile"></i>High threat</span>
   `;
 
   const polygons = scanModelState
@@ -733,7 +776,7 @@ function drawScanModel() {
       </svg>
       <aside class="scan-callout">
         <span>Highlighted hotspot</span>
-        <strong>${scanCell.cell_id} · ${titleCase(scanCell.health_label)}</strong>
+        <strong>${scanCell.cell_id} · ${threatProfile(scanCell.health_label).shortLabel}</strong>
         <p>${habitat?.habitat_story || "No habitat story available."}</p>
         ${
           keyDetection
@@ -988,13 +1031,13 @@ async function buildUploadEvidence(files) {
       image: previewUrl,
       title: file.name,
       subtitle: `${species.common_name} detected in a ${detection.sceneLabel.toLowerCase()} scene`,
-      annotation: `${titleCase(inferredRisk)} risk focus · hotspot ${habitat.cell_id} · ${formatPercent(detection.confidence)}`,
+      annotation: `${threatProfile(inferredRisk).shortLabel} focus · hotspot ${habitat.cell_id} · ${formatPercent(detection.confidence)}`,
       speciesName: species.common_name,
       cellId: habitat.cell_id,
       confidence: detection.confidence,
       note: `${species.common_name} was vision-matched from the uploaded image and linked to ${titleCase(
         habitat.habitat_type,
-      )} where risk is currently ${titleCase(inferredRisk)}.`,
+      )}. ${threatProfile(inferredRisk).description}`,
       healthLabel: habitat.health_label,
       badge: "Photo detection",
       actionItems: [...new Set([...(species.action_items || []), ...(habitat.recommended_actions || [])])].slice(0, 3),
@@ -1012,7 +1055,7 @@ function sampleEvidence() {
       id: `guided-${species.common_name}`,
       image: species.example_images?.[0] || species.image_asset,
       title: species.common_name,
-      subtitle: `${titleCase(habitat.habitat_type)} hotspot · ${formatPercent(habitat.risk_score)} risk`,
+      subtitle: `${titleCase(habitat.habitat_type)} hotspot · ${threatProfile(habitat.health_label).shortLabel}`,
       annotation: `Example imagery for ${species.common_name}`,
       speciesName: species.common_name,
       cellId: habitat.cell_id,

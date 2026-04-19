@@ -66,6 +66,24 @@ const RISK_SWATCH: Record<string, string> = {
   fragile: "rgba(248, 113, 113, 0.52)",
 };
 
+const THREAT_CONTENT: Record<string, { level: "Low" | "Medium" | "High"; shortLabel: string; description: string }> = {
+  thriving: {
+    level: "Low",
+    shortLabel: "Low threat",
+    description: "This hotspot is currently stable. Continue monitoring and preventive habitat protection.",
+  },
+  stressed: {
+    level: "Medium",
+    shortLabel: "Medium threat",
+    description: "Stress indicators are rising. Early intervention can prevent escalation into critical pressure.",
+  },
+  fragile: {
+    level: "High",
+    shortLabel: "High threat",
+    description: "Severe habitat pressure is active. Immediate restoration and species protection actions are recommended.",
+  },
+};
+
 function createId(prefix = "id") {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return `${prefix}-${crypto.randomUUID()}`;
@@ -93,6 +111,10 @@ function toneClass(status: string) {
     return "bg-amber-100 text-amber-700 border-amber-200";
   }
   return "bg-emerald-100 text-emerald-700 border-emerald-200";
+}
+
+function threatProfile(status: string) {
+  return THREAT_CONTENT[status] || THREAT_CONTENT.thriving;
 }
 
 function coordinateLabel(lat: number, lon: number) {
@@ -229,6 +251,8 @@ export default function App() {
     return scanModel.find((cell) => cell.cell_id === activeCellId) || scanModel[0];
   }, [scanModel, activeCellId]);
 
+  const activeThreat = useMemo(() => threatProfile(activeHabitat?.health_label || "thriving"), [activeHabitat]);
+
   const focusEvidence = useMemo(() => {
     if (!evidence.length) return [];
     const exact = evidence.filter((entry) => entry.cellId === activeCellId || entry.speciesName === activeSpeciesName);
@@ -283,16 +307,17 @@ export default function App() {
     }
     return speciesCatalog.slice(0, 3).map((species, index) => {
       const habitat = topHabitatForSpecies(species.common_name) || habitats[index] || habitats[0];
+      const threat = threatProfile(habitat?.health_label || "thriving");
       return {
         id: `guided-${species.common_name}-${index}`,
         image: species.example_images?.[0] || species.image_asset,
         title: species.common_name,
         subtitle: `${titleCase(habitat?.habitat_type || "habitat")} hotspot`,
-        annotation: `${formatPercent(species.avg_vulnerability_score)} avg vulnerability · ${habitat?.cell_id || "unknown cell"}`,
+        annotation: `${threat.shortLabel} · ${habitat?.cell_id || "unknown cell"} · ${formatPercent(species.avg_vulnerability_score)} avg vulnerability`,
         speciesName: species.common_name,
         cellId: habitat?.cell_id || "",
         confidence: Math.min(0.97, species.avg_vulnerability_score + 0.18),
-        note: `${species.narrative} This sample field card keeps the conservation story clear in the first minute.`,
+        note: `${species.narrative} ${threat.description}`,
         badge: "Sample field set",
         actionItems: [...new Set([...(species.action_items || []), ...(habitat?.recommended_actions || [])])].slice(0, 3),
         sourceUrl: species.source_url || "#",
@@ -317,6 +342,7 @@ export default function App() {
       return uniqueFiles(files).map((file, index) => {
         const species = bestSpeciesMatch(file.name, index);
         const habitat = topHabitatForSpecies(species?.common_name || "") || habitats[index] || habitats[0];
+        const threat = threatProfile(habitat?.health_label || "thriving");
         const previewUrl = URL.createObjectURL(file);
         objectUrlsRef.current.push(previewUrl);
 
@@ -325,11 +351,11 @@ export default function App() {
           image: previewUrl,
           title: file.name,
           subtitle: `${species?.common_name || "Unknown species"} matched to ${titleCase(habitat?.habitat_type || "habitat")}`,
-          annotation: `Hotspot ${habitat?.cell_id || "unknown"} · ${formatPercent((species?.avg_vulnerability_score || 0) + 0.15)} confidence`,
+          annotation: `${threat.shortLabel} · hotspot ${habitat?.cell_id || "unknown"} · ${formatPercent((species?.avg_vulnerability_score || 0) + 0.15)} confidence`,
           speciesName: species?.common_name || activeSpeciesName,
           cellId: habitat?.cell_id || activeCellId,
           confidence: Math.min(0.95, (species?.avg_vulnerability_score || 0.4) + 0.15),
-          note: `Photo-derived focus points toward ${species?.common_name || "the selected species"} within this habitat cell.`,
+          note: `Photo-derived focus points toward ${species?.common_name || "the selected species"} in this habitat cell. ${threat.description}`,
           badge: "Uploaded photo",
           actionItems: [...new Set([...(species?.action_items || []), ...(habitat?.recommended_actions || [])])].slice(0, 3),
           sourceUrl: species?.source_url || "#",
@@ -496,7 +522,7 @@ export default function App() {
               <CardContent className="space-y-4">
                 <div className="flex flex-wrap items-center gap-3">
                   <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${toneClass(activeHabitat?.health_label || "thriving")}`}>
-                    {titleCase(activeHabitat?.health_label || "thriving")} hotspot
+                    {activeThreat.shortLabel} hotspot
                   </span>
                   <span className="inline-flex items-center rounded-full border border-border/70 bg-white/60 px-3 py-1 text-xs font-semibold">
                     Mode: {evidenceMode === "uploaded" ? "Uploaded photos" : evidenceMode === "guided" ? "Sample field set" : "Habitat model only"}
@@ -506,6 +532,7 @@ export default function App() {
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground">{MODEL_STATUS_TEXT[modelStatus].detail}</p>
+                <p className="text-sm text-muted-foreground">{activeThreat.description}</p>
 
                 <div className="grid gap-3 md:grid-cols-3">
                   <article className="rounded-xl border border-border/70 bg-white/60 p-4">
@@ -771,7 +798,7 @@ export default function App() {
                 <div className="flex flex-wrap gap-2 text-xs">
                   {(["fragile", "stressed", "thriving"] as const).map((label) => (
                     <span key={label} className={`inline-flex items-center rounded-full border px-3 py-1 ${toneClass(label)}`}>
-                      {titleCase(label)}
+                      {threatProfile(label).shortLabel}
                     </span>
                   ))}
                 </div>
@@ -820,7 +847,7 @@ export default function App() {
                     <p className="text-sm text-muted-foreground mt-1">{activeHabitat?.habitat_story}</p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <span className={`inline-flex rounded-full border px-3 py-1 text-xs ${toneClass(activeScanCell.health_label)}`}>
-                        {titleCase(activeScanCell.health_label)}
+                        {threatProfile(activeScanCell.health_label).shortLabel}
                       </span>
                       <span className="inline-flex rounded-full border border-border/70 px-3 py-1 text-xs">
                         {titleCase(activeScanCell.habitat_type)}
@@ -855,7 +882,7 @@ export default function App() {
                         <p className="text-sm text-muted-foreground">{detection.note}</p>
                         <div className="mt-2 flex items-center justify-between text-xs">
                           <span className={`inline-flex rounded-full border px-2 py-0.5 ${toneClass(detection.risk_level)}`}>
-                            {titleCase(detection.risk_level)}
+                            {threatProfile(detection.risk_level).shortLabel}
                           </span>
                           <span>{formatPercent(detection.confidence)}</span>
                         </div>
@@ -900,7 +927,7 @@ export default function App() {
                       <div className="flex flex-col gap-1">
                         <span className="font-semibold">{species.common_name}</span>
                         <span className="text-xs text-muted-foreground">
-                          {species.scientific_name} · {titleCase(species.status_label)} · {formatPercent(species.avg_vulnerability_score)}
+                          {species.scientific_name} · {threatProfile(species.status_label).shortLabel} · {formatPercent(species.avg_vulnerability_score)}
                         </span>
                       </div>
                     </AccordionTrigger>
