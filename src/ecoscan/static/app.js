@@ -10,6 +10,9 @@ const actionList = document.getElementById("actionList");
 const photoGallery = document.getElementById("photoGallery");
 const detectionFeed = document.getElementById("detectionFeed");
 const mapTitle = document.getElementById("mapTitle");
+const locationMiniCard = document.getElementById("locationMiniCard");
+const locationWidgetTitle = document.getElementById("locationWidgetTitle");
+const locationWidgetCoords = document.getElementById("locationWidgetCoords");
 const corridorMap = document.getElementById("corridorMap");
 const scanTitle = document.getElementById("scanTitle");
 const scanLegend = document.getElementById("scanLegend");
@@ -86,6 +89,12 @@ function formatPercent(value) {
 
 function formatLabel(value) {
   return titleCase(String(value || "").replace(/\bpm25\b/i, "PM25"));
+}
+
+function formatCoordinate(lat, lon) {
+  const latLabel = `${Math.abs(Number(lat || 0)).toFixed(4)}° ${Number(lat || 0) >= 0 ? "N" : "S"}`;
+  const lonLabel = `${Math.abs(Number(lon || 0)).toFixed(4)}° ${Number(lon || 0) >= 0 ? "E" : "W"}`;
+  return `${latLabel}, ${lonLabel}`;
 }
 
 function habitatTone(score) {
@@ -277,6 +286,15 @@ function buildSpotlight() {
   focusChipRow.innerHTML = chips.map((chip) => `<span class="focus-chip">${chip}</span>`).join("");
   mapTitle.textContent = `${species.common_name} across the Coyote Valley corridor`;
   scanTitle.textContent = `${titleCase(habitat.habitat_type)} hotspot for ${species.common_name}`;
+}
+
+function buildLocationWidget() {
+  if (!locationWidgetTitle || !locationWidgetCoords || !studyAreaState) {
+    return;
+  }
+
+  locationWidgetTitle.textContent = studyAreaState.region || studyAreaState.name || "Coyote Valley, CA";
+  locationWidgetCoords.textContent = formatCoordinate(studyAreaState.center?.lat, studyAreaState.center?.lon);
 }
 
 function buildActionList() {
@@ -715,6 +733,7 @@ function renderExperience() {
   updateIntakeState();
   buildHeroMetrics();
   buildSpotlight();
+  buildLocationWidget();
   buildActionList();
   buildSummaryCards();
   buildPhotoGallery();
@@ -1027,6 +1046,12 @@ function bindEvents() {
   clearEvidenceButton.addEventListener("click", () => {
     clearEvidence();
   });
+
+  if (locationMiniCard) {
+    locationMiniCard.addEventListener("click", () => {
+      locationMiniCard.classList.toggle("is-expanded");
+    });
+  }
 }
 
 function renderError(message) {

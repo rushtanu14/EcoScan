@@ -4,16 +4,13 @@ import { AlertTriangle, CheckCircle2, ImagePlus, Loader2, Sparkles, UploadCloud 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import { LocationMap } from "@/components/ui/expand-map";
 import FileUpload05 from "@/components/ui/file-upload-1";
 import { Gallery4, Gallery4Item } from "@/components/ui/gallery4";
-import HalideLanding from "@/components/ui/halide-topo-hero";
+import { HorizonHeroSection } from "@/components/ui/horizon-hero-section";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import ScrollExpandMedia from "@/components/ui/scroll-expansion-hero";
-import { Navbar1 } from "@/components/ui/shadcnblocks-com-navbar1";
 import { DropFile, SketchpadDropzone } from "@/components/ui/sketchpad-dropzone";
 import type { EcoPayload, SpeciesSummary } from "@/types/ecoscan";
 
@@ -147,7 +144,6 @@ export default function App() {
   const [evidence, setEvidence] = useState<EvidenceCard[]>([]);
   const [evidenceMode, setEvidenceMode] = useState<EvidenceMode>("none");
   const [modelStatus, setModelStatus] = useState<ModelStatus>("heuristic");
-  const [showCinematic, setShowCinematic] = useState(false);
 
   const objectUrlsRef = useRef<string[]>([]);
 
@@ -456,39 +452,39 @@ export default function App() {
 
   return (
     <div className="relative pb-24">
-      <header className="sticky top-0 z-50 backdrop-blur-md bg-background/70 border-b border-border/60">
-        <Navbar1
-          logo={{
-            url: "#home",
-            src: "/assets/species-monarch.svg",
-            alt: "EcoScan logo",
-            title: "EcoScan",
-          }}
-          menu={[
-            { title: "Home", url: "#home" },
-            {
-              title: "Workflow",
-              url: "#story",
-              items: [
-                { title: "Story", url: "#story", description: "One clear verdict in the first 30 seconds." },
-                { title: "Upload", url: "#upload", description: "Drag, drop, and run photo-derived species focus." },
-                { title: "Map", url: "#map", description: "Spatial habitat and corridor interpretation." },
-                { title: "3D Scan", url: "#scan", description: "Annotated polygon hotspots with confidence." },
-              ],
-            },
-            { title: "Species", url: "#species" },
-            { title: "Sources", url: "#sources" },
-          ]}
-          auth={{
-            login: { text: "Sample Set", url: "#upload" },
-            signup: { text: "Run Analysis", url: "#upload" },
-          }}
-        />
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#05070c]/95 backdrop-blur-xl">
+        <div className="container flex items-center justify-between py-3.5">
+          <a href="#home" className="text-2xl font-black tracking-tight text-white">
+            ecoscan
+          </a>
+          <nav className="hidden items-center gap-10 md:flex">
+            <a href="#story" className="text-sm font-semibold text-slate-200 transition-colors hover:text-white">
+              Features
+            </a>
+            <a href="#species" className="text-sm font-semibold text-slate-200 transition-colors hover:text-white">
+              Pricing
+            </a>
+            <a href="#sources" className="text-sm font-semibold text-slate-200 transition-colors hover:text-white">
+              About
+            </a>
+          </nav>
+          <div className="flex items-center gap-2.5">
+            <Button
+              variant="outline"
+              className="h-10 rounded-xl border-white/20 bg-transparent px-4 text-sm font-semibold text-white hover:bg-white/10"
+            >
+              Sign In
+            </Button>
+            <Button className="h-10 rounded-xl bg-zinc-100 px-4 text-sm font-semibold text-zinc-900 hover:bg-white">
+              Get Started
+            </Button>
+          </div>
+        </div>
       </header>
 
       <main className="space-y-14" id="home">
         <section className="container pt-8 space-y-8">
-          <HalideLanding />
+          <HorizonHeroSection />
           <div id="story" className="grid gap-5 lg:grid-cols-3">
             <Card className="glass-card lg:col-span-2">
               <CardHeader>
@@ -542,9 +538,9 @@ export default function App() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <Button variant="outline" onClick={() => setShowCinematic((current) => !current)}>
-                    {showCinematic ? "Hide cinematic section" : "Open cinematic section"}
-                  </Button>
+                  <div className="rounded-xl border border-border/70 bg-white/60 px-4 py-3 text-sm text-muted-foreground md:max-w-sm">
+                    Keep the first pass simple: one species, one hotspot, one action.
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -569,64 +565,33 @@ export default function App() {
         </section>
 
         <section className="container">
-          <ContainerScroll
-            titleComponent={
-              <div className="space-y-2">
-                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Clear conservation narrative lane</p>
-                <h2 className="text-3xl md:text-5xl font-semibold">
-                  Start with one hotspot, then show evidence and action.
-                </h2>
-              </div>
-            }
-          >
-            <div className="relative h-full w-full">
-              <img
-                src={focusEvidence[0]?.image || activeSpecies?.image_asset || "/assets/hero-coyote-valley.jpg"}
-                alt={activeSpecies?.common_name || "EcoScan species evidence"}
-                className="h-full w-full object-cover rounded-xl"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent rounded-xl" />
-              <div className="absolute inset-x-0 bottom-0 p-5 text-white">
-                <p className="text-xs uppercase tracking-[0.2em]">Highlighted evidence</p>
-                <h3 className="mt-1 text-xl font-semibold">{activeSpecies?.common_name || "Top species signal"}</h3>
-                <p className="mt-1 text-sm text-white/85">{focusEvidence[0]?.note || activeHabitat?.habitat_story}</p>
-              </div>
-            </div>
-          </ContainerScroll>
+          <Card className="glass-card surface-noise">
+            <CardHeader>
+              <CardTitle className="text-3xl">"Design should be easy to understand."</CardTitle>
+              <CardDescription>
+                Conservation UI works best when every panel explains what changed, why it matters, and what to do next.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <article className="rounded-xl border border-border/70 bg-white/60 p-4">
+                <h3 className="font-semibold">Photo-to-species detection</h3>
+                <p className="mt-2 text-sm text-muted-foreground">Uploaded photos replace sample evidence and update hotspot focus.</p>
+              </article>
+              <article className="rounded-xl border border-border/70 bg-white/60 p-4">
+                <h3 className="font-semibold">Map + scan sync</h3>
+                <p className="mt-2 text-sm text-muted-foreground">One click keeps evidence cards, map polygons, and scan overlays aligned.</p>
+              </article>
+              <article className="rounded-xl border border-border/70 bg-white/60 p-4">
+                <h3 className="font-semibold">Risk-first narrative</h3>
+                <p className="mt-2 text-sm text-muted-foreground">The top takeaway card leads with species impact before technical detail.</p>
+              </article>
+              <article className="rounded-xl border border-border/70 bg-white/60 p-4">
+                <h3 className="font-semibold">Action-oriented close</h3>
+                <p className="mt-2 text-sm text-muted-foreground">Immediate restoration steps stay visible in every focused run.</p>
+              </article>
+            </CardContent>
+          </Card>
         </section>
-
-        {showCinematic ? (
-          <section className="container">
-            <Card className="glass-card overflow-hidden">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between gap-3">
-                  <span>Immersive scroll narrative</span>
-                  <Button variant="outline" onClick={() => setShowCinematic(false)}>
-                    Close
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <ScrollExpandMedia
-                  mediaType="image"
-                  mediaSrc={activeSpecies?.image_asset || "/assets/hero-coyote-valley.jpg"}
-                  bgImageSrc="/assets/hero-coyote-valley.jpg"
-                  title={`${activeSpecies?.common_name || "Species"} pressure`}
-                  date={payload.system_snapshot?.observed_window || "2026 source-backed snapshot"}
-                  scrollToExpand="Scroll to reveal annotated context"
-                  textBlend
-                >
-                  <div className="max-w-3xl mx-auto text-foreground">
-                    <h3 className="text-2xl font-semibold mb-4">Why this matters right now</h3>
-                    <p className="text-lg">
-                      {payload.location_context?.pressure_story || activeHabitat?.habitat_story}
-                    </p>
-                  </div>
-                </ScrollExpandMedia>
-              </CardContent>
-            </Card>
-          </section>
-        ) : null}
 
         <section id="upload" className="container space-y-5">
           <div className="flex flex-wrap items-end justify-between gap-3">
@@ -740,10 +705,16 @@ export default function App() {
                 <CardDescription>{studyArea?.name}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <LocationMap
-                  location={studyArea?.region || "Unknown region"}
-                  coordinates={coordinateLabel(studyArea?.center.lat || 0, studyArea?.center.lon || 0)}
-                />
+                <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-[#060a10] p-7">
+                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(52,211,153,0.09)_0%,_transparent_72%)]" />
+                  <div className="relative z-10 flex flex-col items-center gap-7">
+                    <p className="text-xs font-medium uppercase tracking-[0.2em] text-emerald-100/70">Current Location</p>
+                    <LocationMap
+                      location={studyArea?.region || "Unknown region"}
+                      coordinates={coordinateLabel(studyArea?.center.lat || 0, studyArea?.center.lon || 0)}
+                    />
+                  </div>
+                </div>
                 <p className="text-sm text-muted-foreground">{studyArea?.story}</p>
                 <p className="text-sm text-muted-foreground">{payload.location_context?.pressure_story}</p>
               </CardContent>

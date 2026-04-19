@@ -3,26 +3,26 @@
 @tailwind utilities;
 
 :root {
-  --background: 42 33% 95%;
-  --foreground: 132 22% 10%;
-  --muted: 40 26% 89%;
-  --muted-foreground: 130 10% 33%;
-  --popover: 42 40% 98%;
-  --popover-foreground: 132 22% 10%;
-  --card: 42 40% 98%;
-  --card-foreground: 132 22% 10%;
-  --border: 38 19% 80%;
-  --input: 38 19% 78%;
-  --primary: 146 28% 30%;
-  --primary-foreground: 48 100% 96%;
-  --secondary: 32 42% 74%;
-  --secondary-foreground: 136 21% 14%;
-  --accent: 151 19% 88%;
-  --accent-foreground: 136 21% 14%;
-  --destructive: 8 62% 46%;
-  --destructive-foreground: 0 0% 98%;
-  --ring: 146 28% 30%;
-  --radius: 0.95rem;
+  --background: 224 36% 6%;
+  --foreground: 224 66% 95%;
+  --muted: 224 28% 12%;
+  --muted-foreground: 223 20% 72%;
+  --popover: 224 34% 8%;
+  --popover-foreground: 224 66% 95%;
+  --card: 225 33% 9%;
+  --card-foreground: 224 66% 95%;
+  --border: 224 22% 24%;
+  --input: 224 22% 22%;
+  --primary: 351 100% 62%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 224 23% 17%;
+  --secondary-foreground: 224 66% 95%;
+  --accent: 224 22% 17%;
+  --accent-foreground: 224 66% 95%;
+  --destructive: 5 82% 58%;
+  --destructive-foreground: 0 0% 100%;
+  --ring: 351 100% 62%;
+  --radius: 1rem;
 }
 
 * {
@@ -31,29 +31,25 @@
 
 body {
   @apply bg-background text-foreground antialiased;
-  font-family: "Plus Jakarta Sans", "Avenir Next", "Segoe UI", sans-serif;
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Inter", "SF Pro Text", "Avenir Next", "Segoe UI", sans-serif;
   background-image:
-    radial-gradient(circle at 12% 10%, rgba(255, 255, 255, 0.8), transparent 28%),
-    radial-gradient(circle at 88% 4%, rgba(58, 121, 82, 0.16), transparent 22%),
-    linear-gradient(180deg, #f7f1e7 0%, #efe7da 45%, #e8dccf 100%);
+    radial-gradient(circle at 18% -8%, rgba(141, 95, 255, 0.26), transparent 38%),
+    radial-gradient(circle at 82% -10%, rgba(255, 82, 102, 0.22), transparent 34%),
+    linear-gradient(180deg, #05070d 0%, #04060c 52%, #03050a 100%);
 }
 
 h1,
 h2,
 h3,
 h4 {
-  font-family: "Fraunces", "Iowan Old Style", Georgia, serif;
-}
-
-.texture-grid {
-  background-image:
-    linear-gradient(rgba(17, 26, 22, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(17, 26, 22, 0.08) 1px, transparent 1px);
-  background-size: 28px 28px;
+  font-family: "Space Grotesk", "Inter", sans-serif;
+  letter-spacing: 0.01em;
 }
 
 .glass-card {
-  @apply border border-border/80 bg-white/70 backdrop-blur-md shadow-[0_20px_70px_rgba(56,43,27,0.14)];
+  @apply border border-border/80 bg-card/90 backdrop-blur-md shadow-[0_24px_64px_rgba(0,0,0,0.45)];
 }
 
 .surface-noise::before {
@@ -61,21 +57,29 @@ h4 {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.12) 0.7px, transparent 0.7px);
+  border-radius: inherit;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.14) 0.62px, transparent 0.62px);
   background-size: 4px 4px;
-  opacity: 0.16;
+  opacity: 0.11;
+}
+
+.texture-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 11px;
+  height: 11px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(61, 101, 76, 0.45);
+  background: rgba(255, 75, 96, 0.5);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.06);
 }

@@ -1,7 +1,9 @@
+"use client";
+
 import type React from "react";
 
-import { useState, useRef } from "react";
-import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
+import { useRef, useState } from "react";
+import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 
 interface LocationMapProps {
   location?: string;
@@ -59,7 +61,7 @@ export function LocationMap({
       onClick={handleClick}
     >
       <motion.div
-        className="relative overflow-hidden rounded-2xl bg-background border border-border"
+        className="relative overflow-hidden rounded-2xl border border-border bg-background"
         style={{
           rotateX: springRotateX,
           rotateY: springRotateY,
@@ -78,7 +80,7 @@ export function LocationMap({
         <div className="absolute inset-0 bg-gradient-to-br from-muted/20 via-transparent to-muted/40" />
 
         <AnimatePresence>
-          {isExpanded ? (
+          {isExpanded && (
             <motion.div
               className="absolute inset-0 pointer-events-none"
               initial={{ opacity: 0 }}
@@ -88,7 +90,7 @@ export function LocationMap({
             >
               <div className="absolute inset-0 bg-muted" />
 
-              <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+              <svg className="absolute inset-0 h-full w-full" preserveAspectRatio="none">
                 <motion.line
                   x1="0%"
                   y1="35%"
@@ -166,6 +168,43 @@ export function LocationMap({
               </svg>
 
               <motion.div
+                className="absolute top-[40%] left-[10%] h-[20%] w-[15%] rounded-sm border border-muted-foreground/20 bg-muted-foreground/30"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, delay: 0.5 }}
+              />
+              <motion.div
+                className="absolute top-[15%] left-[35%] h-[15%] w-[12%] rounded-sm border border-muted-foreground/15 bg-muted-foreground/25"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, delay: 0.6 }}
+              />
+              <motion.div
+                className="absolute top-[70%] left-[75%] h-[18%] w-[18%] rounded-sm border border-muted-foreground/18 bg-muted-foreground/28"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, delay: 0.7 }}
+              />
+              <motion.div
+                className="absolute top-[20%] right-[10%] h-[25%] w-[10%] rounded-sm border border-muted-foreground/15 bg-muted-foreground/22"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, delay: 0.55 }}
+              />
+              <motion.div
+                className="absolute top-[55%] left-[5%] h-[12%] w-[8%] rounded-sm border border-muted-foreground/12 bg-muted-foreground/20"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, delay: 0.65 }}
+              />
+              <motion.div
+                className="absolute top-[8%] left-[75%] h-[10%] w-[14%] rounded-sm border border-muted-foreground/15 bg-muted-foreground/22"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, delay: 0.75 }}
+              />
+
+              <motion.div
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
                 initial={{ scale: 0, y: -20 }}
                 animate={{ scale: 1, y: 0 }}
@@ -186,7 +225,7 @@ export function LocationMap({
 
               <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60" />
             </motion.div>
-          ) : null}
+          )}
         </AnimatePresence>
 
         <motion.div
@@ -204,10 +243,16 @@ export function LocationMap({
           </svg>
         </motion.div>
 
-        <div className="relative z-10 h-full flex flex-col justify-between p-5">
+        <div className="relative z-10 flex h-full flex-col justify-between p-5">
           <div className="flex items-start justify-between">
             <div className="relative">
-              <motion.div className="relative" animate={{ opacity: isExpanded ? 0 : 1 }} transition={{ duration: 0.3 }}>
+              <motion.div
+                className="relative"
+                animate={{
+                  opacity: isExpanded ? 0 : 1,
+                }}
+                transition={{ duration: 0.3 }}
+              >
                 <motion.svg
                   width="18"
                   height="18"
@@ -233,21 +278,21 @@ export function LocationMap({
             </div>
 
             <motion.div
-              className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-foreground/5 backdrop-blur-sm"
+              className="flex items-center gap-1.5 rounded-full bg-foreground/5 px-2 py-1 backdrop-blur-sm"
               animate={{
                 scale: isHovered ? 1.05 : 1,
                 backgroundColor: isHovered ? "hsl(var(--foreground) / 0.08)" : "hsl(var(--foreground) / 0.05)",
               }}
               transition={{ duration: 0.2 }}
             >
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span className="text-[10px] font-medium text-muted-foreground tracking-wide uppercase">Live</span>
+              <div className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Live</span>
             </motion.div>
           </div>
 
           <div className="space-y-1">
             <motion.h3
-              className="text-foreground font-medium text-sm tracking-tight"
+              className="text-sm font-medium tracking-tight text-foreground"
               animate={{
                 x: isHovered ? 4 : 0,
               }}
@@ -257,9 +302,9 @@ export function LocationMap({
             </motion.h3>
 
             <AnimatePresence>
-              {isExpanded ? (
+              {isExpanded && (
                 <motion.p
-                  className="text-muted-foreground text-xs font-mono"
+                  className="text-xs font-mono text-muted-foreground"
                   initial={{ opacity: 0, y: -10, height: 0 }}
                   animate={{ opacity: 1, y: 0, height: "auto" }}
                   exit={{ opacity: 0, y: -10, height: 0 }}
@@ -267,7 +312,7 @@ export function LocationMap({
                 >
                   {coordinates}
                 </motion.p>
-              ) : null}
+              )}
             </AnimatePresence>
 
             <motion.div
@@ -283,7 +328,7 @@ export function LocationMap({
       </motion.div>
 
       <motion.p
-        className="absolute -bottom-6 left-1/2 text-[10px] text-muted-foreground whitespace-nowrap"
+        className="absolute -bottom-6 left-1/2 whitespace-nowrap text-[10px] text-muted-foreground"
         style={{ x: "-50%" }}
         initial={{ opacity: 0 }}
         animate={{
