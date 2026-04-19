@@ -27,6 +27,8 @@ const choosePhotosButton = document.getElementById("choosePhotosButton");
 const guidedDemoButton = document.getElementById("guidedDemoButton");
 const analyzeUploadsButton = document.getElementById("analyzeUploadsButton");
 const clearEvidenceButton = document.getElementById("clearEvidenceButton");
+const pageLinks = [...document.querySelectorAll("[data-page-link]")];
+const pageViews = [...document.querySelectorAll("[data-page-view]")];
 
 let overviewState = null;
 let habitatState = [];
@@ -44,9 +46,12 @@ let uploadedEvidenceState = [];
 let previewUrls = [];
 let evidenceModeState = "none";
 let uploadAnalysisInFlight = false;
+let activePageState = "home";
 
 let activeCellId = null;
 let activeSpeciesName = null;
+
+const VALID_PAGES = new Set(["home", "upload", "map", "species"]);
 
 const SPECIES_WIKI_PAGES = {
   "Monarch butterfly": "Monarch_butterfly",
@@ -105,6 +110,34 @@ function habitatTone(score) {
     return "stressed";
   }
   return "thriving";
+}
+
+function normalizePage(pageName) {
+  const normalized = String(pageName || "").replace(/^#/, "").trim().toLowerCase();
+  return VALID_PAGES.has(normalized) ? normalized : "home";
+}
+
+function setActivePage(pageName, options = {}) {
+  const { updateHash = true } = options;
+  const targetPage = normalizePage(pageName);
+  activePageState = targetPage;
+
+  pageViews.forEach((view) => {
+    view.classList.toggle("is-active", view.dataset.pageView === targetPage);
+  });
+
+  pageLinks.forEach((link) => {
+    link.classList.toggle("is-active", link.dataset.pageLink === targetPage);
+  });
+
+  if (updateHash) {
+    const nextHash = `#${targetPage}`;
+    if (window.location.hash !== nextHash) {
+      history.replaceState(null, "", nextHash);
+    }
+  }
+
+  window.scrollTo(0, 0);
 }
 
 function releasePreviewUrls() {
@@ -1010,7 +1043,25 @@ function clearEvidence() {
 }
 
 function bindEvents() {
-  choosePhotosButton.addEventListener("click", () => photoUploadInput.click());
+  pageLinks.forEach((link) => {
+    link.addEventListener("click", (event) => {
+      const target = link.dataset.pageLink;
+      if (!target) {
+        return;
+      }
+      event.preventDefault();
+      setActivePage(target);
+    });
+  });
+
+  window.addEventListener("hashchange", () => {
+    setActivePage(window.location.hash, { updateHash: false });
+  });
+
+  choosePhotosButton.addEventListener("click", () => {
+    setActivePage("upload");
+    photoUploadInput.click();
+  });
 
   photoUploadInput.addEventListener("change", (event) => {
     selectedPhotoFiles = [...(event.target.files || [])];
@@ -1018,6 +1069,7 @@ function bindEvents() {
   });
 
   guidedDemoButton.addEventListener("click", () => {
+    setActivePage("upload");
     selectedPhotoFiles = [];
     photoUploadInput.value = "";
     sampleEvidence();
@@ -1027,6 +1079,7 @@ function bindEvents() {
     if (!selectedPhotoFiles.length || uploadAnalysisInFlight) {
       return;
     }
+    setActivePage("upload");
 
     uploadAnalysisInFlight = true;
     evidenceModeState = "uploaded";
@@ -1044,6 +1097,7 @@ function bindEvents() {
   });
 
   clearEvidenceButton.addEventListener("click", () => {
+    setActivePage("upload");
     clearEvidence();
   });
 
@@ -1085,6 +1139,7 @@ async function loadDashboard() {
 }
 
 bindEvents();
+setActivePage(window.location.hash || "home", { updateHash: !window.location.hash });
 
 loadDashboard().catch((error) => {
   console.error(error);

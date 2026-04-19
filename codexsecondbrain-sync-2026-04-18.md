@@ -118,3 +118,40 @@
   - `src/ecoscan/static/index.html`
   - `src/ecoscan/static/styles.css`
 - Not yet committed in this snapshot section (commit expected next in workflow).
+
+---
+
+## Session Update — 2026-04-18 21:43 PDT
+
+### Conversation (condensed)
+- User requested a shift from one long-scrolling homepage to clearer multi-page navigation.
+- User requested:
+  - home landing to center the conservation quote aesthetic
+  - upload photos as the primary emphasized tab
+  - top-left brand to be `EcoScan` and return users to home
+  - remove top-right `Sign In` / `Get Started`
+- User asked to drive progress from codexsecondbrain PRD direction.
+
+### PRD alignment applied
+- Applied PRD themes already captured in this file:
+  - photo-first species-risk flow
+  - less demo confusion / clearer UX
+  - conservation outcome framing over hackathon framing
+
+### Work completed
+- Static app (`src/ecoscan/static`) now uses page-style tabs instead of one long scroll:
+  - `home`: quote-led landing + feature/value cards + metrics
+  - `upload`: mission console + upload controls + verdict/actions/evidence
+  - `map`: corridor map + 3D scan hotspot view
+  - `species`: habitat/species/sensor/source reference panels
+- Navbar changes:
+  - Brand text set to `EcoScan`
+  - Brand and Home nav return to the home page view
+  - Removed Sign In / Get Started controls
+  - `Upload Photos` tab visually emphasized
+- Added hash-driven page switching and active nav state in `app.js`.
+
+### Files touched in this pass
+- `src/ecoscan/static/index.html`
+- `src/ecoscan/static/styles.css`
+- `src/ecoscan/static/app.js`

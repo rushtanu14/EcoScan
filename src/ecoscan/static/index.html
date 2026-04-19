@@ -12,292 +12,291 @@
 
     <div class="page-shell">
       <header class="topbar reveal">
-        <a class="brand-wordmark" href="#missionConsole">efford</a>
+        <a class="brand-wordmark" href="#home" data-page-link="home">EcoScan</a>
         <nav class="topbar-nav">
-          <a href="#missionConsole">Features</a>
-          <a href="#speciesList">Pricing</a>
-          <a href="#sourceList">About</a>
+          <a href="#home" data-page-link="home" class="is-active">Home</a>
+          <a href="#upload" data-page-link="upload" class="is-primary">Upload Photos</a>
+          <a href="#map" data-page-link="map">Map &amp; Scan</a>
+          <a href="#species" data-page-link="species">Species &amp; Sources</a>
         </nav>
-        <div class="topbar-actions">
-          <a class="topbar-button ghost" href="#missionConsole">Sign In</a>
-          <a class="topbar-button solid" href="#missionConsole">Get Started</a>
-        </div>
       </header>
 
-      <main class="page-flow">
-        <section class="horizon-hero reveal delay-1">
-          <div class="hero-sky-glow"></div>
-          <div class="mountain-layer mountain-a"></div>
-          <div class="mountain-layer mountain-b"></div>
-          <div class="mountain-layer mountain-c"></div>
-          <div class="hero-copy">
-            <p class="hero-kicker">Beyond the boundaries of imagination, lies the universe of possibilities.</p>
-            <h1>INFINITY</h1>
+      <main class="page-views">
+        <section class="page-view is-active" data-page-view="home">
+          <section class="quote-stage reveal delay-1">
+            <article class="quote-card quote-hero">
+              <p class="quote-tag">i believe</p>
+              <h2>
+                "Conservation should be easy to understand because simple signals are quicker to act on."
+              </h2>
+            </article>
+          </section>
+
+          <section class="feature-deck reveal delay-2">
+            <article class="feature-card">
+              <div class="feature-index">1</div>
+              <h3>Photo-first species detection</h3>
+              <p>Each uploaded image becomes a direct species-risk signal tied to one habitat hotspot.</p>
+              <div class="feature-tags"><span>Photo AI</span><span>At-risk focus</span></div>
+            </article>
+            <article class="feature-card">
+              <div class="feature-index">2</div>
+              <h3>Map and scan clarity</h3>
+              <p>Every detected species links to map overlays and 3D hotspot annotations in one click.</p>
+              <div class="feature-tags"><span>Spatial sync</span><span>3D proof</span></div>
+            </article>
+            <article class="feature-card">
+              <div class="feature-index">3</div>
+              <h3>Action-first output</h3>
+              <p>EcoScan closes each run with clear protection steps for field teams and reviewers.</p>
+              <div class="feature-tags"><span>Action list</span><span>Field ready</span></div>
+            </article>
+            <article class="feature-card">
+              <div class="feature-index">4</div>
+              <h3>Evidence-backed narrative</h3>
+              <p>Source links and habitat context stay attached to every risk callout.</p>
+              <div class="feature-tags"><span>Trust</span><span>Traceability</span></div>
+            </article>
+          </section>
+
+          <section class="case-gallery reveal delay-2">
+            <div class="gallery-header">
+              <h2>Case Studies</h2>
+              <p>Visual habitat examples tied to species pressure and intervention priorities.</p>
+            </div>
+            <div class="gallery-strip">
+              <article class="gallery-item">
+                <img src="/assets/hero-coyote-valley.jpg?v=20260417" alt="Coyote Valley habitat corridor overview" />
+                <div>
+                  <h3>Corridor overview</h3>
+                  <p>Regional linkage under stress from heat, edge effects, and fragmentation.</p>
+                </div>
+              </article>
+              <article class="gallery-item">
+                <img src="/assets/species-frog.svg?v=20260417" alt="Amphibian habitat pressure evidence" />
+                <div>
+                  <h3>Wetland pressure</h3>
+                  <p>Freshwater refuge stability directly impacts amphibian and turtle persistence.</p>
+                </div>
+              </article>
+              <article class="gallery-item">
+                <img src="/assets/species-monarch.svg?v=20260417" alt="Pollinator habitat pressure evidence" />
+                <div>
+                  <h3>Pollinator decline signal</h3>
+                  <p>Host plant and nectar corridor stress compounds migration vulnerability.</p>
+                </div>
+              </article>
+              <article class="gallery-item">
+                <img src="/assets/species-valley-oak.svg?v=20260417" alt="Oak woodland stress evidence" />
+                <div>
+                  <h3>Oak recruitment risk</h3>
+                  <p>Dry soils and thermal stress weaken canopy recovery in key transition zones.</p>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="platform-shell reveal delay-3">
+            <div class="platform-headline">
+              <h2>One clear species-risk operating view for rapid conservation decisions.</h2>
+              <p>Built around the PRD direction: simpler flow, stronger photo-first proof, and lower demo confusion.</p>
+            </div>
+            <div id="heroMetrics" class="hero-metrics"></div>
+          </section>
+        </section>
+
+        <section class="page-view" data-page-view="upload">
+          <section class="upload-hero reveal delay-1">
+            <p class="eyebrow">Primary workflow</p>
+            <h2>Upload photos first. Let EcoScan detect what is at risk.</h2>
             <p>
-              Track where biodiversity pressure appears first, connect photo evidence to at-risk species, and close
-              with clear conservation actions.
+              This is the main action path: upload field photos, run species-risk detection, and immediately review the
+              hotspot verdict and action list.
             </p>
-          </div>
-          <a href="#missionConsole" class="hero-jump">Explore the signal</a>
-        </section>
+          </section>
 
-        <section class="quote-stage reveal delay-2">
-          <article class="quote-card">
-            <p class="quote-tag">i believe</p>
-            <h2>
-              "Conservation should be easy to understand because simple signals are quicker to act on."
-            </h2>
-          </article>
-        </section>
-
-        <section class="feature-deck reveal delay-2">
-          <article class="feature-card">
-            <div class="feature-index">1</div>
-            <h3>Photo-to-species risk detection</h3>
-            <p>Uploaded evidence replaces sample cards and links each photo to a likely at-risk species + hotspot cell.</p>
-            <div class="feature-tags"><span>Detection</span><span>At-risk focus</span></div>
-          </article>
-          <article class="feature-card">
-            <div class="feature-index">2</div>
-            <h3>Spatial hotspot clarity</h3>
-            <p>Every species callout syncs to map polygons and scan overlays so pressure location is obvious instantly.</p>
-            <div class="feature-tags"><span>Map sync</span><span>3D overlay</span></div>
-          </article>
-          <article class="feature-card">
-            <div class="feature-index">3</div>
-            <h3>Action-first outputs</h3>
-            <p>Priority actions update from habitat and species context so teams know exactly what to do next.</p>
-            <div class="feature-tags"><span>Action list</span><span>Field ready</span></div>
-          </article>
-          <article class="feature-card">
-            <div class="feature-index">4</div>
-            <h3>Source-backed context</h3>
-            <p>Public references stay attached to each ecological claim for transparent conservation storytelling.</p>
-            <div class="feature-tags"><span>Evidence</span><span>Traceability</span></div>
-          </article>
-        </section>
-
-        <section class="case-gallery reveal delay-3">
-          <div class="gallery-header">
-            <h2>Case Studies</h2>
-            <p>Visual habitat examples tied to species pressure and intervention priorities.</p>
-          </div>
-          <div class="gallery-strip">
-            <article class="gallery-item">
-              <img src="/assets/hero-coyote-valley.jpg?v=20260417" alt="Coyote Valley habitat corridor overview" />
-              <div>
-                <h3>Corridor overview</h3>
-                <p>Regional linkage under stress from heat, edge effects, and fragmentation.</p>
-              </div>
-            </article>
-            <article class="gallery-item">
-              <img src="/assets/species-frog.svg?v=20260417" alt="Amphibian habitat pressure evidence" />
-              <div>
-                <h3>Wetland pressure</h3>
-                <p>Freshwater refuge stability directly impacts amphibian and turtle persistence.</p>
-              </div>
-            </article>
-            <article class="gallery-item">
-              <img src="/assets/species-monarch.svg?v=20260417" alt="Pollinator habitat pressure evidence" />
-              <div>
-                <h3>Pollinator decline signal</h3>
-                <p>Host plant and nectar corridor stress compounds migration vulnerability.</p>
-              </div>
-            </article>
-            <article class="gallery-item">
-              <img src="/assets/species-valley-oak.svg?v=20260417" alt="Oak woodland stress evidence" />
-              <div>
-                <h3>Oak recruitment risk</h3>
-                <p>Dry soils and thermal stress weaken canopy recovery in key transition zones.</p>
-              </div>
-            </article>
-          </div>
-        </section>
-
-        <section class="platform-shell reveal delay-3">
-          <div class="platform-headline">
-            <h2>The EcoScan ecosystem brings one clear species-risk operating view.</h2>
-            <p>From intake to actions, everything stays in one dark, focused workflow panel.</p>
-          </div>
-          <div id="heroMetrics" class="hero-metrics"></div>
-        </section>
-
-        <section id="missionConsole" class="intake-shell reveal delay-4">
-          <div class="intake-copy">
-            <p class="eyebrow">Mission Console</p>
-            <h2>Upload, detect, and focus the next habitat intervention.</h2>
-            <p>
-              The map and 3D scan are preloaded. Add one to three photos to replace sample evidence with field-specific
-              detections.
-            </p>
-            <ul class="intake-list">
-              <li><strong>Instant start:</strong> use the sample field set to initialize the story.</li>
-              <li><strong>Live evidence:</strong> upload photos and run species-risk detection.</li>
-              <li><strong>Outcome:</strong> one top verdict, hotspot proof, and prioritized actions.</li>
-            </ul>
-          </div>
-
-          <aside class="intake-card">
-            <p class="panel-label">Input controls</p>
-            <h3>Photo-driven species detection</h3>
-            <p class="panel-copy">Upload evidence to replace sample cards and re-anchor risk focus automatically.</p>
-
-            <input id="photoUploadInput" type="file" accept="image/*" multiple hidden />
-
-            <div class="button-row">
-              <button id="choosePhotosButton" class="primary-button" type="button">Choose photos</button>
-              <button id="guidedDemoButton" class="secondary-button" type="button">Use sample field set</button>
+          <section id="missionConsole" class="intake-shell reveal delay-2">
+            <div class="intake-copy">
+              <p class="eyebrow">Mission Console</p>
+              <h2>Upload, detect, and focus the next habitat intervention.</h2>
+              <p>
+                The map and 3D scan are preloaded. Add one to three photos to replace sample evidence with
+                field-specific detections.
+              </p>
+              <ul class="intake-list">
+                <li><strong>Instant start:</strong> use the sample field set to initialize the story.</li>
+                <li><strong>Live evidence:</strong> upload photos and run species-risk detection.</li>
+                <li><strong>Outcome:</strong> one top verdict, hotspot proof, and prioritized actions.</li>
+              </ul>
             </div>
 
-            <div class="button-row">
-              <button id="analyzeUploadsButton" class="secondary-button" type="button" disabled>
-                Analyze selected photos
-              </button>
-              <button id="clearEvidenceButton" class="ghost-button" type="button">Clear</button>
-            </div>
+            <aside class="intake-card">
+              <p class="panel-label">Input controls</p>
+              <h3>Photo-driven species detection</h3>
+              <p class="panel-copy">Upload evidence to replace sample cards and re-anchor risk focus automatically.</p>
 
-            <div class="intake-status">
-              <div class="status-row">
-                <span>Selected photos</span>
-                <strong id="selectedPhotoSummary">No files selected yet</strong>
+              <input id="photoUploadInput" type="file" accept="image/*" multiple hidden />
+
+              <div class="button-row">
+                <button id="choosePhotosButton" class="primary-button" type="button">Choose photos</button>
+                <button id="guidedDemoButton" class="secondary-button" type="button">Use sample field set</button>
               </div>
-              <div class="status-row">
-                <span>Current mode</span>
-                <strong id="evidenceModeLabel">Habitat model only</strong>
+
+              <div class="button-row">
+                <button id="analyzeUploadsButton" class="secondary-button" type="button" disabled>
+                  Analyze selected photos
+                </button>
+                <button id="clearEvidenceButton" class="ghost-button" type="button">Clear</button>
               </div>
-            </div>
 
-            <p id="selectedPhotoNames" class="file-list">Use the sample field set or upload photos to detect at-risk species.</p>
-          </aside>
-        </section>
-
-        <section class="results-grid reveal delay-4">
-          <article class="spotlight-card">
-            <p class="panel-label">Main takeaway</p>
-            <h2 id="verdictHeadline">Loading current habitat verdict...</h2>
-            <p id="verdictBody" class="spotlight-body">Preparing the corridor brief.</p>
-            <div id="focusChipRow" class="focus-chip-row"></div>
-          </article>
-
-          <aside class="action-panel">
-            <p class="panel-label">What to do next</p>
-            <h3>Priority action list</h3>
-            <div id="actionList" class="action-list"></div>
-          </aside>
-        </section>
-
-        <section class="summary-strip reveal delay-4">
-          <div id="summaryCards" class="summary-cards"></div>
-        </section>
-
-        <section class="evidence-grid reveal delay-5">
-          <article class="panel">
-            <div class="panel-header">
-              <div>
-                <p class="panel-label">Evidence gallery</p>
-                <h3>Photo detections and example imagery</h3>
-              </div>
-              <p class="panel-note">Select a card to sync verdict, map, and 3D scan to that evidence point.</p>
-            </div>
-            <div id="photoGallery" class="photo-gallery"></div>
-          </article>
-
-          <article class="panel">
-            <div class="panel-header">
-              <div>
-                <p class="panel-label">Detection brief</p>
-                <h3>Current species-risk interpretation</h3>
-              </div>
-              <p class="panel-note">Confidence and action tags are intentionally compact for quick reading.</p>
-            </div>
-            <div id="detectionFeed" class="detection-feed"></div>
-          </article>
-        </section>
-
-        <section class="context-grid reveal delay-5">
-          <article class="panel">
-            <div class="panel-header">
-              <div>
-                <p class="panel-label">Corridor map</p>
-                <h3 id="mapTitle">Where pressure is surfacing</h3>
-              </div>
-              <p class="panel-note">Spatial overlay of habitat cells, landmarks, and sensor anchors.</p>
-            </div>
-            <div class="map-widget-shell">
-              <p class="map-widget-label">Current location</p>
-              <button id="locationMiniCard" class="location-mini-card" type="button" aria-label="Toggle location details">
-                <div class="location-mini-grid"></div>
-                <div class="location-mini-head">
-                  <span class="location-mini-icon">⌖</span>
-                  <span class="location-mini-live"><i></i>Live</span>
+              <div class="intake-status">
+                <div class="status-row">
+                  <span>Selected photos</span>
+                  <strong id="selectedPhotoSummary">No files selected yet</strong>
                 </div>
-                <div class="location-mini-body">
-                  <strong id="locationWidgetTitle">Coyote Valley, CA</strong>
-                  <small id="locationWidgetCoords">37.2550° N, 121.8500° W</small>
+                <div class="status-row">
+                  <span>Current mode</span>
+                  <strong id="evidenceModeLabel">Habitat model only</strong>
                 </div>
-                <span class="location-mini-hint">Click to expand</span>
-              </button>
-            </div>
-            <div id="corridorMap" class="map-viewport" role="img" aria-label="Corridor habitat map"></div>
-          </article>
-
-          <article class="panel">
-            <div class="panel-header">
-              <div>
-                <p class="panel-label">3D scan</p>
-                <h3 id="scanTitle">Annotated hotspot model</h3>
               </div>
-              <p class="panel-note">Polygon overlays highlight exactly where species pressure is strongest.</p>
-            </div>
-            <div id="scanLegend" class="legend"></div>
-            <div id="scanViewport" class="scan-viewport"></div>
-          </article>
-        </section>
 
-        <details class="deep-dive reveal">
-          <summary>Open habitat, species, sensor, and source details</summary>
-          <div class="deep-dive-grid">
+              <p id="selectedPhotoNames" class="file-list">
+                Use the sample field set or upload photos to detect at-risk species.
+              </p>
+            </aside>
+          </section>
+
+          <section class="results-grid reveal delay-2">
+            <article class="spotlight-card">
+              <p class="panel-label">Main takeaway</p>
+              <h2 id="verdictHeadline">Loading current habitat verdict...</h2>
+              <p id="verdictBody" class="spotlight-body">Preparing the corridor brief.</p>
+              <div id="focusChipRow" class="focus-chip-row"></div>
+            </article>
+
+            <aside class="action-panel">
+              <p class="panel-label">What to do next</p>
+              <h3>Priority action list</h3>
+              <div id="actionList" class="action-list"></div>
+            </aside>
+          </section>
+
+          <section class="summary-strip reveal delay-2">
+            <div id="summaryCards" class="summary-cards"></div>
+          </section>
+
+          <section class="evidence-grid reveal delay-3">
             <article class="panel">
               <div class="panel-header">
                 <div>
-                  <p class="panel-label">Habitat ranking</p>
-                  <h3>Cells to inspect first</h3>
+                  <p class="panel-label">Evidence gallery</p>
+                  <h3>Photo detections and example imagery</h3>
                 </div>
+                <p class="panel-note">Select a card to sync verdict, map, and 3D scan to that evidence point.</p>
               </div>
-              <div id="habitatList" class="habitat-list"></div>
+              <div id="photoGallery" class="photo-gallery"></div>
             </article>
 
             <article class="panel">
               <div class="panel-header">
                 <div>
-                  <p class="panel-label">Species atlas</p>
-                  <h3>At-risk species and habitat needs</h3>
+                  <p class="panel-label">Detection brief</p>
+                  <h3>Current species-risk interpretation</h3>
                 </div>
+                <p class="panel-note">Confidence and action tags are intentionally compact for quick reading.</p>
               </div>
-              <div id="speciesList" class="species-list"></div>
+              <div id="detectionFeed" class="detection-feed"></div>
+            </article>
+          </section>
+        </section>
+
+        <section class="page-view" data-page-view="map">
+          <section class="context-grid reveal delay-1">
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <p class="panel-label">Corridor map</p>
+                  <h3 id="mapTitle">Where pressure is surfacing</h3>
+                </div>
+                <p class="panel-note">Spatial overlay of habitat cells, landmarks, and sensor anchors.</p>
+              </div>
+              <div class="map-widget-shell">
+                <p class="map-widget-label">Current location</p>
+                <button id="locationMiniCard" class="location-mini-card" type="button" aria-label="Toggle location details">
+                  <div class="location-mini-grid"></div>
+                  <div class="location-mini-head">
+                    <span class="location-mini-icon">⌖</span>
+                    <span class="location-mini-live"><i></i>Live</span>
+                  </div>
+                  <div class="location-mini-body">
+                    <strong id="locationWidgetTitle">Coyote Valley, CA</strong>
+                    <small id="locationWidgetCoords">37.2550° N, 121.8500° W</small>
+                  </div>
+                  <span class="location-mini-hint">Click to expand</span>
+                </button>
+              </div>
+              <div id="corridorMap" class="map-viewport" role="img" aria-label="Corridor habitat map"></div>
             </article>
 
             <article class="panel">
               <div class="panel-header">
                 <div>
-                  <p class="panel-label">Sensors</p>
-                  <h3>Field context behind the model</h3>
+                  <p class="panel-label">3D scan</p>
+                  <h3 id="scanTitle">Annotated hotspot model</h3>
                 </div>
+                <p class="panel-note">Polygon overlays highlight exactly where species pressure is strongest.</p>
               </div>
-              <div id="sensorList" class="sensor-list"></div>
+              <div id="scanLegend" class="legend"></div>
+              <div id="scanViewport" class="scan-viewport"></div>
             </article>
+          </section>
+        </section>
 
-            <article class="panel">
-              <div class="panel-header">
-                <div>
-                  <p class="panel-label">Sources</p>
-                  <h3>Public references and anchors</h3>
+        <section class="page-view" data-page-view="species">
+          <section class="deep-dive-panel reveal delay-1">
+            <div class="deep-dive-grid">
+              <article class="panel">
+                <div class="panel-header">
+                  <div>
+                    <p class="panel-label">Habitat ranking</p>
+                    <h3>Cells to inspect first</h3>
+                  </div>
                 </div>
-              </div>
-              <div id="sourceList" class="source-list"></div>
-            </article>
-          </div>
-        </details>
+                <div id="habitatList" class="habitat-list"></div>
+              </article>
+
+              <article class="panel">
+                <div class="panel-header">
+                  <div>
+                    <p class="panel-label">Species atlas</p>
+                    <h3>At-risk species and habitat needs</h3>
+                  </div>
+                </div>
+                <div id="speciesList" class="species-list"></div>
+              </article>
+
+              <article class="panel">
+                <div class="panel-header">
+                  <div>
+                    <p class="panel-label">Sensors</p>
+                    <h3>Field context behind the model</h3>
+                  </div>
+                </div>
+                <div id="sensorList" class="sensor-list"></div>
+              </article>
+
+              <article class="panel">
+                <div class="panel-header">
+                  <div>
+                    <p class="panel-label">Sources</p>
+                    <h3>Public references and anchors</h3>
+                  </div>
+                </div>
+                <div id="sourceList" class="source-list"></div>
+              </article>
+            </div>
+          </section>
+        </section>
       </main>
     </div>
 

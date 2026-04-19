@@ -90,54 +90,36 @@ body {
 .topbar-nav {
   display: flex;
   align-items: center;
-  gap: 2.6rem;
+  gap: 1.8rem;
 }
 
 .topbar-nav a {
-  color: #d6dcf7;
+  color: #cdd6f4;
   text-decoration: none;
-  font-size: 0.98rem;
+  font-size: 0.92rem;
   font-weight: 600;
+  border: 1px solid transparent;
+  border-radius: 0.65rem;
+  padding: 0.45rem 0.64rem;
+  transition: all 0.18s ease;
 }
 
 .topbar-nav a:hover {
   color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.04);
 }
 
-.topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-}
-
-.topbar-button {
-  text-decoration: none;
-  border-radius: 0.7rem;
-  padding: 0.58rem 0.98rem;
-  font-size: 0.92rem;
-  font-weight: 620;
-  border: 1px solid transparent;
-  transition: all 0.18s ease;
-}
-
-.topbar-button.ghost {
-  border-color: rgba(255, 255, 255, 0.16);
+.topbar-nav a.is-active {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.08);
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.03);
 }
 
-.topbar-button.ghost:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.topbar-button.solid {
-  border-color: rgba(255, 255, 255, 0.72);
-  color: #070a11;
-  background: #f2f4fb;
-}
-
-.topbar-button.solid:hover {
-  background: #ffffff;
+.topbar-nav a.is-primary {
+  border-color: rgba(255, 95, 114, 0.7);
+  background: linear-gradient(180deg, rgba(255, 95, 114, 0.35), rgba(255, 70, 95, 0.22));
+  color: #fff3f6;
 }
 
 .brand-lockup {
@@ -182,9 +164,18 @@ body {
   color: #9fa9ca;
 }
 
-.page-flow {
+.page-views {
   display: grid;
+  gap: 0;
+}
+
+.page-view {
+  display: none;
   gap: 1.1rem;
+}
+
+.page-view.is-active {
+  display: grid;
 }
 
 .reveal {
@@ -343,6 +334,21 @@ body {
   line-height: 1.05;
   font-weight: 620;
   color: #f5f7ff;
+}
+
+.quote-card.quote-hero {
+  width: 100%;
+  border: 1px solid rgba(255, 76, 101, 0.72);
+  border-radius: 0.9rem;
+  padding: 1.22rem 1.2rem 1.12rem;
+  background: radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.05), transparent 44%),
+    linear-gradient(180deg, rgba(7, 11, 20, 0.96), rgba(5, 8, 14, 0.96));
+}
+
+.quote-card.quote-hero h2 {
+  font-size: clamp(2.1rem, 5.6vw, 4.15rem);
+  line-height: 0.98;
+  max-width: 1080px;
 }
 
 .feature-deck {
@@ -515,6 +521,25 @@ body {
   display: grid;
   grid-template-columns: 1.1fr 1fr;
   gap: 0.92rem;
+}
+
+.upload-hero {
+  border: 1px solid rgba(255, 95, 114, 0.46);
+  border-radius: 1rem;
+  background: linear-gradient(160deg, rgba(24, 12, 24, 0.92), rgba(13, 16, 28, 0.94));
+  padding: 1.05rem 1.1rem;
+}
+
+.upload-hero h2 {
+  margin: 0.32rem 0 0.36rem;
+  font-size: clamp(1.75rem, 3.7vw, 2.7rem);
+  line-height: 1.05;
+}
+
+.upload-hero p {
+  margin: 0;
+  color: #c7d0ee;
+  max-width: 830px;
 }
 
 .intake-copy h2 {
@@ -758,6 +783,11 @@ body {
 .deep-dive-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.72rem;
+}
+
+.deep-dive-panel {
+  display: grid;
   gap: 0.72rem;
 }
 
@@ -1324,17 +1354,6 @@ body {
   margin-bottom: 0.24rem;
 }
 
-.deep-dive summary {
-  cursor: pointer;
-  color: #d5ddfa;
-  font-weight: 600;
-  margin-bottom: 0.7rem;
-}
-
-.deep-dive[open] summary {
-  margin-bottom: 0.82rem;
-}
-
 @media (max-width: 980px) {
   .topbar-nav {
     gap: 1.2rem;
@@ -1380,12 +1399,14 @@ body {
   }
 
   .topbar-nav {
-    display: none;
+    width: 100%;
+    overflow-x: auto;
+    gap: 0.5rem;
+    padding-bottom: 0.15rem;
   }
 
-  .topbar-actions {
-    width: 100%;
-    justify-content: flex-end;
+  .topbar-nav a {
+    white-space: nowrap;
   }
 
   .hero-jump {
