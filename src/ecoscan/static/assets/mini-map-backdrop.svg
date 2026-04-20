@@ -1,0 +1,32 @@
+<svg width="1280" height="880" viewBox="0 0 1280 880" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1280" height="880" fill="#061021"/>
+  <rect width="1280" height="880" fill="url(#grid)"/>
+  <path d="M0 690C170 620 260 610 430 636C565 657 760 737 890 735C1021 733 1133 660 1280 600V880H0V690Z" fill="url(#terrain)"/>
+  <path d="M140 130L1160 130" stroke="#2A3D5D" stroke-width="2" stroke-dasharray="8 8"/>
+  <path d="M140 270L1160 270" stroke="#2A3D5D" stroke-width="2" stroke-dasharray="8 8"/>
+  <path d="M140 410L1160 410" stroke="#2A3D5D" stroke-width="2" stroke-dasharray="8 8"/>
+  <path d="M140 550L1160 550" stroke="#2A3D5D" stroke-width="2" stroke-dasharray="8 8"/>
+  <path d="M210 70L210 760" stroke="#274166" stroke-width="2" stroke-dasharray="8 8"/>
+  <path d="M420 70L420 760" stroke="#274166" stroke-width="2" stroke-dasharray="8 8"/>
+  <path d="M640 70L640 760" stroke="#274166" stroke-width="2" stroke-dasharray="8 8"/>
+  <path d="M860 70L860 760" stroke="#274166" stroke-width="2" stroke-dasharray="8 8"/>
+  <path d="M1070 70L1070 760" stroke="#274166" stroke-width="2" stroke-dasharray="8 8"/>
+  <path d="M165 640C250 620 345 620 423 646L468 472C572 504 670 492 777 436L842 556C910 532 973 521 1068 532L1113 674C986 703 900 733 769 752C633 772 506 768 385 744C288 726 223 697 165 640Z" fill="#0B162A" stroke="#7FA3D1" stroke-opacity="0.6" stroke-width="3"/>
+  <path d="M260 620L377 592L468 472L586 504L777 436L842 556L949 520L1068 532" stroke="#8EC0FF" stroke-opacity="0.85" stroke-width="4"/>
+  <path d="M254 690L343 671L335 598L282 608L254 690Z" fill="#17304D" stroke="#8EC0FF" stroke-opacity="0.7" stroke-width="3"/>
+  <path d="M906 699L1005 696L1005 587L916 592L906 699Z" fill="#17304D" stroke="#8EC0FF" stroke-opacity="0.7" stroke-width="3"/>
+  <circle cx="468" cy="472" r="10" fill="#B8FFD9"/>
+  <circle cx="777" cy="436" r="10" fill="#B8FFD9"/>
+  <circle cx="842" cy="556" r="10" fill="#B8FFD9"/>
+  <circle cx="280" cy="610" r="8" fill="#B8FFD9"/>
+  <circle cx="930" cy="592" r="8" fill="#B8FFD9"/>
+  <defs>
+    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse">
+      <path d="M36 0H0V36" stroke="#ffffff" stroke-opacity="0.05" stroke-width="1"/>
+    </pattern>
+    <linearGradient id="terrain" x1="640" y1="560" x2="640" y2="880" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0D1B31"/>
+      <stop offset="1" stop-color="#060A14"/>
+    </linearGradient>
+  </defs>
+</svg>

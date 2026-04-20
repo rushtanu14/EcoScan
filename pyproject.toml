@@ -18,13 +18,16 @@ api = [
   "fastapi>=0.111.0",
   "uvicorn>=0.30.0",
 ]
+desktop = [
+  "pywebview>=5.1",
+]
 
 [project.scripts]
 ecoscan = "ecoscan.cli:main"
+ecoscan-desktop = "ecoscan.desktop:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
