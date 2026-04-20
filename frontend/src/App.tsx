@@ -49,14 +49,28 @@ const MODEL_STATUS_TEXT: Record<ModelStatus, { label: string; detail: string }> 
 
 const KINGDOM_IMAGE_BANK: Record<string, string[]> = {
   animal: [
-    "https://images.unsplash.com/photo-1474511320723-9a56873867b5?auto=format&fit=crop&q=80&w=1200",
-    "https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?auto=format&fit=crop&q=80&w=1200",
-    "https://images.unsplash.com/photo-1452570053594-1b985d6ea890?auto=format&fit=crop&q=80&w=1200",
+    // Birds, reptiles, amphibians, insects
+    "https://images.unsplash.com/photo-1444464666175-1642a9c67b12?auto=format&fit=crop&q=80&w=1200", // Woodpecker-like
+    "https://images.unsplash.com/photo-1485872299829-c673f5194813?auto=format&fit=crop&q=80&w=1200", // Dark bird
+    "https://images.unsplash.com/photo-1558147866-c83b5e7b55bc?auto=format&fit=crop&q=80&w=1200", // Turtle
+    "https://images.unsplash.com/photo-1599599810694-2da9cbb0d007?auto=format&fit=crop&q=80&w=1200", // Frog
+    "https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?auto=format&fit=crop&q=80&w=1200", // Butterfly
+    "https://images.unsplash.com/photo-1470114716159-e389f8712fda?auto=format&fit=crop&q=80&w=1200", // Heron-like bird
+    "https://images.unsplash.com/photo-1505228395891-9a51e7e86e81?auto=format&fit=crop&q=80&w=1200", // Bird in flight
+    "https://images.unsplash.com/photo-1552728089-57bdde30beb3?auto=format&fit=crop&q=80&w=1200", // Aquatic life
+    "https://images.unsplash.com/photo-1444802686981-c3aba66f7fb1?auto=format&fit=crop&q=80&w=1200", // Insects/small wildlife
   ],
   plant: [
-    "https://images.unsplash.com/photo-1462275646964-a0e3386b89fa?auto=format&fit=crop&q=80&w=1200",
-    "https://images.unsplash.com/photo-1477511801984-4ad318ed9846?auto=format&fit=crop&q=80&w=1200",
-    "https://images.unsplash.com/photo-1468327768560-75b778cbb551?auto=format&fit=crop&q=80&w=1200",
+    // Oak trees, wildflowers, shrubs
+    "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&q=80&w=1200", // Oak tree
+    "https://images.unsplash.com/photo-1490598967868-2aa4f00a0558?auto=format&fit=crop&q=80&w=1200", // Wildflower
+    "https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&q=80&w=1200", // Grass meadow
+    "https://images.unsplash.com/photo-1466478353382-a277b1b91e1f?auto=format&fit=crop&q=80&w=1200", // Forest canopy
+    "https://images.unsplash.com/photo-1495567720989-cebdbdd97913?auto=format&fit=crop&q=80&w=1200", // Green shoots
+    "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=1200", // Spring blooms
+    "https://images.unsplash.com/photo-1469022563149-aa64fce926d9?auto=format&fit=crop&q=80&w=1200", // Wildflower field
+    "https://images.unsplash.com/photo-1445911173510-2513f95b351d?auto=format&fit=crop&q=80&w=1200", // Native shrubs
+    "https://images.unsplash.com/photo-1518531933037-91b2f5f21cc0?auto=format&fit=crop&q=80&w=1200", // Botanical detail
   ],
 };
 
