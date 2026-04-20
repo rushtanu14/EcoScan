@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { LocationMap } from "@/components/ui/expand-map";
 import FileUpload05 from "@/components/ui/file-upload-1";
 import { Gallery4, Gallery4Item } from "@/components/ui/gallery4";
-import { HorizonHeroSection } from "@/components/ui/horizon-hero-section";
+import { AnimatedHero } from "@/components/ui/animated-hero";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
@@ -157,6 +157,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [currentPage, setCurrentPage] = useState<"home" | "upload" | "species" | "sources">("home");
   const [activeSpeciesName, setActiveSpeciesName] = useState<string>("");
   const [activeCellId, setActiveCellId] = useState<string>("");
   const [speciesQuery, setSpeciesQuery] = useState("");
@@ -366,18 +367,17 @@ export default function App() {
   );
 
   useEffect(() => {
-    if (!payload || evidence.length) {
+    if (!payload) {
       return;
     }
-    const guided = buildGuidedEvidence();
-    setEvidence(guided);
-    setEvidenceMode("guided");
-    setModelStatus("zero_shot");
-    if (guided[0]) {
-      setActiveSpeciesName(guided[0].speciesName);
-      setActiveCellId(guided[0].cellId);
+    // Don't auto-load evidence - wait for user to click "use sample demo"
+    if (payload.habitats?.[0]) {
+      setActiveCellId(payload.habitats[0].cell_id);
     }
-  }, [payload, evidence.length, buildGuidedEvidence]);
+    if (payload.species_catalog?.[0]) {
+      setActiveSpeciesName(payload.species_catalog[0].common_name);
+    }
+  }, [payload]);
 
   const runGuidedDemo = useCallback(() => {
     releaseObjectUrls();
@@ -477,560 +477,557 @@ export default function App() {
   }
 
   return (
-    <div className="relative pb-24">
+    <div className="relative min-h-screen flex flex-col bg-background">
       <header className="sticky top-0 z-50 border-b border-white/10 bg-[#05070c]/95 backdrop-blur-xl">
         <div className="container flex items-center justify-between py-3.5">
-          <a href="#home" className="text-2xl font-black tracking-tight text-white">
+          <button onClick={() => setCurrentPage("home")} className="text-2xl font-black tracking-tight text-white hover:text-teal-400 transition-colors cursor-pointer">
             ecoscan
-          </a>
+          </button>
           <nav className="hidden items-center gap-10 md:flex">
-            <a href="#story" className="text-sm font-semibold text-slate-200 transition-colors hover:text-white">
-              Features
-            </a>
-            <a href="#species" className="text-sm font-semibold text-slate-200 transition-colors hover:text-white">
-              Pricing
-            </a>
-            <a href="#sources" className="text-sm font-semibold text-slate-200 transition-colors hover:text-white">
-              About
-            </a>
+            <button onClick={() => setCurrentPage("upload")} className={`text-sm font-semibold transition-colors ${currentPage === "upload" ? "text-teal-400" : "text-slate-200 hover:text-white"}`}>
+              Upload
+            </button>
+            <button onClick={() => setCurrentPage("species")} className={`text-sm font-semibold transition-colors ${currentPage === "species" ? "text-teal-400" : "text-slate-200 hover:text-white"}`}>
+              Species
+            </button>
+            <button onClick={() => setCurrentPage("sources")} className={`text-sm font-semibold transition-colors ${currentPage === "sources" ? "text-teal-400" : "text-slate-200 hover:text-white"}`}>
+              Sources
+            </button>
           </nav>
-          <div className="flex items-center gap-2.5">
-            <Button
-              variant="outline"
-              className="h-10 rounded-xl border-white/20 bg-transparent px-4 text-sm font-semibold text-white hover:bg-white/10"
-            >
-              Sign In
-            </Button>
-            <Button className="h-10 rounded-xl bg-zinc-100 px-4 text-sm font-semibold text-zinc-900 hover:bg-white">
-              Get Started
-            </Button>
-          </div>
         </div>
       </header>
 
-      <main className="space-y-14" id="home">
-        <section className="container pt-8 space-y-8">
-          <HorizonHeroSection />
-          <div id="story" className="grid gap-5 lg:grid-cols-3">
-            <Card className="glass-card lg:col-span-2">
+      <main className="flex-1">
+        {currentPage === "home" && (
+          <div className="space-y-14">
+            <AnimatedHero
+              headline="See species at risk. Act on data."
+              subheadline="Upload a photo from your habitat. EcoScan identifies species present, their threat levels, and what conservation actions matter most right now."
+              backgroundImage="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=1920"
+              cta={{
+                text: "Go to upload",
+                onClick: () => setCurrentPage("upload"),
+              }}
+              showScrollIndicator={true}
+            />
+
+            <section className="container pt-8 space-y-8">
+              <div id="story" className="grid gap-5 lg:grid-cols-3 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
+                <Card className="glass-card lg:col-span-2 hover:shadow-xl transition-shadow duration-300">
+                  <CardHeader>
+                    <CardTitle className="text-2xl">Crystal-clear biodiversity story</CardTitle>
+                    <CardDescription>
+                      {payload.location_context?.why_here || payload.study_area.story}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${toneClass(activeHabitat?.health_label || "thriving")}`}>
+                        {activeThreat.shortLabel} hotspot
+                      </span>
+                      <span className="inline-flex items-center rounded-full border border-emerald-400/40 bg-gradient-to-br from-emerald-500/30 to-teal-500/20 px-3 py-1 text-xs font-semibold text-emerald-100">
+                        Mode: {evidenceMode === "uploaded" ? "Uploaded photos" : evidenceMode === "guided" ? "Sample field set" : "Habitat model only"}
+                      </span>
+                      <span className="inline-flex items-center rounded-full border border-emerald-400/40 bg-gradient-to-br from-emerald-500/30 to-teal-500/20 px-3 py-1 text-xs font-semibold text-emerald-100">
+                        {MODEL_STATUS_TEXT[modelStatus].label}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{MODEL_STATUS_TEXT[modelStatus].detail}</p>
+                    <p className="text-sm text-muted-foreground">{activeThreat.description}</p>
+
+                    <div className="grid gap-3 md:grid-cols-3">
+                      <article className="rounded-xl border border-emerald-400/40 bg-gradient-to-br from-emerald-500/20 to-teal-600/15 p-4 hover:from-emerald-500/30 hover:to-teal-600/25 transition-all duration-300">
+                        <p className="text-xs uppercase tracking-wide text-emerald-200/70">Average biodiversity</p>
+                        <p className="mt-1 text-2xl font-semibold text-emerald-100">{payload.overview.avg_biodiversity_score.toFixed(1)}</p>
+                      </article>
+                      <article className="rounded-xl border border-emerald-400/40 bg-gradient-to-br from-emerald-500/20 to-teal-600/15 p-4 hover:from-emerald-500/30 hover:to-teal-600/25 transition-all duration-300">
+                        <p className="text-xs uppercase tracking-wide text-emerald-200/70">Stressed or fragile cells</p>
+                        <p className="mt-1 text-2xl font-semibold text-emerald-100">{payload.overview.stressed_cells + payload.overview.fragile_cells}</p>
+                      </article>
+                      <article className="rounded-xl border border-emerald-400/40 bg-gradient-to-br from-emerald-500/20 to-teal-600/15 p-4 hover:from-emerald-500/30 hover:to-teal-600/25 transition-all duration-300">
+                        <p className="text-xs uppercase tracking-wide text-emerald-200/70">Lead at-risk species</p>
+                        <p className="mt-1 text-base font-semibold text-emerald-100">{activeSpecies?.common_name || payload.overview.top_species_at_risk[0]}</p>
+                      </article>
+                    </div>
+
+                    <div className="flex flex-wrap items-end gap-3">
+                      <div className="w-full md:w-72">
+                        <p className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">Focus species</p>
+                        <Select value={activeSpeciesName} onValueChange={selectSpecies}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a species" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {speciesCatalog.map((species) => (
+                              <SelectItem key={species.common_name} value={species.common_name}>
+                                {species.common_name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="rounded-xl border border-emerald-400/40 bg-gradient-to-br from-emerald-500/20 to-teal-600/15 px-4 py-3 text-sm text-emerald-100 md:max-w-sm">
+                        Keep the first pass simple: one species, one hotspot, one action.
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="glass-card hover:shadow-xl transition-shadow duration-300">
+                  <CardHeader>
+                    <CardTitle>Next actions</CardTitle>
+                    <CardDescription>Immediate actions linked to the current hotspot and species signal.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {combinedActions.map((action) => (
+                      <div key={action} className="rounded-xl border border-emerald-400/40 bg-gradient-to-br from-emerald-500/25 to-teal-600/20 p-3 text-sm text-emerald-50 hover:from-emerald-500/35 hover:to-teal-600/30 transition-all duration-300">
+                        {action}
+                      </div>
+                    ))}
+                    {!combinedActions.length ? (
+                      <p className="text-sm text-muted-foreground">No action items yet. Start with the sample set or run upload analysis first.</p>
+                    ) : null}
+                  </CardContent>
+                </Card>
+              </div>
+            </section>
+
+            <section className="container">
+              <Card className="glass-card surface-noise hover:shadow-2xl transition-shadow duration-300 animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
+                <CardHeader>
+                  <CardTitle className="text-3xl">Why this approach works</CardTitle>
+                  <CardDescription>
+                    Conservation UI works best when every panel explains what changed, why it matters, and what to do next.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                  <article className="rounded-xl border border-emerald-400/40 bg-gradient-to-br from-emerald-500/20 to-teal-600/15 p-4 hover:from-emerald-500/30 hover:to-teal-600/25 transition-all duration-300 transform hover:scale-105">
+                    <h3 className="font-semibold text-emerald-100">Photo-to-species detection</h3>
+                    <p className="mt-2 text-sm text-emerald-200/80">Uploaded photos replace sample evidence and update hotspot focus.</p>
+                  </article>
+                  <article className="rounded-xl border border-emerald-400/40 bg-gradient-to-br from-emerald-500/20 to-teal-600/15 p-4 hover:from-emerald-500/30 hover:to-teal-600/25 transition-all duration-300 transform hover:scale-105">
+                    <h3 className="font-semibold text-emerald-100">Map + scan sync</h3>
+                    <p className="mt-2 text-sm text-emerald-200/80">One click keeps evidence cards, map polygons, and scan overlays aligned.</p>
+                  </article>
+                  <article className="rounded-xl border border-emerald-400/40 bg-gradient-to-br from-emerald-500/20 to-teal-600/15 p-4 hover:from-emerald-500/30 hover:to-teal-600/25 transition-all duration-300 transform hover:scale-105">
+                    <h3 className="font-semibold text-emerald-100">Risk-first narrative</h3>
+                    <p className="mt-2 text-sm text-emerald-200/80">The top takeaway card leads with species impact before technical detail.</p>
+                  </article>
+                  <article className="rounded-xl border border-emerald-400/40 bg-gradient-to-br from-emerald-500/20 to-teal-600/15 p-4 hover:from-emerald-500/30 hover:to-teal-600/25 transition-all duration-300 transform hover:scale-105">
+                    <h3 className="font-semibold text-emerald-100">Action-oriented close</h3>
+                    <p className="mt-2 text-sm text-emerald-200/80">Immediate restoration steps stay visible in every focused run.</p>
+                  </article>
+                </CardContent>
+              </Card>
+            </section>
+          </div>
+        )}
+
+        {currentPage === "upload" && (
+          <div className="container space-y-5 py-12">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Photo intake</p>
+                <h2 className="text-3xl font-semibold">Upload your field photo</h2>
+                <p className="mt-2 text-muted-foreground">Identify species present, assess threat levels, and get actionable conservation steps.</p>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={runGuidedDemo} className="hover:bg-white/20 transition-colors">
+                  <Sparkles className="size-4 mr-2" />
+                  Use sample field set
+                </Button>
+                <Button onClick={analyzeUploads} className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400">
+                  <UploadCloud className="size-4 mr-2" />
+                  Analyze uploads
+                </Button>
+                <Button variant="outline" onClick={clearEvidence} className="hover:bg-white/20 transition-colors">
+                  Clear
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid gap-5 lg:grid-cols-2">
+              <Card className="glass-card hover:shadow-xl transition-all duration-300 hover:border-cyan-500/50">
+                <CardHeader>
+                  <CardTitle>Primary photo uploader</CardTitle>
+                  <CardDescription>Use this for a clean single-photo conservation analysis path.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FileUpload05
+                    selectedFile={primaryFile}
+                    onSelect={(files) => setPrimaryFile(files?.[0] || null)}
+                    onClear={() => setPrimaryFile(null)}
+                    onSubmit={analyzeUploads}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card className="glass-card hover:shadow-xl transition-all duration-300 hover:border-teal-500/50">
+                <CardHeader>
+                  <CardTitle>Sketchpad dropzone</CardTitle>
+                  <CardDescription>Drop multiple images and remove individual files before scoring.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <SketchpadDropzone files={dropFiles} onDrop={handleDrop} onRemove={removeDropFile} />
+                  <div className="flex items-center justify-between text-sm text-muted-foreground">
+                    <span>{dropFiles.length} file(s) in queue</span>
+                    <Button variant="outline" size="sm" onClick={() => setDropFiles([])}>
+                      Clear board
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="glass-card hover:shadow-xl transition-shadow duration-300">
               <CardHeader>
-                <CardTitle className="text-2xl">Crystal-clear biodiversity story</CardTitle>
+                <CardTitle>Evidence gallery</CardTitle>
                 <CardDescription>
-                  {payload.location_context?.why_here || payload.study_area.story}
+                  {focusEvidence.length
+                    ? "Click a card to focus the analysis below. View habitat risk, species details, and recommended actions."
+                    : "Use the sample field set or upload files to generate visual evidence cards."}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${toneClass(activeHabitat?.health_label || "thriving")}`}>
-                    {activeThreat.shortLabel} hotspot
-                  </span>
-                  <span className="inline-flex items-center rounded-full border border-border/70 bg-white/60 px-3 py-1 text-xs font-semibold">
-                    Mode: {evidenceMode === "uploaded" ? "Uploaded photos" : evidenceMode === "guided" ? "Sample field set" : "Habitat model only"}
-                  </span>
-                  <span className="inline-flex items-center rounded-full border border-border/70 bg-white/60 px-3 py-1 text-xs font-semibold">
-                    {MODEL_STATUS_TEXT[modelStatus].label}
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground">{MODEL_STATUS_TEXT[modelStatus].detail}</p>
-                <p className="text-sm text-muted-foreground">{activeThreat.description}</p>
-
-                <div className="grid gap-3 md:grid-cols-3">
-                  <article className="rounded-xl border border-border/70 bg-white/60 p-4">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Average biodiversity</p>
-                    <p className="mt-1 text-2xl font-semibold">{payload.overview.avg_biodiversity_score.toFixed(1)}</p>
-                  </article>
-                  <article className="rounded-xl border border-border/70 bg-white/60 p-4">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Stressed or fragile cells</p>
-                    <p className="mt-1 text-2xl font-semibold">{payload.overview.stressed_cells + payload.overview.fragile_cells}</p>
-                  </article>
-                  <article className="rounded-xl border border-border/70 bg-white/60 p-4">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Lead at-risk species</p>
-                    <p className="mt-1 text-base font-semibold">{activeSpecies?.common_name || payload.overview.top_species_at_risk[0]}</p>
-                  </article>
-                </div>
-
-                <div className="flex flex-wrap items-end gap-3">
-                  <div className="w-full md:w-72">
-                    <p className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">Focus species</p>
-                    <Select value={activeSpeciesName} onValueChange={selectSpecies}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a species" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {speciesCatalog.map((species) => (
-                          <SelectItem key={species.common_name} value={species.common_name}>
-                            {species.common_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="rounded-xl border border-border/70 bg-white/60 px-4 py-3 text-sm text-muted-foreground md:max-w-sm">
-                    Keep the first pass simple: one species, one hotspot, one action.
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle>Next actions</CardTitle>
-                <CardDescription>Immediate actions linked to the current hotspot and species signal.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {combinedActions.map((action) => (
-                  <div key={action} className="rounded-xl border border-border/70 bg-white/70 p-3 text-sm">
-                    {action}
-                  </div>
-                ))}
-                {!combinedActions.length ? (
-                  <p className="text-sm text-muted-foreground">No action items yet. Start with the sample set or run upload analysis first.</p>
-                ) : null}
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-
-        <section className="container">
-          <Card className="glass-card surface-noise">
-            <CardHeader>
-              <CardTitle className="text-3xl">"Design should be easy to understand."</CardTitle>
-              <CardDescription>
-                Conservation UI works best when every panel explains what changed, why it matters, and what to do next.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <article className="rounded-xl border border-border/70 bg-white/60 p-4">
-                <h3 className="font-semibold">Photo-to-species detection</h3>
-                <p className="mt-2 text-sm text-muted-foreground">Uploaded photos replace sample evidence and update hotspot focus.</p>
-              </article>
-              <article className="rounded-xl border border-border/70 bg-white/60 p-4">
-                <h3 className="font-semibold">Map + scan sync</h3>
-                <p className="mt-2 text-sm text-muted-foreground">One click keeps evidence cards, map polygons, and scan overlays aligned.</p>
-              </article>
-              <article className="rounded-xl border border-border/70 bg-white/60 p-4">
-                <h3 className="font-semibold">Risk-first narrative</h3>
-                <p className="mt-2 text-sm text-muted-foreground">The top takeaway card leads with species impact before technical detail.</p>
-              </article>
-              <article className="rounded-xl border border-border/70 bg-white/60 p-4">
-                <h3 className="font-semibold">Action-oriented close</h3>
-                <p className="mt-2 text-sm text-muted-foreground">Immediate restoration steps stay visible in every focused run.</p>
-              </article>
-            </CardContent>
-          </Card>
-        </section>
-
-        <section id="upload" className="container space-y-5">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Photo intake</p>
-              <h2 className="text-3xl font-semibold">Aesthetic upload flow with clear next steps</h2>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={runGuidedDemo}>
-                <Sparkles className="size-4 mr-2" />
-                Use sample field set
-              </Button>
-              <Button onClick={analyzeUploads}>
-                <UploadCloud className="size-4 mr-2" />
-                Analyze uploads
-              </Button>
-              <Button variant="outline" onClick={clearEvidence}>
-                Clear
-              </Button>
-            </div>
-          </div>
-
-          <div className="grid gap-5 lg:grid-cols-2">
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle>Primary photo uploader</CardTitle>
-                <CardDescription>Use this for a clean single-photo conservation analysis path.</CardDescription>
-              </CardHeader>
               <CardContent>
-                <FileUpload05
-                  selectedFile={primaryFile}
-                  onSelect={(files) => setPrimaryFile(files?.[0] || null)}
-                  onClear={() => setPrimaryFile(null)}
-                  onSubmit={analyzeUploads}
-                />
-              </CardContent>
-            </Card>
-
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle>Sketchpad dropzone</CardTitle>
-                <CardDescription>Drop multiple images and remove individual files before scoring.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <SketchpadDropzone files={dropFiles} onDrop={handleDrop} onRemove={removeDropFile} />
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <span>{dropFiles.length} file(s) in queue</span>
-                  <Button variant="outline" size="sm" onClick={() => setDropFiles([])}>
-                    Clear board
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle>Evidence deck</CardTitle>
-              <CardDescription>
-                {focusEvidence.length
-                  ? "Click a card to focus map and scan sections."
-                  : "Use the sample field set or upload files to generate visual evidence cards."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {evidence.length ? (
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {evidence.map((item) => (
-                    <button
-                      type="button"
-                      key={item.id}
-                      className={`text-left rounded-2xl overflow-hidden border transition-all bg-white/80 hover:shadow-lg ${
-                        item.cellId === activeCellId || item.speciesName === activeSpeciesName
-                          ? "border-primary shadow-lg"
-                          : "border-border/70"
-                      }`}
-                      onClick={() => {
-                        setActiveSpeciesName(item.speciesName);
-                        setActiveCellId(item.cellId);
-                      }}
-                    >
-                      <img src={item.image} alt={item.title} className="h-44 w-full object-cover" />
-                      <div className="p-4 space-y-1.5">
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground">{item.badge}</p>
-                        <h3 className="font-semibold">{item.title}</h3>
-                        <p className="text-sm text-muted-foreground">{item.subtitle}</p>
-                        <p className="text-xs text-primary">{item.annotation}</p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-2xl border border-dashed border-border p-8 text-center text-muted-foreground">
-                  <ImagePlus className="size-8 mx-auto mb-3" />
-                  No evidence cards yet.
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </section>
-
-        <section id="map" className="container space-y-5">
-          <div>
-            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Spatial view</p>
-            <h2 className="text-3xl font-semibold">Corridor map with habitat highlights</h2>
-          </div>
-          <div className="grid gap-5 lg:grid-cols-3">
-            <Card className="glass-card lg:col-span-1">
-              <CardHeader>
-                <CardTitle>Study area pulse</CardTitle>
-                <CardDescription>{studyArea?.name}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-[#060a10] p-7">
-                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(52,211,153,0.09)_0%,_transparent_72%)]" />
-                  <div className="relative z-10 flex flex-col items-center gap-7">
-                    <p className="text-xs font-medium uppercase tracking-[0.2em] text-emerald-100/70">Current Location</p>
-                    <LocationMap
-                      location={studyArea?.region || "Unknown region"}
-                      coordinates={coordinateLabel(studyArea?.center.lat || 0, studyArea?.center.lon || 0)}
-                    />
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground">{studyArea?.story}</p>
-                <p className="text-sm text-muted-foreground">{payload.location_context?.pressure_story}</p>
-              </CardContent>
-            </Card>
-
-            <Card className="glass-card lg:col-span-2">
-              <CardHeader>
-                <CardTitle>Habitat risk overlay</CardTitle>
-                <CardDescription>Click any polygon to update species and 3D scan focus.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="rounded-2xl border border-border/70 bg-white/80 p-3">
-                  <svg viewBox="0 0 100 100" className="h-[420px] w-full rounded-xl bg-[#f8f5ef]">
-                    {landmarks.map((landmark) => {
-                      const points = landmark.coordinates
-                        .map((point) => {
-                          const [x, y] = projectPoint(point);
-                          return `${x},${y}`;
-                        })
-                        .join(" ");
-                      return (
-                        <polyline
-                          key={landmark.name}
-                          points={points}
-                          fill="none"
-                          stroke="rgba(55,65,81,0.5)"
-                          strokeWidth={landmark.kind === "waterway" ? 1.2 : 0.8}
-                          strokeDasharray={landmark.kind === "waterway" ? undefined : "2 2"}
-                        />
-                      );
-                    })}
-                    {habitats.map((habitat) => {
-                      const points = habitat.polygon
-                        .map((point) => {
-                          const [x, y] = projectPoint(point);
-                          return `${x},${y}`;
-                        })
-                        .join(" ");
-                      const isActive = habitat.cell_id === activeCellId;
-                      return (
-                        <polygon
-                          key={habitat.cell_id}
-                          points={points}
-                          fill={RISK_SWATCH[habitat.health_label] || "rgba(96,165,250,0.45)"}
-                          stroke={isActive ? "rgba(20,83,45,0.95)" : "rgba(31,41,55,0.35)"}
-                          strokeWidth={isActive ? 1.4 : 0.4}
-                          className="cursor-pointer transition-all"
-                          onClick={() => selectCell(habitat.cell_id)}
-                        />
-                      );
-                    })}
-                  </svg>
-                </div>
-                <div className="flex flex-wrap gap-2 text-xs">
-                  {(["fragile", "stressed", "thriving"] as const).map((label) => (
-                    <span key={label} className={`inline-flex items-center rounded-full border px-3 py-1 ${toneClass(label)}`}>
-                      {threatProfile(label).shortLabel}
-                    </span>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-
-        <section id="scan" className="container space-y-5">
-          <div>
-            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">3D scan interpretation</p>
-            <h2 className="text-3xl font-semibold">Annotated mesh/point-cloud style hotspot view</h2>
-          </div>
-          <div className="grid gap-5 lg:grid-cols-3">
-            <Card className="glass-card lg:col-span-2">
-              <CardHeader>
-                <CardTitle>Projected scan mesh</CardTitle>
-                <CardDescription>Spatially aligned polygons sourced from scan model coordinates.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="rounded-2xl border border-border/70 bg-[#111827] p-3">
-                  <svg viewBox="0 0 100 100" className="h-[360px] w-full rounded-xl bg-[#111827]">
-                    {scanModel.map((cell) => {
-                      const points = cell.projected_polygon
-                        .map(([x, y]) => `${x * 100},${y * 100}`)
-                        .join(" ");
-                      const isActive = cell.cell_id === activeScanCell?.cell_id;
-                      return (
-                        <polygon
-                          key={cell.cell_id}
-                          points={points}
-                          fill={RISK_SWATCH[cell.health_label] || "rgba(148,163,184,0.4)"}
-                          stroke={isActive ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.25)"}
-                          strokeWidth={isActive ? 1.2 : 0.35}
-                          className="cursor-pointer"
-                          onClick={() => selectCell(cell.cell_id)}
-                        />
-                      );
-                    })}
-                  </svg>
-                </div>
-                {activeScanCell ? (
-                  <div className="rounded-2xl border border-border/70 bg-white/70 p-4">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Highlighted hotspot</p>
-                    <h3 className="mt-1 text-xl font-semibold">{activeScanCell.cell_id}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">{activeHabitat?.habitat_story}</p>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <span className={`inline-flex rounded-full border px-3 py-1 text-xs ${toneClass(activeScanCell.health_label)}`}>
-                        {threatProfile(activeScanCell.health_label).shortLabel}
-                      </span>
-                      <span className="inline-flex rounded-full border border-border/70 px-3 py-1 text-xs">
-                        {titleCase(activeScanCell.habitat_type)}
-                      </span>
-                      <span className="inline-flex rounded-full border border-border/70 px-3 py-1 text-xs">
-                        Canopy {formatPercent(activeScanCell.canopy_height)}
-                      </span>
-                    </div>
-                  </div>
-                ) : null}
-              </CardContent>
-            </Card>
-
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle>Detection and action feed</CardTitle>
-                <CardDescription>Localized detections and action recommendations for the selected cell.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {(focusEvidence.length ? focusEvidence : []).map((item) => (
-                  <article key={item.id} className="rounded-xl border border-border/70 bg-white/70 p-3">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">{item.badge}</p>
-                    <p className="font-semibold">{item.speciesName}</p>
-                    <p className="text-sm text-muted-foreground">{item.note}</p>
-                    <p className="text-xs text-primary mt-1">{formatPercent(item.confidence)} confidence</p>
-                  </article>
-                ))}
-                {!focusEvidence.length && activeScanCell?.detections?.length
-                  ? activeScanCell.detections.map((detection) => (
-                      <article key={`${activeScanCell.cell_id}-${detection.species_name}`} className="rounded-xl border border-border/70 bg-white/70 p-3">
-                        <p className="font-semibold">{detection.species_name}</p>
-                        <p className="text-sm text-muted-foreground">{detection.note}</p>
-                        <div className="mt-2 flex items-center justify-between text-xs">
-                          <span className={`inline-flex rounded-full border px-2 py-0.5 ${toneClass(detection.risk_level)}`}>
-                            {threatProfile(detection.risk_level).shortLabel}
-                          </span>
-                          <span>{formatPercent(detection.confidence)}</span>
+                {evidence.length ? (
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    {evidence.map((item, idx) => (
+                      <button
+                        type="button"
+                        key={item.id}
+                        className={`text-left rounded-2xl overflow-hidden border transition-all bg-gradient-to-br from-emerald-500/20 to-teal-600/15 hover:from-emerald-500/30 hover:to-teal-600/25 hover:shadow-lg hover:scale-105 transform ${
+                          item.cellId === activeCellId || item.speciesName === activeSpeciesName
+                            ? "border-emerald-400 shadow-emerald-500/30 shadow-lg scale-105"
+                            : "border-emerald-400/30"
+                        } animate-fade-in-up`}
+                        style={{ animationDelay: `${idx * 50}ms` }}
+                        onClick={() => {
+                          setActiveSpeciesName(item.speciesName);
+                          setActiveCellId(item.cellId);
+                        }}
+                      >
+                        <img src={item.image} alt={item.title} className="h-44 w-full object-cover" />
+                        <div className="p-4 space-y-1.5">
+                          <p className="text-xs uppercase tracking-wide text-muted-foreground">{item.badge}</p>
+                          <h3 className="font-semibold">{item.title}</h3>
+                          <p className="text-sm text-muted-foreground">{item.subtitle}</p>
+                          <p className="text-xs text-primary">{item.annotation}</p>
                         </div>
-                      </article>
-                    ))
-                  : null}
-                <Separator />
-                <div className="space-y-2">
-                  {combinedActions.map((action) => (
-                    <div key={action} className="flex items-start gap-2 text-sm">
-                      <CheckCircle2 className="size-4 mt-0.5 text-emerald-600 shrink-0" />
-                      <span>{action}</span>
-                    </div>
-                  ))}
-                </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border border-dashed border-border p-8 text-center text-muted-foreground">
+                    <ImagePlus className="size-8 mx-auto mb-3" />
+                    No evidence cards yet. Try the sample set or upload photos.
+                  </div>
+                )}
               </CardContent>
             </Card>
-          </div>
-        </section>
 
-        <section id="species" className="container space-y-5">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Species profiles</p>
-              <h2 className="text-3xl font-semibold">Gallery view for each species at risk</h2>
-            </div>
-            <div className="w-full sm:w-80">
-              <Input
-                placeholder="Search by species, scientific name, or habitat"
-                value={speciesQuery}
-                onChange={(event) => setSpeciesQuery(event.target.value)}
-              />
-            </div>
-          </div>
+            {evidence.length > 0 && (
+              <>
+                <section className="space-y-5">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Spatial view</p>
+                    <h2 className="text-3xl font-semibold">Corridor map with habitat highlights</h2>
+                  </div>
+                  <div className="grid gap-5 lg:grid-cols-3">
+                    <Card className="glass-card lg:col-span-1">
+                      <CardHeader>
+                        <CardTitle>Study area pulse</CardTitle>
+                        <CardDescription>{studyArea?.name}</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-[#060a10] p-7">
+                          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(16,185,129,0.09)_0%,_transparent_72%)]" />
+                          <div className="relative z-10 flex flex-col items-center gap-7">
+                            <p className="text-xs font-medium uppercase tracking-[0.2em] text-teal-100/70">Current Location</p>
+                            <LocationMap
+                              location={studyArea?.region || "Unknown region"}
+                              coordinates={coordinateLabel(studyArea?.center.lat || 0, studyArea?.center.lon || 0)}
+                            />
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{studyArea?.story}</p>
+                        <p className="text-sm text-muted-foreground">{payload.location_context?.pressure_story}</p>
+                      </CardContent>
+                    </Card>
 
-          <Card className="glass-card">
-            <CardContent className="pt-6">
-              <Accordion type="single" collapsible className="w-full">
-                {filteredSpecies.map((species) => (
-                  <AccordionItem key={species.common_name} value={species.common_name}>
-                    <AccordionTrigger className="text-left">
-                      <div className="flex flex-col gap-1">
-                        <span className="font-semibold">{species.common_name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {species.scientific_name} · {threatProfile(species.status_label).shortLabel} · {formatPercent(species.avg_vulnerability_score)}
-                        </span>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="space-y-3 pb-4">
-                        <p className="text-sm text-muted-foreground">{species.narrative}</p>
-                        <div className="flex flex-wrap gap-2">
-                          {species.action_items.map((action) => (
-                            <span key={action} className="inline-flex rounded-full border border-border/70 bg-white/70 px-3 py-1 text-xs">
-                              {action}
+                    <Card className="glass-card lg:col-span-2">
+                      <CardHeader>
+                        <CardTitle>Habitat risk overlay</CardTitle>
+                        <CardDescription>Click any polygon to update species and 3D scan focus.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="rounded-2xl border border-emerald-400/40 bg-gradient-to-br from-emerald-500/20 to-teal-600/15 p-3">
+                          <svg viewBox="0 0 100 100" className="h-[420px] w-full rounded-xl bg-[#f8f5ef]">
+                            {landmarks.map((landmark) => {
+                              const points = landmark.coordinates
+                                .map((point) => {
+                                  const [x, y] = projectPoint(point);
+                                  return `${x},${y}`;
+                                })
+                                .join(" ");
+                              return (
+                                <polyline
+                                  key={landmark.name}
+                                  points={points}
+                                  fill="none"
+                                  stroke="rgba(55,65,81,0.5)"
+                                  strokeWidth={landmark.kind === "waterway" ? 1.2 : 0.8}
+                                  strokeDasharray={landmark.kind === "waterway" ? undefined : "2 2"}
+                                />
+                              );
+                            })}
+                            {habitats.map((habitat) => {
+                              const points = habitat.polygon
+                                .map((point) => {
+                                  const [x, y] = projectPoint(point);
+                                  return `${x},${y}`;
+                                })
+                                .join(" ");
+                              const isActive = habitat.cell_id === activeCellId;
+                              return (
+                                <polygon
+                                  key={habitat.cell_id}
+                                  points={points}
+                                  fill={RISK_SWATCH[habitat.health_label] || "rgba(96,165,250,0.45)"}
+                                  stroke={isActive ? "rgba(20,83,45,0.95)" : "rgba(31,41,55,0.35)"}
+                                  strokeWidth={isActive ? 1.4 : 0.4}
+                                  className="cursor-pointer transition-all"
+                                  onClick={() => selectCell(habitat.cell_id)}
+                                />
+                              );
+                            })}
+                          </svg>
+                        </div>
+                        <div className="flex flex-wrap gap-2 text-xs">
+                          {(["fragile", "stressed", "thriving"] as const).map((label) => (
+                            <span key={label} className={`inline-flex items-center rounded-full border px-3 py-1 ${toneClass(label)}`}>
+                              {threatProfile(label).shortLabel}
                             </span>
                           ))}
                         </div>
-                        <Gallery4
-                          title={`${species.common_name} image references`}
-                          description={`Visual examples plus habitat context for ${species.common_name}.`}
-                          items={speciesGalleryItems(species)}
-                        />
-                        <Button asChild variant="outline">
-                          <a href={species.source_url} target="_blank" rel="noreferrer">
-                            Open source reference
-                          </a>
-                        </Button>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </CardContent>
-          </Card>
-        </section>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </section>
 
-        <section id="sources" className="container space-y-5">
-          <div>
-            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Confidence and provenance</p>
-            <h2 className="text-3xl font-semibold">Sensor context and source links</h2>
-          </div>
-          <div className="grid gap-5 lg:grid-cols-2">
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle>Sensor profiles</CardTitle>
-                <CardDescription>Representative stations used to anchor habitat interpretation.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {sensorProfiles.map((sensor) => (
-                  <article key={sensor.sensor_id} className="rounded-xl border border-border/70 bg-white/70 p-3">
-                    <p className="font-semibold">{sensor.label || sensor.sensor_id}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {sensor.summary || sensor.why_it_matters || "Context station used in the EcoScan fusion model."}
-                    </p>
-                    {sensor.source_url ? (
-                      <a className="text-xs text-primary hover:underline" href={sensor.source_url} target="_blank" rel="noreferrer">
-                        {sensor.source_name || sensor.source_url}
-                      </a>
-                    ) : (
-                      <p className="text-xs text-muted-foreground">{sensor.kind || "No linked source URL in this payload."}</p>
-                    )}
-                  </article>
-                ))}
-              </CardContent>
-            </Card>
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle>Data sources</CardTitle>
-                <CardDescription>Public links used for corridor and species grounding.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {dataSources.map((source) => (
-                  <article key={source.url} className="rounded-xl border border-border/70 bg-white/70 p-3">
-                    <p className="font-semibold">{source.name}</p>
-                    <p className="text-sm text-muted-foreground">{source.note}</p>
-                    <a className="text-xs text-primary hover:underline" href={source.url} target="_blank" rel="noreferrer">
-                      {source.kind}
-                    </a>
-                  </article>
-                ))}
-                {!dataSources.length ? (
-                  <p className="text-sm text-muted-foreground">
-                    No external source list in this payload. Add `data_sources` to your map JSON for full provenance cards.
-                  </p>
-                ) : null}
-              </CardContent>
-            </Card>
-          </div>
-        </section>
+                <section className="space-y-5">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">3D scan interpretation</p>
+                    <h2 className="text-3xl font-semibold">Annotated mesh/point-cloud style hotspot view</h2>
+                  </div>
+                  <div className="grid gap-5 lg:grid-cols-3">
+                    <Card className="glass-card lg:col-span-2">
+                      <CardHeader>
+                        <CardTitle>Projected scan mesh</CardTitle>
+                        <CardDescription>Spatially aligned polygons sourced from scan model coordinates.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="rounded-2xl border border-border/70 bg-[#111827] p-3">
+                          <svg viewBox="0 0 100 100" className="h-[360px] w-full rounded-xl bg-[#111827]">
+                            {scanModel.map((cell) => {
+                              const points = cell.projected_polygon
+                                .map(([x, y]) => `${x * 100},${y * 100}`)
+                                .join(" ");
+                              const isActive = cell.cell_id === activeScanCell?.cell_id;
+                              return (
+                                <polygon
+                                  key={cell.cell_id}
+                                  points={points}
+                                  fill={RISK_SWATCH[cell.health_label] || "rgba(148,163,184,0.4)"}
+                                  stroke={isActive ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.25)"}
+                                  strokeWidth={isActive ? 1.2 : 0.35}
+                                  className="cursor-pointer"
+                                  onClick={() => selectCell(cell.cell_id)}
+                                />
+                              );
+                            })}
+                          </svg>
+                        </div>
+                        {activeScanCell ? (
+                          <div className="rounded-2xl border border-emerald-400/40 bg-gradient-to-br from-emerald-500/20 to-teal-600/15 p-4">
+                            <p className="text-xs uppercase tracking-wide text-emerald-200/70">Highlighted hotspot</p>
+                            <h3 className="mt-1 text-xl font-semibold text-emerald-100">{activeScanCell.cell_id}</h3>
+                            <p className="text-sm text-emerald-200/80 mt-1">{activeHabitat?.habitat_story}</p>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <span className={`inline-flex rounded-full border px-3 py-1 text-xs ${toneClass(activeScanCell.health_label)}`}>
+                                {threatProfile(activeScanCell.health_label).shortLabel}
+                              </span>
+                              <span className="inline-flex rounded-full border border-border/70 px-3 py-1 text-xs">
+                                {titleCase(activeScanCell.habitat_type)}
+                              </span>
+                              <span className="inline-flex rounded-full border border-border/70 px-3 py-1 text-xs">
+                                Canopy {formatPercent(activeScanCell.canopy_height)}
+                              </span>
+                            </div>
+                          </div>
+                        ) : null}
+                      </CardContent>
+                    </Card>
 
-        <footer className="container">
-          <Card className="glass-card">
-            <CardContent className="py-6 flex flex-col md:flex-row md:items-center justify-between gap-3">
-              <p className="text-sm text-muted-foreground">
-                EcoScan UI update branch: stable demo-first flow with photo intake, species galleries, map overlays, and scan annotations.
-              </p>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={runGuidedDemo}>
-                  Guided reset
-                </Button>
-                <Button onClick={analyzeUploads}>
-                  Analyze now
-                </Button>
+                    <Card className="glass-card">
+                      <CardHeader>
+                        <CardTitle>Detection and action feed</CardTitle>
+                        <CardDescription>Localized detections and action recommendations for the selected cell.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        {(focusEvidence.length ? focusEvidence : []).map((item) => (
+                          <article key={item.id} className="rounded-xl border border-emerald-400/40 bg-gradient-to-br from-emerald-500/20 to-teal-600/15 p-3">
+                            <p className="text-xs uppercase tracking-wide text-emerald-200/70">{item.badge}</p>
+                            <p className="font-semibold text-emerald-100">{item.speciesName}</p>
+                            <p className="text-sm text-emerald-200/80">{item.note}</p>
+                            <p className="text-xs text-teal-400 mt-1">{formatPercent(item.confidence)} confidence</p>
+                          </article>
+                        ))}
+                        {!focusEvidence.length && activeScanCell?.detections?.length
+                          ? activeScanCell.detections.map((detection) => (
+                              <article key={`${activeScanCell.cell_id}-${detection.species_name}`} className="rounded-xl border border-emerald-400/40 bg-gradient-to-br from-emerald-500/20 to-teal-600/15 p-3">
+                                <p className="font-semibold text-emerald-100">{detection.species_name}</p>
+                                <p className="text-sm text-emerald-200/80">{detection.note}</p>
+                                <div className="mt-2 flex items-center justify-between text-xs">
+                                  <span className={`inline-flex rounded-full border px-2 py-0.5 ${toneClass(detection.risk_level)}`}>
+                                    {threatProfile(detection.risk_level).shortLabel}
+                                  </span>
+                                  <span className="text-emerald-100">{formatPercent(detection.confidence)}</span>
+                                </div>
+                              </article>
+                            ))
+                          : null}
+                        <Separator />
+                        <div className="space-y-2">
+                          {combinedActions.map((action) => (
+                            <div key={action} className="flex items-start gap-2 text-sm">
+                              <CheckCircle2 className="size-4 mt-0.5 text-teal-600 shrink-0" />
+                              <span>{action}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </section>
+              </>
+            )}
+          </div>
+        )}
+
+        {currentPage === "species" && (
+          <div className="container space-y-5 py-12">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Species profiles</p>
+                <h2 className="text-3xl font-semibold">Gallery view for each species at risk</h2>
               </div>
-            </CardContent>
-          </Card>
-        </footer>
+              <div className="w-full sm:w-80">
+                <Input
+                  placeholder="Search by species, scientific name, or habitat"
+                  value={speciesQuery}
+                  onChange={(event) => setSpeciesQuery(event.target.value)}
+                />
+              </div>
+            </div>
+
+            <Card className="glass-card">
+              <CardContent className="pt-6">
+                <Accordion type="single" collapsible className="w-full">
+                  {filteredSpecies.map((species) => (
+                    <AccordionItem key={species.common_name} value={species.common_name}>
+                      <AccordionTrigger className="text-left">
+                        <div className="flex flex-col gap-1">
+                          <span className="font-semibold">{species.common_name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {species.scientific_name} · {threatProfile(species.status_label).shortLabel} · {formatPercent(species.avg_vulnerability_score)}
+                          </span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="space-y-3 pb-4">
+                          <p className="text-sm text-muted-foreground">{species.narrative}</p>
+                          <div className="flex flex-wrap gap-2">
+                            {species.action_items.map((action) => (
+                              <span key={action} className="inline-flex rounded-full border border-emerald-400/40 bg-gradient-to-br from-emerald-500/25 to-teal-600/20 px-3 py-1 text-xs text-emerald-100">
+                                {action}
+                              </span>
+                            ))}
+                          </div>
+                          <Gallery4
+                            title={`${species.common_name} image references`}
+                            description={`Visual examples plus habitat context for ${species.common_name}.`}
+                            items={speciesGalleryItems(species)}
+                          />
+                          <Button asChild variant="outline">
+                            <a href={species.source_url} target="_blank" rel="noreferrer">
+                              Open source reference
+                            </a>
+                          </Button>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {currentPage === "sources" && (
+          <div className="container space-y-5 py-12">
+            <div>
+              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Confidence and provenance</p>
+              <h2 className="text-3xl font-semibold">Sensor context and source links</h2>
+            </div>
+            <div className="grid gap-5 lg:grid-cols-2">
+              <Card className="glass-card">
+                <CardHeader>
+                  <CardTitle>Sensor profiles</CardTitle>
+                  <CardDescription>Representative stations used to anchor habitat interpretation.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {sensorProfiles.map((sensor) => (
+                    <article key={sensor.sensor_id} className="rounded-xl border border-emerald-400/40 bg-gradient-to-br from-emerald-500/20 to-teal-600/15 p-3">
+                      <p className="font-semibold text-emerald-100">{sensor.label || sensor.sensor_id}</p>
+                      <p className="text-sm text-emerald-200/80">
+                        {sensor.summary || sensor.why_it_matters || "Context station used in the EcoScan fusion model."}
+                      </p>
+                      {sensor.source_url ? (
+                        <a className="text-xs text-teal-400 hover:underline" href={sensor.source_url} target="_blank" rel="noreferrer">
+                          {sensor.source_name || sensor.source_url}
+                        </a>
+                      ) : (
+                        <p className="text-xs text-emerald-200/60">{sensor.kind || "No linked source URL in this payload."}</p>
+                      )}
+                    </article>
+                  ))}
+                </CardContent>
+              </Card>
+              <Card className="glass-card">
+                <CardHeader>
+                  <CardTitle>Data sources</CardTitle>
+                  <CardDescription>Public links used for corridor and species grounding.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {dataSources.map((source) => (
+                    <article key={source.url} className="rounded-xl border border-emerald-400/40 bg-gradient-to-br from-emerald-500/20 to-teal-600/15 p-3">
+                      <p className="font-semibold text-emerald-100">{source.name}</p>
+                      <p className="text-sm text-emerald-200/80">{source.note}</p>
+                      <a className="text-xs text-teal-400 hover:underline" href={source.url} target="_blank" rel="noreferrer">
+                        {source.kind}
+                      </a>
+                    </article>
+                  ))}
+                  {!dataSources.length ? (
+                    <p className="text-sm text-muted-foreground">
+                      No external source list in this payload. Add `data_sources` to your map JSON for full provenance cards.
+                    </p>
+                  ) : null}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
