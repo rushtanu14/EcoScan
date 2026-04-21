@@ -12,7 +12,7 @@
   --card: 225 33% 9%;
   --card-foreground: 224 66% 95%;
   --border: 224 22% 24%;
-  --input: 224 22% 22%;
+  --input: 224 15% 28%;
   --primary: 351 100% 62%;
   --primary-foreground: 0 0% 100%;
   --secondary: 224 23% 17%;
@@ -35,7 +35,7 @@ body {
   min-height: 100vh;
   font-family: "Inter", "SF Pro Text", "Avenir Next", "Segoe UI", sans-serif;
   background-image:
-    radial-gradient(circle at 18% -8%, rgba(141, 95, 255, 0.26), transparent 38%),
+    radial-gradient(circle at 18% -8%, rgba(34, 197, 194, 0.22), transparent 38%),
     radial-gradient(circle at 82% -10%, rgba(255, 82, 102, 0.22), transparent 34%),
     linear-gradient(180deg, #05070d 0%, #04060c 52%, #03050a 100%);
 }
