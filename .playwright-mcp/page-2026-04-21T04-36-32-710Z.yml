@@ -1,0 +1,5 @@
+- generic [ref=e5]:
+  - heading "Unable to load the biodiversity briefing" [level=3] [ref=e6]:
+    - img [ref=e7]
+    - text: Unable to load the biodiversity briefing
+  - paragraph [ref=e9]: No payload available from /api/demo-biodiversity.
