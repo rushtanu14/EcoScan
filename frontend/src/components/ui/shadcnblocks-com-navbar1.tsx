@@ -131,13 +131,8 @@ const Navbar1 = ({
               </NavigationMenu>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button asChild variant="outline" size="sm">
-              <a href={auth.login.url}>{auth.login.text}</a>
-            </Button>
-            <Button asChild size="sm">
-              <a href={auth.signup.url}>{auth.signup.text}</a>
-            </Button>
+          <div className="flex gap-2 items-center">
+            <a href="#upload" className="inline-flex h-9 items-center gap-2 rounded-md bg-cyan-500 px-3 py-1 text-sm font-semibold text-white hover:bg-cyan-600">Upload</a>
           </div>
         </nav>
         <div className="block lg:hidden">
@@ -179,12 +174,7 @@ const Navbar1 = ({
                     </div>
                   </div>
                   <div className="flex flex-col gap-3">
-                    <Button asChild variant="outline">
-                      <a href={auth.login.url}>{auth.login.text}</a>
-                    </Button>
-                    <Button asChild>
-                      <a href={auth.signup.url}>{auth.signup.text}</a>
-                    </Button>
+                    <a href="#upload" className="inline-flex h-10 items-center gap-2 rounded-md bg-cyan-500 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-600">Upload</a>
                   </div>
                 </div>
               </SheetContent>

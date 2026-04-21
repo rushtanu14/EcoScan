@@ -9,10 +9,10 @@
   --muted-foreground: 160 20% 72%;
   --popover: 160 32% 8%;
   --popover-foreground: 160 50% 95%;
-  --card: 165 33% 9%;
-  --card-foreground: 160 50% 95%;
+  --card: 165 33% 14%;
+  --card-foreground: 160 50% 97%;
   --border: 165 22% 24%;
-  --input: 160 15% 28%;
+  --input: 160 15% 34%;
   --primary: 162 72% 45%;
   --primary-foreground: 0 0% 100%;
   --secondary: 160 23% 17%;
@@ -49,7 +49,8 @@ h4 {
 }
 
 .glass-card {
-  @apply border border-border/80 bg-card/90 backdrop-blur-md shadow-[0_24px_64px_rgba(0,0,0,0.45)];
+  @apply border border-border/60 bg-card/75 backdrop-blur-md shadow-[0_18px_48px_rgba(0,0,0,0.5)];
+  color: hsl(var(--card-foreground));
 }
 
 .surface-noise::before {
@@ -58,9 +59,9 @@ h4 {
   inset: 0;
   pointer-events: none;
   border-radius: inherit;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.14) 0.62px, transparent 0.62px);
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 0.62px, transparent 0.62px);
   background-size: 4px 4px;
-  opacity: 0.11;
+  opacity: 0.06;
 }
 
 .texture-grid {
