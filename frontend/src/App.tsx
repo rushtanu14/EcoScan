@@ -182,6 +182,8 @@ export default function App() {
   const [modelStatus, setModelStatus] = useState<ModelStatus>("heuristic");
 
   const objectUrlsRef = useRef<string[]>([]);
+  const [route, setRoute] = useState<string>(window.location.hash?.replace('#', '') || 'home');
+
 
   const habitats = payload?.habitats || [];
   const speciesCatalog = payload?.species_catalog || [];
@@ -203,6 +205,12 @@ export default function App() {
       releaseObjectUrls();
     };
   }, [releaseObjectUrls]);
+
+  useEffect(() => {
+    const onHash = () => setRoute(window.location.hash.replace('#', '') || 'home');
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -492,39 +500,53 @@ export default function App() {
 
   return (
     <div className="relative pb-24">
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#05070c]/95 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-emerald-900/20 bg-gradient-to-r from-emerald-950/95 via-teal-950/95 to-emerald-950/95 backdrop-blur-xl">
         <div className="container flex items-center justify-between py-3.5">
-          <a href="#home" className="text-2xl font-black tracking-tight text-white">
-            ecoscan
+          <a href="#home" className="text-2xl font-black tracking-tight text-emerald-50">
+            EcoScan
           </a>
-          <nav className="hidden items-center gap-10 md:flex">
-            <a href="#story" className="text-sm font-semibold text-slate-200 transition-colors hover:text-white">
-              Features
+          <nav className="hidden items-center gap-8 md:flex">
+            <a href="#habitat" className="text-sm font-semibold text-emerald-100 transition-colors hover:text-emerald-50">
+              Habitat Analysis
             </a>
-            <a href="#species" className="text-sm font-semibold text-slate-200 transition-colors hover:text-white">
-              Pricing
+            <a href="#species" className="text-sm font-semibold text-emerald-100 transition-colors hover:text-emerald-50">
+              Species Profiles
             </a>
-            <a href="#sources" className="text-sm font-semibold text-slate-200 transition-colors hover:text-white">
-              About
+            <a href="#upload" className="text-sm font-semibold text-emerald-100 transition-colors hover:text-emerald-50">
+              Photo Upload
+            </a>
+            <a href="#scan" className="text-sm font-semibold text-emerald-100 transition-colors hover:text-emerald-50">
+              3D Analysis
             </a>
           </nav>
-          <div className="flex items-center gap-2.5">
-            <Button
-              variant="outline"
-              className="h-10 rounded-xl border-white/20 bg-transparent px-4 text-sm font-semibold text-white hover:bg-white/10"
-            >
-              Sign In
-            </Button>
-            <Button className="h-10 rounded-xl bg-zinc-100 px-4 text-sm font-semibold text-zinc-900 hover:bg-white">
-              Get Started
-            </Button>
-          </div>
         </div>
       </header>
 
       <main className="space-y-14" id="home">
-        <section className="container pt-8 space-y-8">
-          <HorizonHeroSection />
+        <section id="home" className={route !== 'home' ? 'hidden relative w-full h-screen flex items-center justify-center overflow-hidden' : 'relative w-full h-screen flex items-center justify-center overflow-hidden'}>
+          <div 
+            className="absolute inset-0 w-full h-full bg-cover bg-center"
+            style={{
+              backgroundImage: "url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=2000')",
+            }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/60" />
+          </div>
+          
+          <div className="relative z-10 container mx-auto text-center space-y-6 text-white px-4 max-w-3xl">
+            <h1 className="text-5xl md:text-6xl font-black tracking-tight leading-tight">
+              Protect Ecosystems with Data
+            </h1>
+            <p className="text-lg md:text-xl text-emerald-100 max-w-2xl mx-auto">
+              Real-time biodiversity monitoring, species-risk assessment, and conservation action planning for critical habitats.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
+              <a href="#upload" className="inline-block rounded-full bg-cyan-400/95 hover:bg-cyan-500 text-zinc-900 font-semibold px-6 py-3 shadow-lg">Start with sample data</a>
+            </div>
+          </div>
+        </section>
+
+        <section id="habitat" className={route !== 'habitat' ? 'hidden container pt-8 space-y-8' : 'container pt-8 space-y-8'}>
           <div id="story" className="grid gap-5 lg:grid-cols-3">
             <Card className="glass-card lg:col-span-2">
               <CardHeader>
@@ -634,7 +656,7 @@ export default function App() {
           </Card>
         </section>
 
-        <section id="upload" className="container space-y-5">
+        <section id="upload" className={route !== 'upload' ? 'hidden container space-y-5' : 'container space-y-5'}>
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Photo intake</p>
@@ -734,7 +756,7 @@ export default function App() {
           </Card>
         </section>
 
-        <section id="map" className="container space-y-5">
+        <section id="map" className={route !== 'map' ? 'hidden container space-y-5' : 'container space-y-5'}>
           <div>
             <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Spatial view</p>
             <h2 className="text-3xl font-semibold">Corridor map with habitat highlights</h2>
@@ -821,7 +843,7 @@ export default function App() {
           </div>
         </section>
 
-        <section id="scan" className="container space-y-5">
+        <section id="scan" className={route !== 'scan' ? 'hidden container space-y-5' : 'container space-y-5'}>
           <div>
             <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">3D scan interpretation</p>
             <h2 className="text-3xl font-semibold">Annotated mesh/point-cloud style hotspot view</h2>
@@ -917,7 +939,7 @@ export default function App() {
           </div>
         </section>
 
-        <section id="species" className="container space-y-5">
+        <section id="species" className={route !== 'species' ? 'hidden container space-y-5' : 'container space-y-5'}>
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Species profiles</p>
