@@ -75,6 +75,7 @@ SPECIES_LIBRARY = [
         "image_asset": "/assets/species-valley-oak.svg",
         "example_images": ["/assets/species-valley-oak.svg", "/assets/species-acorn-woodpecker.svg"],
         "aliases": ["oak", "sapling", "tree", "quercus"],
+        "factors": ["soil_stress", "moisture_stress", "thermal_stress"],
         "threat_level": "High",
         "population_trend": "Recruitment failure—few trees <50 years old",
         "narrative": "Valley oaks historically dominated California lowlands, reaching 150 feet and living 300+ years. Over 99% of stands are gone, and survivors show recruitment failure: seedlings cannot establish in drying soils and thermal stress. Young trees are trapped between grazing pressure and groundwater depletion.",
