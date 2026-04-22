@@ -49,6 +49,31 @@ stop_by_pid_file "$legacy_pid_file" "EcoScan legacy server"
 stop_by_pid_file "$desktop_backend_pid_file" "EcoScan desktop backend"
 stop_by_pid_file "$desktop_pid_file" "EcoScan desktop app"
 
+# Additionally, kill any processes listening on the common dev ports (frontend/backend)
+kill_by_port() {
+  local port="$1"
+  if command -v lsof >/dev/null 2>&1; then
+    for pid in $(lsof -tiTCP:"${port}" -sTCP:LISTEN 2>/dev/null || true); do
+      if [[ -n "$pid" ]]; then
+        echo "Killing process $pid listening on port ${port}"
+        kill "$pid" 2>/dev/null || true
+        for _ in $(seq 1 20); do
+          if ! kill -0 "$pid" 2>/dev/null; then
+            echo "Process $pid on port ${port} stopped."
+            break
+          fi
+          sleep 0.1
+        done
+        kill -9 "$pid" 2>/dev/null || true
+      fi
+    done
+  fi
+}
+
+# Common ports used by EcoScan
+kill_by_port 8000
+kill_by_port 5173
+
 if [[ -f "$frontend_pid_file" || -f "$backend_pid_file" || -f "$legacy_pid_file" || -f "$desktop_backend_pid_file" || -f "$desktop_pid_file" ]]; then
   rm -f "$frontend_pid_file" "$backend_pid_file" "$legacy_pid_file" "$desktop_backend_pid_file" "$desktop_pid_file"
 fi

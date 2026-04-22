@@ -6,6 +6,10 @@ cd "$(dirname "$0")"
 desktop_pid_file=".ecoscan.desktop.pid"
 desktop_backend_pid_file=".ecoscan.desktop.backend.pid"
 
+backend_port=8000
+frontend_port=5173
+backend_args=()
+
 is_running() {
   local pid="${1:-}"
   [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null
@@ -29,6 +33,36 @@ clean_stale_pid() {
 
 clean_stale_pid "$desktop_pid_file"
 clean_stale_pid "$desktop_backend_pid_file"
+
+existing_backend_pid="$(read_pid "$desktop_backend_pid_file")"
+existing_desktop_pid="$(read_pid "$desktop_pid_file")"
+
+if is_running "$existing_backend_pid" || is_running "$existing_desktop_pid"; then
+  echo "EcoScan desktop appears to already be running."
+  [[ -n "$existing_backend_pid" ]] && echo "Backend PID: $existing_backend_pid"
+  [[ -n "$existing_desktop_pid" ]] && echo "Desktop PID: $existing_desktop_pid"
+  echo "Use ./stop.sh first if you want to restart it."
+  exit 1
+fi
+
+port_in_use() {
+  local port="$1"
+  python3 - "$port" <<'PY'
+import socket
+import sys
+
+port = int(sys.argv[1])
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+try:
+    sock.bind(("127.0.0.1", port))
+except OSError:
+    sys.exit(0)
+finally:
+    sock.close()
+
+sys.exit(1)
+PY
+}
 
 existing_desktop_pid="$(read_pid "$desktop_pid_file")"
 if is_running "$existing_desktop_pid"; then
@@ -55,4 +89,36 @@ then
 fi
 
 echo "Launching EcoScan desktop app..."
-PYTHONPATH=src python3 -m ecoscan.desktop "$@"
+if port_in_use "$backend_port"; then
+  echo "Backend port ${backend_port} is already in use by another process."
+  echo "Stop the existing process, or start EcoScan on another port: ./run-desktop.sh --port 8123"
+  exit 1
+fi
+
+PYTHONPATH=src python3 -m ecoscan.cli serve --data-dir data/sample_inputs --port "$backend_port" "$@" &
+desktop_backend_pid=$!
+echo "$desktop_backend_pid" >"$desktop_backend_pid_file"
+
+for _ in $(seq 1 40); do
+  if curl -s "http://127.0.0.1:${backend_port}/health" >/dev/null; then
+    break
+  fi
+  sleep 0.25
+done
+
+if ! curl -s "http://127.0.0.1:${backend_port}/health" >/dev/null; then
+  echo "Backend failed to start on port ${backend_port}."
+  exit 1
+fi
+
+# Launch desktop UI (pywebview) which loads the local frontend or backend UI
+PYTHONPATH=src python3 -m ecoscan.desktop "$@" &
+desktop_pid=$!
+echo "$desktop_pid" >"$desktop_pid_file"
+
+echo "EcoScan desktop backend: http://127.0.0.1:${backend_port}"
+echo "Launched EcoScan desktop app (PID ${desktop_pid})."
+
+trap '[[ -n "$desktop_pid" ]] && kill "$desktop_pid" 2>/dev/null || true; [[ -n "$desktop_backend_pid" ]] && kill "$desktop_backend_pid" 2>/dev/null || true; rm -f "$desktop_pid_file" "$desktop_backend_pid_file"' EXIT INT TERM
+
+wait "$desktop_pid"
