@@ -45,7 +45,7 @@ export function SketchpadDropzone({ files, onDrop, onRemove }: SketchpadDropzone
         onClick={handleClick}
         onDragOver={(e) => e.preventDefault()}
         onDrop={handleDrop}
-        className="relative border-2 border-dashed border-gray-400/60 rounded-lg p-8 min-h-[260px] bg-white/80 flex flex-wrap gap-4 items-start cursor-pointer text-foreground"
+        className="relative border-2 border-dashed border-gray-400/60 rounded-lg p-8 min-h-[260px] bg-white/80 flex flex-wrap gap-4 items-start cursor-pointer text-zinc-900"
         style={{
           backgroundImage:
             "repeating-linear-gradient(0deg, transparent, transparent 24px, rgba(0,0,0,0.04) 25px), repeating-linear-gradient(-90deg, transparent, transparent 24px, rgba(0,0,0,0.04) 25px)",

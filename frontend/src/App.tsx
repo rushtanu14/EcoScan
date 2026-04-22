@@ -560,27 +560,27 @@ export default function App() {
                   <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${toneClass(activeHabitat?.health_label || "thriving")}`}>
                     {activeThreat.shortLabel} hotspot
                   </span>
-                  <span className="inline-flex items-center rounded-full border border-border/70 bg-white/60 px-3 py-1 text-xs font-semibold text-foreground">
+                  <span className="inline-flex items-center rounded-full border border-border/70 bg-white/60 px-3 py-1 text-xs font-semibold text-zinc-900">
                     Mode: {evidenceMode === "uploaded" ? "Uploaded photos" : evidenceMode === "guided" ? "Sample field set" : "Habitat model only"}
                   </span>
                   <span className="inline-flex items-center rounded-full border border-border/70 bg-white/60 px-3 py-1 text-xs font-semibold">
                     {MODEL_STATUS_TEXT[modelStatus].label}
                   </span>
                 </div>
-                <p className="text-sm text-muted-foreground">{MODEL_STATUS_TEXT[modelStatus].detail}</p>
-                <p className="text-sm text-muted-foreground">{activeThreat.description}</p>
+                <p className="text-sm text-zinc-700">{MODEL_STATUS_TEXT[modelStatus].detail}</p>
+                <p className="text-sm text-zinc-700">{activeThreat.description}</p>
 
                 <div className="grid gap-3 md:grid-cols-3">
-                  <article className="rounded-xl border border-border/70 bg-white/60 p-4 text-foreground">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Average biodiversity</p>
+                  <article className="rounded-xl border border-border/70 bg-white/60 p-4 text-zinc-900">
+                    <p className="text-xs uppercase tracking-wide text-zinc-700">Average biodiversity</p>
                     <p className="mt-1 text-2xl font-semibold">{payload.overview.avg_biodiversity_score.toFixed(1)}</p>
                   </article>
-                  <article className="rounded-xl border border-border/70 bg-white/60 p-4 text-foreground">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Stressed or fragile cells</p>
+                  <article className="rounded-xl border border-border/70 bg-white/60 p-4 text-zinc-900">
+                    <p className="text-xs uppercase tracking-wide text-zinc-700">Stressed or fragile cells</p>
                     <p className="mt-1 text-2xl font-semibold">{payload.overview.stressed_cells + payload.overview.fragile_cells}</p>
                   </article>
-                  <article className="rounded-xl border border-border/70 bg-white/60 p-4 text-foreground">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Lead at-risk species</p>
+                  <article className="rounded-xl border border-border/70 bg-white/60 p-4 text-zinc-900">
+                    <p className="text-xs uppercase tracking-wide text-zinc-700">Lead at-risk species</p>
                     <p className="mt-1 text-base font-semibold">{activeSpecies?.common_name || payload.overview.top_species_at_risk[0]}</p>
                   </article>
                 </div>
@@ -601,7 +601,7 @@ export default function App() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="rounded-xl border border-border/70 bg-white/60 px-4 py-3 text-sm text-foreground md:max-w-sm">
+                  <div className="rounded-xl border border-border/70 bg-white/60 px-4 py-3 text-sm text-zinc-900 md:max-w-sm">
                     Keep the first pass simple: one species, one hotspot, one action.
                   </div>
                 </div>
@@ -615,7 +615,7 @@ export default function App() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {combinedActions.map((action) => (
-                  <div key={action} className="rounded-xl border border-border/70 bg-white/70 p-3 text-sm text-foreground">
+                  <div key={action} className="rounded-xl border border-border/70 bg-white/70 p-3 text-sm text-zinc-900">
                     {action}
                   </div>
                 ))}
@@ -636,21 +636,21 @@ export default function App() {
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <article className="rounded-xl border border-border/70 bg-white/60 p-4 text-foreground">
+              <article className="rounded-xl border border-border/70 bg-white/60 p-4 text-zinc-900">
                 <h3 className="font-semibold">Photo-to-species detection</h3>
-                <p className="mt-2 text-sm text-muted-foreground">Uploaded photos replace sample evidence and update hotspot focus.</p>
+                <p className="mt-2 text-sm text-zinc-700">Uploaded photos replace sample evidence and update hotspot focus.</p>
               </article>
-              <article className="rounded-xl border border-border/70 bg-white/60 p-4 text-foreground">
+              <article className="rounded-xl border border-border/70 bg-white/60 p-4 text-zinc-900">
                 <h3 className="font-semibold">Map + scan sync</h3>
-                <p className="mt-2 text-sm text-muted-foreground">One click keeps evidence cards, map polygons, and scan overlays aligned.</p>
+                <p className="mt-2 text-sm text-zinc-700">One click keeps evidence cards, map polygons, and scan overlays aligned.</p>
               </article>
-              <article className="rounded-xl border border-border/70 bg-white/60 p-4 text-foreground">
+              <article className="rounded-xl border border-border/70 bg-white/60 p-4 text-zinc-900">
                 <h3 className="font-semibold">Risk-first narrative</h3>
-                <p className="mt-2 text-sm text-muted-foreground">The top takeaway card leads with species impact before technical detail.</p>
+                <p className="mt-2 text-sm text-zinc-700">The top takeaway card leads with species impact before technical detail.</p>
               </article>
-              <article className="rounded-xl border border-border/70 bg-white/60 p-4 text-foreground">
+              <article className="rounded-xl border border-border/70 bg-white/60 p-4 text-zinc-900">
                 <h3 className="font-semibold">Action-oriented close</h3>
-                <p className="mt-2 text-sm text-muted-foreground">Immediate restoration steps stay visible in every focused run.</p>
+                <p className="mt-2 text-sm text-zinc-700">Immediate restoration steps stay visible in every focused run.</p>
               </article>
             </CardContent>
           </Card>
@@ -726,7 +726,7 @@ export default function App() {
                     <button
                       type="button"
                       key={item.id}
-                      className={`text-left rounded-2xl overflow-hidden border transition-all bg-white/80 hover:shadow-lg text-foreground ${
+                      className={`text-left rounded-2xl overflow-hidden border transition-all bg-white/80 hover:shadow-lg text-zinc-900 ${
                         item.cellId === activeCellId || item.speciesName === activeSpeciesName
                           ? "border-primary shadow-lg"
                           : "border-border/70"
@@ -747,7 +747,7 @@ export default function App() {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-2xl border border-dashed border-border p-8 text-center text-muted-foreground">
+                <div className="rounded-2xl border border-dashed border-border p-8 text-center text-zinc-700">
                   <ImagePlus className="size-8 mx-auto mb-3" />
                   No evidence cards yet.
                 </div>
@@ -789,7 +789,7 @@ export default function App() {
                 <CardDescription>Click any polygon to update species and 3D scan focus.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="rounded-2xl border border-border/70 bg-white/80 p-3">
+                <div className="rounded-2xl border border-border/70 bg-white/80 p-3 text-zinc-900">
                   <svg viewBox="0 0 100 100" className="h-[420px] w-full rounded-xl bg-[#f8f5ef]">
                     {landmarks.map((landmark) => {
                       const points = landmark.coordinates
@@ -877,7 +877,7 @@ export default function App() {
                   </svg>
                 </div>
                 {activeScanCell ? (
-                  <div className="rounded-2xl border border-border/70 bg-white/70 p-4">
+                  <div className="rounded-2xl border border-border/70 bg-white/70 p-4 text-zinc-900">
                     <p className="text-xs uppercase tracking-wide text-muted-foreground">Highlighted hotspot</p>
                     <h3 className="mt-1 text-xl font-semibold">{activeScanCell.cell_id}</h3>
                     <p className="text-sm text-muted-foreground mt-1">{activeHabitat?.habitat_story}</p>
@@ -904,7 +904,7 @@ export default function App() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {(focusEvidence.length ? focusEvidence : []).map((item) => (
-                  <article key={item.id} className="rounded-xl border border-border/70 bg-white/70 p-3">
+                  <article key={item.id} className="rounded-xl border border-border/70 bg-white/70 p-3 text-zinc-900">
                     <p className="text-xs uppercase tracking-wide text-muted-foreground">{item.badge}</p>
                     <p className="font-semibold">{item.speciesName}</p>
                     <p className="text-sm text-muted-foreground">{item.note}</p>
@@ -913,7 +913,7 @@ export default function App() {
                 ))}
                 {!focusEvidence.length && activeScanCell?.detections?.length
                   ? activeScanCell.detections.map((detection) => (
-                      <article key={`${activeScanCell.cell_id}-${detection.species_name}`} className="rounded-xl border border-border/70 bg-white/70 p-3">
+                      <article key={`${activeScanCell.cell_id}-${detection.species_name}`} className="rounded-xl border border-border/70 bg-white/70 p-3 text-zinc-900">
                         <p className="font-semibold">{detection.species_name}</p>
                         <p className="text-sm text-muted-foreground">{detection.note}</p>
                         <div className="mt-2 flex items-center justify-between text-xs">
@@ -972,7 +972,7 @@ export default function App() {
                         <p className="text-sm text-muted-foreground">{species.narrative}</p>
                         <div className="flex flex-wrap gap-2">
                           {species.action_items.map((action) => (
-                            <span key={action} className="inline-flex rounded-full border border-border/70 bg-white/70 px-3 py-1 text-xs">
+                            <span key={action} className="inline-flex rounded-full border border-border/70 bg-white/70 px-3 py-1 text-xs text-zinc-900">
                               {action}
                             </span>
                           ))}
@@ -1009,7 +1009,7 @@ export default function App() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {sensorProfiles.map((sensor) => (
-                  <article key={sensor.sensor_id} className="rounded-xl border border-border/70 bg-white/70 p-3">
+                  <article key={sensor.sensor_id} className="rounded-xl border border-border/70 bg-white/70 p-3 text-zinc-900">
                     <p className="font-semibold">{sensor.label || sensor.sensor_id}</p>
                     <p className="text-sm text-muted-foreground">
                       {sensor.summary || sensor.why_it_matters || "Context station used in the EcoScan fusion model."}
@@ -1032,7 +1032,7 @@ export default function App() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {dataSources.map((source) => (
-                  <article key={source.url} className="rounded-xl border border-border/70 bg-white/70 p-3">
+                  <article key={source.url} className="rounded-xl border border-border/70 bg-white/70 p-3 text-zinc-900">
                     <p className="font-semibold">{source.name}</p>
                     <p className="text-sm text-muted-foreground">{source.note}</p>
                     <a className="text-xs text-primary hover:underline" href={source.url} target="_blank" rel="noreferrer">
