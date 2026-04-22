@@ -587,7 +587,7 @@ export default function App() {
 
                 <div className="flex flex-wrap items-end gap-3">
                   <div className="w-full md:w-72">
-                    <p className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">Focus species</p>
+                    <p className="mb-1 text-xs uppercase tracking-wide text-foreground">Focus species</p>
                     <Select value={activeSpeciesName} onValueChange={selectSpecies}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a species" />
@@ -620,7 +620,7 @@ export default function App() {
                   </div>
                 ))}
                 {!combinedActions.length ? (
-                  <p className="text-sm text-muted-foreground">No action items yet. Start with the sample set or run upload analysis first.</p>
+                  <p className="text-sm text-foreground">No action items yet. Start with the sample set or run upload analysis first.</p>
                 ) : null}
               </CardContent>
             </Card>
@@ -659,7 +659,7 @@ export default function App() {
         <section id="upload" className={route !== 'upload' ? 'hidden container space-y-5' : 'container space-y-5'}>
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Photo intake</p>
+              <p className="text-xs uppercase tracking-[0.16em] text-foreground">Photo intake</p>
               <h2 className="text-3xl font-semibold">Aesthetic upload flow with clear next steps</h2>
             </div>
             <div className="flex gap-2">
@@ -700,7 +700,7 @@ export default function App() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <SketchpadDropzone files={dropFiles} onDrop={handleDrop} onRemove={removeDropFile} />
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <div className="flex items-center justify-between text-sm text-foreground">
                   <span>{dropFiles.length} file(s) in queue</span>
                   <Button variant="outline" size="sm" onClick={() => setDropFiles([])}>
                     Clear board
@@ -738,9 +738,9 @@ export default function App() {
                     >
                       <img src={item.image} alt={item.title} className="h-44 w-full object-cover" />
                       <div className="p-4 space-y-1.5">
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground">{item.badge}</p>
+                        <p className="text-xs uppercase tracking-wide text-foreground">{item.badge}</p>
                         <h3 className="font-semibold">{item.title}</h3>
-                        <p className="text-sm text-muted-foreground">{item.subtitle}</p>
+                        <p className="text-sm text-foreground">{item.subtitle}</p>
                         <p className="text-xs text-primary">{item.annotation}</p>
                       </div>
                     </button>
@@ -758,7 +758,7 @@ export default function App() {
 
         <section id="map" className={route !== 'map' ? 'hidden container space-y-5' : 'container space-y-5'}>
           <div>
-            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Spatial view</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-foreground">Spatial view</p>
             <h2 className="text-3xl font-semibold">Corridor map with habitat highlights</h2>
           </div>
           <div className="grid gap-5 lg:grid-cols-3">
@@ -778,8 +778,8 @@ export default function App() {
                     />
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground">{studyArea?.story}</p>
-                <p className="text-sm text-muted-foreground">{payload.location_context?.pressure_story}</p>
+                <p className="text-sm text-foreground">{studyArea?.story}</p>
+                <p className="text-sm text-foreground">{payload.location_context?.pressure_story}</p>
               </CardContent>
             </Card>
 
@@ -845,7 +845,7 @@ export default function App() {
 
         <section id="scan" className={route !== 'scan' ? 'hidden container space-y-5' : 'container space-y-5'}>
           <div>
-            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">3D scan interpretation</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-foreground">3D scan interpretation</p>
             <h2 className="text-3xl font-semibold">Annotated mesh/point-cloud style hotspot view</h2>
           </div>
           <div className="grid gap-5 lg:grid-cols-3">
@@ -878,9 +878,9 @@ export default function App() {
                 </div>
                 {activeScanCell ? (
                   <div className="rounded-2xl border border-border/70 bg-teal-100 p-4 text-zinc-900">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Highlighted hotspot</p>
+                    <p className="text-xs uppercase tracking-wide text-foreground">Highlighted hotspot</p>
                     <h3 className="mt-1 text-xl font-semibold">{activeScanCell.cell_id}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">{activeHabitat?.habitat_story}</p>
+                    <p className="text-sm text-foreground mt-1">{activeHabitat?.habitat_story}</p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <span className={`inline-flex rounded-full border px-3 py-1 text-xs ${toneClass(activeScanCell.health_label)}`}>
                         {threatProfile(activeScanCell.health_label).shortLabel}
@@ -905,9 +905,9 @@ export default function App() {
               <CardContent className="space-y-3">
                 {(focusEvidence.length ? focusEvidence : []).map((item) => (
                   <article key={item.id} className="rounded-xl border border-border/70 bg-white/70 p-3 text-zinc-900">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">{item.badge}</p>
+                    <p className="text-xs uppercase tracking-wide text-foreground">{item.badge}</p>
                     <p className="font-semibold">{item.speciesName}</p>
-                    <p className="text-sm text-muted-foreground">{item.note}</p>
+                    <p className="text-sm text-foreground">{item.note}</p>
                     <p className="text-xs text-primary mt-1">{formatPercent(item.confidence)} confidence</p>
                   </article>
                 ))}
@@ -915,7 +915,7 @@ export default function App() {
                   ? activeScanCell.detections.map((detection) => (
                       <article key={`${activeScanCell.cell_id}-${detection.species_name}`} className="rounded-xl border border-border/70 bg-white/70 p-3 text-zinc-900">
                         <p className="font-semibold">{detection.species_name}</p>
-                        <p className="text-sm text-muted-foreground">{detection.note}</p>
+                        <p className="text-sm text-foreground">{detection.note}</p>
                         <div className="mt-2 flex items-center justify-between text-xs">
                           <span className={`inline-flex rounded-full border px-2 py-0.5 ${toneClass(detection.risk_level)}`}>
                             {threatProfile(detection.risk_level).shortLabel}
@@ -942,7 +942,7 @@ export default function App() {
         <section id="species" className={route !== 'species' ? 'hidden container space-y-5' : 'container space-y-5'}>
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Species profiles</p>
+              <p className="text-xs uppercase tracking-[0.16em] text-foreground">Species profiles</p>
               <h2 className="text-3xl font-semibold">Gallery view for each species at risk</h2>
             </div>
             <div className="w-full sm:w-80">
@@ -962,14 +962,14 @@ export default function App() {
                     <AccordionTrigger className="text-left">
                       <div className="flex flex-col gap-1">
                         <span className="font-semibold">{species.common_name}</span>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-foreground">
                           {species.scientific_name} · {threatProfile(species.status_label).shortLabel} · {formatPercent(species.avg_vulnerability_score)}
                         </span>
                       </div>
                     </AccordionTrigger>
                     <AccordionContent>
                       <div className="space-y-3 pb-4">
-                        <p className="text-sm text-muted-foreground">{species.narrative}</p>
+                        <p className="text-sm text-foreground">{species.narrative}</p>
                         <div className="flex flex-wrap gap-2">
                           {species.action_items.map((action) => (
                             <span key={action} className="inline-flex rounded-full border border-border/70 bg-white/70 px-3 py-1 text-xs text-zinc-900">
@@ -998,7 +998,7 @@ export default function App() {
 
         <section id="sources" className="container space-y-5">
           <div>
-            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Confidence and provenance</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-foreground">Confidence and provenance</p>
             <h2 className="text-3xl font-semibold">Sensor context and source links</h2>
           </div>
           <div className="grid gap-5 lg:grid-cols-2">
@@ -1011,7 +1011,7 @@ export default function App() {
                 {sensorProfiles.map((sensor) => (
                   <article key={sensor.sensor_id} className="rounded-xl border border-border/70 bg-white/70 p-3 text-zinc-900">
                     <p className="font-semibold">{sensor.label || sensor.sensor_id}</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-foreground">
                       {sensor.summary || sensor.why_it_matters || "Context station used in the EcoScan fusion model."}
                     </p>
                     {sensor.source_url ? (
@@ -1019,7 +1019,7 @@ export default function App() {
                         {sensor.source_name || sensor.source_url}
                       </a>
                     ) : (
-                      <p className="text-xs text-muted-foreground">{sensor.kind || "No linked source URL in this payload."}</p>
+                      <p className="text-xs text-foreground">{sensor.kind || "No linked source URL in this payload."}</p>
                     )}
                   </article>
                 ))}
