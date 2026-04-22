@@ -23,7 +23,7 @@ export default function FileUpload05({ selectedFile, onSelect, onClear, onSubmit
         <h3 className="text-lg font-semibold text-foreground">Photo Upload</h3>
         <div className="mt-4 flex justify-center space-x-4 rounded-md border border-dashed border-input px-6 py-10 bg-background/50">
           <div className="sm:flex sm:items-center sm:gap-x-3">
-            <Upload className="mx-auto h-8 w-8 text-muted-foreground sm:mx-0 sm:h-6 sm:w-6" aria-hidden={true} />
+            <Upload className="mx-auto h-8 w-8 text-teal-700 sm:mx-0 sm:h-6 sm:w-6" aria-hidden={true} />
             <div className="mt-4 flex text-sm leading-6 text-foreground sm:mt-0">
               <Label
                 htmlFor="file-upload-4"
@@ -42,20 +42,20 @@ export default function FileUpload05({ selectedFile, onSelect, onClear, onSubmit
             </div>
           </div>
         </div>
-        <p className="mt-2 flex items-center justify-between text-xs leading-5 text-muted-foreground">
+        <p className="mt-2 flex items-center justify-between text-xs leading-5 text-teal-700">
           Recommended max. size: 10 MB, Accepted file types: JPG, PNG, WEBP.
         </p>
         {selectedFile ? (
-          <div className="relative mt-8 rounded-lg bg-muted p-3">
+          <div className="relative mt-8 rounded-lg bg-teal-50 p-3">
             <div className="absolute right-1 top-1">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="rounded-sm p-2 text-muted-foreground hover:text-foreground"
-                aria-label="Remove"
-                onClick={onClear}
-              >
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="rounded-sm p-2 text-teal-700 hover:text-foreground"
+                  aria-label="Remove"
+                  onClick={onClear}
+                >
                 <X className="size-4 shrink-0" aria-hidden={true} />
               </Button>
             </div>

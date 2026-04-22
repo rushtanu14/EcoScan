@@ -77,7 +77,7 @@ export function LocationMap({
           damping: 35,
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-muted/20 via-transparent to-muted/40" />
+        <div className="absolute inset-0 bg-gradient-to-br from-teal-50/40 via-transparent to-teal-50/60" />
 
         <AnimatePresence>
           {isExpanded && (
@@ -88,7 +88,7 @@ export function LocationMap({
               exit={{ opacity: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
             >
-              <div className="absolute inset-0 bg-muted" />
+              <div className="absolute inset-0 bg-teal-50" />
 
               <svg className="absolute inset-0 h-full w-full" preserveAspectRatio="none">
                 <motion.line
@@ -168,37 +168,37 @@ export function LocationMap({
               </svg>
 
               <motion.div
-                className="absolute top-[40%] left-[10%] h-[20%] w-[15%] rounded-sm border border-muted-foreground/20 bg-muted-foreground/30"
+                className="absolute top-[40%] left-[10%] h-[20%] w-[15%] rounded-sm border border-teal-700/20 bg-teal-100/30"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, delay: 0.5 }}
               />
               <motion.div
-                className="absolute top-[15%] left-[35%] h-[15%] w-[12%] rounded-sm border border-muted-foreground/15 bg-muted-foreground/25"
+                className="absolute top-[15%] left-[35%] h-[15%] w-[12%] rounded-sm border border-teal-700/15 bg-teal-100/25"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, delay: 0.6 }}
               />
               <motion.div
-                className="absolute top-[70%] left-[75%] h-[18%] w-[18%] rounded-sm border border-muted-foreground/18 bg-muted-foreground/28"
+                className="absolute top-[70%] left-[75%] h-[18%] w-[18%] rounded-sm border border-teal-700/18 bg-teal-100/28"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, delay: 0.7 }}
               />
               <motion.div
-                className="absolute top-[20%] right-[10%] h-[25%] w-[10%] rounded-sm border border-muted-foreground/15 bg-muted-foreground/22"
+                className="absolute top-[20%] right-[10%] h-[25%] w-[10%] rounded-sm border border-teal-700/15 bg-teal-100/22"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, delay: 0.55 }}
               />
               <motion.div
-                className="absolute top-[55%] left-[5%] h-[12%] w-[8%] rounded-sm border border-muted-foreground/12 bg-muted-foreground/20"
+                className="absolute top-[55%] left-[5%] h-[12%] w-[8%] rounded-sm border border-teal-700/12 bg-teal-100/20"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, delay: 0.65 }}
               />
               <motion.div
-                className="absolute top-[8%] left-[75%] h-[10%] w-[14%] rounded-sm border border-muted-foreground/15 bg-muted-foreground/22"
+                className="absolute top-[8%] left-[75%] h-[10%] w-[14%] rounded-sm border border-teal-700/15 bg-teal-100/22"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, delay: 0.75 }}
@@ -223,7 +223,7 @@ export function LocationMap({
                 </svg>
               </motion.div>
 
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60" />
+              <div className="absolute inset-0 bg-gradient-to-t from-teal-50 via-transparent to-transparent opacity-60" />
             </motion.div>
           )}
         </AnimatePresence>
