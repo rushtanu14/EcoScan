@@ -560,7 +560,7 @@ export default function App() {
                   <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${toneClass(activeHabitat?.health_label || "thriving")}`}>
                     {activeThreat.shortLabel} hotspot
                   </span>
-                  <span className="inline-flex items-center rounded-full border border-border/70 bg-white/60 px-3 py-1 text-xs font-semibold">
+                  <span className="inline-flex items-center rounded-full border border-border/70 bg-white/60 px-3 py-1 text-xs font-semibold text-foreground">
                     Mode: {evidenceMode === "uploaded" ? "Uploaded photos" : evidenceMode === "guided" ? "Sample field set" : "Habitat model only"}
                   </span>
                   <span className="inline-flex items-center rounded-full border border-border/70 bg-white/60 px-3 py-1 text-xs font-semibold">
@@ -571,15 +571,15 @@ export default function App() {
                 <p className="text-sm text-muted-foreground">{activeThreat.description}</p>
 
                 <div className="grid gap-3 md:grid-cols-3">
-                  <article className="rounded-xl border border-border/70 bg-white/60 p-4">
+                  <article className="rounded-xl border border-border/70 bg-white/60 p-4 text-foreground">
                     <p className="text-xs uppercase tracking-wide text-muted-foreground">Average biodiversity</p>
                     <p className="mt-1 text-2xl font-semibold">{payload.overview.avg_biodiversity_score.toFixed(1)}</p>
                   </article>
-                  <article className="rounded-xl border border-border/70 bg-white/60 p-4">
+                  <article className="rounded-xl border border-border/70 bg-white/60 p-4 text-foreground">
                     <p className="text-xs uppercase tracking-wide text-muted-foreground">Stressed or fragile cells</p>
                     <p className="mt-1 text-2xl font-semibold">{payload.overview.stressed_cells + payload.overview.fragile_cells}</p>
                   </article>
-                  <article className="rounded-xl border border-border/70 bg-white/60 p-4">
+                  <article className="rounded-xl border border-border/70 bg-white/60 p-4 text-foreground">
                     <p className="text-xs uppercase tracking-wide text-muted-foreground">Lead at-risk species</p>
                     <p className="mt-1 text-base font-semibold">{activeSpecies?.common_name || payload.overview.top_species_at_risk[0]}</p>
                   </article>
@@ -601,7 +601,7 @@ export default function App() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="rounded-xl border border-border/70 bg-white/60 px-4 py-3 text-sm text-muted-foreground md:max-w-sm">
+                  <div className="rounded-xl border border-border/70 bg-white/60 px-4 py-3 text-sm text-foreground md:max-w-sm">
                     Keep the first pass simple: one species, one hotspot, one action.
                   </div>
                 </div>
@@ -615,7 +615,7 @@ export default function App() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {combinedActions.map((action) => (
-                  <div key={action} className="rounded-xl border border-border/70 bg-white/70 p-3 text-sm">
+                  <div key={action} className="rounded-xl border border-border/70 bg-white/70 p-3 text-sm text-foreground">
                     {action}
                   </div>
                 ))}
@@ -636,19 +636,19 @@ export default function App() {
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <article className="rounded-xl border border-border/70 bg-white/60 p-4">
+              <article className="rounded-xl border border-border/70 bg-white/60 p-4 text-foreground">
                 <h3 className="font-semibold">Photo-to-species detection</h3>
                 <p className="mt-2 text-sm text-muted-foreground">Uploaded photos replace sample evidence and update hotspot focus.</p>
               </article>
-              <article className="rounded-xl border border-border/70 bg-white/60 p-4">
+              <article className="rounded-xl border border-border/70 bg-white/60 p-4 text-foreground">
                 <h3 className="font-semibold">Map + scan sync</h3>
                 <p className="mt-2 text-sm text-muted-foreground">One click keeps evidence cards, map polygons, and scan overlays aligned.</p>
               </article>
-              <article className="rounded-xl border border-border/70 bg-white/60 p-4">
+              <article className="rounded-xl border border-border/70 bg-white/60 p-4 text-foreground">
                 <h3 className="font-semibold">Risk-first narrative</h3>
                 <p className="mt-2 text-sm text-muted-foreground">The top takeaway card leads with species impact before technical detail.</p>
               </article>
-              <article className="rounded-xl border border-border/70 bg-white/60 p-4">
+              <article className="rounded-xl border border-border/70 bg-white/60 p-4 text-foreground">
                 <h3 className="font-semibold">Action-oriented close</h3>
                 <p className="mt-2 text-sm text-muted-foreground">Immediate restoration steps stay visible in every focused run.</p>
               </article>
@@ -726,7 +726,7 @@ export default function App() {
                     <button
                       type="button"
                       key={item.id}
-                      className={`text-left rounded-2xl overflow-hidden border transition-all bg-white/80 hover:shadow-lg ${
+                      className={`text-left rounded-2xl overflow-hidden border transition-all bg-white/80 hover:shadow-lg text-foreground ${
                         item.cellId === activeCellId || item.speciesName === activeSpeciesName
                           ? "border-primary shadow-lg"
                           : "border-border/70"
