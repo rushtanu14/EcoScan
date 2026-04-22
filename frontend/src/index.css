@@ -6,7 +6,8 @@
   --background: 160 30% 6%;
   --foreground: 160 50% 95%;
   --muted: 160 25% 12%;
-  --muted-foreground: 160 20% 72%;
+  /* Muted foreground was too light on pale card backgrounds; darken for contrast */
+  --muted-foreground: 160 8% 24%;
   --popover: 160 32% 8%;
   --popover-foreground: 160 50% 95%;
   --card: 165 33% 14%;

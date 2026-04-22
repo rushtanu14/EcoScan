@@ -1050,23 +1050,7 @@ export default function App() {
           </div>
         </section>
 
-        <footer className="container">
-          <Card className="glass-card">
-            <CardContent className="py-6 flex flex-col md:flex-row md:items-center justify-between gap-3">
-              <p className="text-sm text-muted-foreground">
-                EcoScan UI update branch: stable demo-first flow with photo intake, species galleries, map overlays, and scan annotations.
-              </p>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={runGuidedDemo}>
-                  Guided reset
-                </Button>
-                <Button onClick={analyzeUploads}>
-                  Analyze now
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </footer>
+        {/* Footer removed per user request (bottom action bar) */}
       </main>
     </div>
   );
