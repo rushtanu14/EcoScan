@@ -740,7 +740,7 @@ export default function App() {
                       <div className="p-4 space-y-1.5">
                         <p className="text-xs uppercase tracking-wide text-foreground">{item.badge}</p>
                         <h3 className="font-semibold">{item.title}</h3>
-                        <p className="text-sm text-foreground">{item.subtitle}</p>
+                        <p className="text-sm text-zinc-700">{item.subtitle}</p>
                         <p className="text-xs text-primary">{item.annotation}</p>
                       </div>
                     </button>

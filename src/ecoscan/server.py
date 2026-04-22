@@ -123,7 +123,29 @@ def run_dev_server(
     EcoScanHandler.cells_file = cells_file
     EcoScanHandler.sensors_file = sensors_file
     EcoScanHandler.map_file = map_file
-    server = ThreadingHTTPServer((host, port), EcoScanHandler)
+    try:
+        server = ThreadingHTTPServer((host, port), EcoScanHandler)
+    except OSError as e:
+        # If the port is already in use, check whether an existing service
+        # is responding on the same host:port. If so, assume the existing
+        # EcoScan server should be reused and exit gracefully. Otherwise
+        # re-raise the error so the caller can see the failure.
+        import socket
+
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            sock.settimeout(1.0)
+            sock.connect((host, port))
+            print(f"Detected existing server at http://{host}:{port}; not starting a new one.")
+            return
+        except Exception:
+            raise
+        finally:
+            try:
+                sock.close()
+            except Exception:
+                pass
+
     print(f"EcoScan server running at http://{host}:{port}")
     try:
         server.serve_forever()

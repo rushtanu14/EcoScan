@@ -71,6 +71,26 @@ if is_running "$existing_desktop_pid"; then
   exit 1
 fi
 
+# Parse optional flags and remove them from args passed to the backend/desktop.
+SKIP_FRONTEND_BUILD=0
+NEW_ARGS=()
+for a in "$@"; do
+  case "$a" in
+    --no-build|--skip-build)
+      SKIP_FRONTEND_BUILD=1
+      ;;
+    *)
+      NEW_ARGS+=("$a")
+      ;;
+  esac
+done
+
+if [[ ${#NEW_ARGS[@]} -gt 0 ]]; then
+  set -- "${NEW_ARGS[@]}"
+else
+  set --
+fi
+
 if ! command -v python3 >/dev/null 2>&1; then
   echo "python3 is required."
   exit 1
@@ -93,6 +113,24 @@ if port_in_use "$backend_port"; then
   echo "Backend port ${backend_port} is already in use by another process."
   echo "Stop the existing process, or start EcoScan on another port: ./run-desktop.sh --port 8123"
   exit 1
+fi
+
+# If a frontend app exists, build it and copy the production output into the
+# Python server static directory so the desktop app shows the up-to-date UI.
+if [ "$SKIP_FRONTEND_BUILD" -ne 1 ] && [ -d "frontend" ] && [ -f "frontend/package.json" ] && command -v npm >/dev/null 2>&1; then
+  echo "Building frontend production bundle..."
+  # Try to install dependencies (best-effort) and build. Failures shouldn't stop the server.
+  if (cd frontend && npm install --no-audit --no-fund); then
+    if (cd frontend && npm run build); then
+      echo "Copying frontend build into server static folder..."
+      rm -rf src/ecoscan/static/* || true
+      cp -R frontend/dist/* src/ecoscan/static/ || true
+    else
+      echo "Warning: frontend build failed; continuing with existing static files."
+    fi
+  else
+    echo "Warning: npm install failed; skipping frontend build."
+  fi
 fi
 
 PYTHONPATH=src python3 -m ecoscan.cli serve --data-dir data/sample_inputs --port "$backend_port" "$@" &

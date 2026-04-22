@@ -272,13 +272,13 @@ export function HorizonHeroSection() {
   }, []);
 
   useEffect(() => {
-    if (!ready) return;
+    if (!ready) return undefined;
     const tl = gsap.timeline();
     tl.from(menuRef.current, { x: -40, opacity: 0, duration: 0.7, ease: "power3.out" });
     tl.from(titleRef.current, { y: 90, opacity: 0, duration: 1, ease: "power4.out" }, "-=0.35");
     tl.from(subtitleRef.current, { y: 36, opacity: 0, duration: 0.8, ease: "power3.out" }, "-=0.7");
     tl.from(progressRef.current, { y: 20, opacity: 0, duration: 0.6 }, "-=0.55");
-    return () => tl.kill();
+    return () => { tl.kill(); };
   }, [ready]);
 
   useEffect(() => {
