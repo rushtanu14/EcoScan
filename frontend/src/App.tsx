@@ -904,18 +904,18 @@ export default function App() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {(focusEvidence.length ? focusEvidence : []).map((item) => (
-                  <article key={item.id} className="rounded-xl border border-border/70 bg-white/70 p-3 text-zinc-900">
-                    <p className="text-xs uppercase tracking-wide text-foreground">{item.badge}</p>
+                  <article key={item.id} className="rounded-xl border border-border/70 bg-teal-50 p-3 text-zinc-900">
+                    <p className="text-xs uppercase tracking-wide text-zinc-700">{item.badge}</p>
                     <p className="font-semibold">{item.speciesName}</p>
-                    <p className="text-sm text-foreground">{item.note}</p>
+                    <p className="text-sm text-zinc-900">{item.note}</p>
                     <p className="text-xs text-primary mt-1">{formatPercent(item.confidence)} confidence</p>
                   </article>
                 ))}
                 {!focusEvidence.length && activeScanCell?.detections?.length
                   ? activeScanCell.detections.map((detection) => (
-                      <article key={`${activeScanCell.cell_id}-${detection.species_name}`} className="rounded-xl border border-border/70 bg-white/70 p-3 text-zinc-900">
+                      <article key={`${activeScanCell.cell_id}-${detection.species_name}`} className="rounded-xl border border-border/70 bg-teal-50 p-3 text-zinc-900">
                         <p className="font-semibold">{detection.species_name}</p>
-                        <p className="text-sm text-foreground">{detection.note}</p>
+                        <p className="text-sm text-zinc-900">{detection.note}</p>
                         <div className="mt-2 flex items-center justify-between text-xs">
                           <span className={`inline-flex rounded-full border px-2 py-0.5 ${toneClass(detection.risk_level)}`}>
                             {threatProfile(detection.risk_level).shortLabel}
@@ -1009,9 +1009,9 @@ export default function App() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {sensorProfiles.map((sensor) => (
-                  <article key={sensor.sensor_id} className="rounded-xl border border-border/70 bg-white/70 p-3 text-zinc-900">
+                  <article key={sensor.sensor_id} className="rounded-xl border border-border/70 bg-teal-50 p-3 text-zinc-900">
                     <p className="font-semibold">{sensor.label || sensor.sensor_id}</p>
-                    <p className="text-sm text-foreground">
+                    <p className="text-sm text-zinc-900">
                       {sensor.summary || sensor.why_it_matters || "Context station used in the EcoScan fusion model."}
                     </p>
                     {sensor.source_url ? (
@@ -1019,7 +1019,7 @@ export default function App() {
                         {sensor.source_name || sensor.source_url}
                       </a>
                     ) : (
-                      <p className="text-xs text-foreground">{sensor.kind || "No linked source URL in this payload."}</p>
+                      <p className="text-xs text-zinc-900">{sensor.kind || "No linked source URL in this payload."}</p>
                     )}
                   </article>
                 ))}
@@ -1032,9 +1032,9 @@ export default function App() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {dataSources.map((source) => (
-                  <article key={source.url} className="rounded-xl border border-border/70 bg-white/70 p-3 text-zinc-900">
+                  <article key={source.url} className="rounded-xl border border-border/70 bg-teal-50 p-3 text-zinc-900">
                     <p className="font-semibold">{source.name}</p>
-                    <p className="text-sm text-muted-foreground">{source.note}</p>
+                    <p className="text-sm text-zinc-900">{source.note}</p>
                     <a className="text-xs text-primary hover:underline" href={source.url} target="_blank" rel="noreferrer">
                       {source.kind}
                     </a>
