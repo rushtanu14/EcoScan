@@ -6,8 +6,8 @@
   --background: 160 30% 6%;
   --foreground: 160 50% 95%;
   --muted: 160 25% 12%;
-  /* Muted foreground was too light on pale card backgrounds; darken for contrast */
-  --muted-foreground: 160 8% 24%;
+  /* Muted foreground should remain readable on dark glass surfaces */
+  --muted-foreground: 160 18% 78%;
   --popover: 160 32% 8%;
   --popover-foreground: 160 50% 95%;
   --card: 165 33% 14%;
@@ -52,6 +52,10 @@ h4 {
 .glass-card {
   @apply border border-border/60 bg-card/75 backdrop-blur-md shadow-[0_18px_48px_rgba(0,0,0,0.5)];
   color: hsl(var(--card-foreground));
+}
+
+.glass-card .text-muted-foreground {
+  color: hsl(var(--foreground) / 0.78);
 }
 
 .surface-noise::before {

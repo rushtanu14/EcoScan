@@ -567,8 +567,8 @@ export default function App() {
                     {MODEL_STATUS_TEXT[modelStatus].label}
                   </span>
                 </div>
-                <p className="text-sm text-zinc-700">{MODEL_STATUS_TEXT[modelStatus].detail}</p>
-                <p className="text-sm text-zinc-700">{activeThreat.description}</p>
+                <p className="text-sm text-muted-foreground">{MODEL_STATUS_TEXT[modelStatus].detail}</p>
+                <p className="text-sm text-muted-foreground">{activeThreat.description}</p>
 
                 <div className="grid gap-3 md:grid-cols-3">
                   <article className="rounded-xl border border-border/70 bg-teal-50 p-4 text-zinc-900">
@@ -738,7 +738,7 @@ export default function App() {
                     >
                       <img src={item.image} alt={item.title} className="h-44 w-full object-cover" />
                       <div className="p-4 space-y-1.5">
-                        <p className="text-xs uppercase tracking-wide text-foreground">{item.badge}</p>
+                        <p className="text-xs uppercase tracking-wide text-zinc-700">{item.badge}</p>
                         <h3 className="font-semibold">{item.title}</h3>
                         <p className="text-sm text-zinc-700">{item.subtitle}</p>
                         <p className="text-xs text-primary">{item.annotation}</p>
@@ -878,9 +878,9 @@ export default function App() {
                 </div>
                 {activeScanCell ? (
                   <div className="rounded-2xl border border-border/70 bg-teal-100 p-4 text-zinc-900">
-                    <p className="text-xs uppercase tracking-wide text-foreground">Highlighted hotspot</p>
+                    <p className="text-xs uppercase tracking-wide text-zinc-700">Highlighted hotspot</p>
                     <h3 className="mt-1 text-xl font-semibold">{activeScanCell.cell_id}</h3>
-                    <p className="text-sm text-foreground mt-1">{activeHabitat?.habitat_story}</p>
+                    <p className="mt-1 text-sm text-zinc-800">{activeHabitat?.habitat_story}</p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <span className={`inline-flex rounded-full border px-3 py-1 text-xs ${toneClass(activeScanCell.health_label)}`}>
                         {threatProfile(activeScanCell.health_label).shortLabel}
